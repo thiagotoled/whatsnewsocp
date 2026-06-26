@@ -11,6 +11,7 @@ Cada diretório contém um laboratório independente com manifestos prontos para
 |---|-----------|-----------|
 | 1 | [In-place Pod Vertical Scaling](./InplacePodverticalscaling/README.md) | Ajuste de CPU e Memória de Pods em execução **sem reinicialização** |
 | 2 | [External Secrets Operator](./ExternalSecretsOperator/README.md) | Sincronização bidirecional de segredos entre OpenShift e Azure Key Vault |
+| 3 | [User Namespaces](./UserNamespaces/README.md) | Isolamento de UID/GID do container em relação ao host com `hostUsers: false` |
 
 ---
 
@@ -40,17 +41,23 @@ whatsnewsocp/
 │   └── ocp-manifests/
 │       ├── 01-namespace.yaml
 │       └── 02-deployment.yaml
-└── ExternalSecretsOperator/
+├── ExternalSecretsOperator/
+│   ├── README.md
+│   └── ocp-manifests/
+│       ├── 01-namespace.yaml
+│       ├── 02-external-secrets-config.yaml
+│       ├── 03-azure-credentials-secret.yaml
+│       ├── 04-secret-store.yaml
+│       ├── 05-external-secret.yaml
+│       ├── 06-pod-check.yaml
+│       ├── 07-push-source-secret.yaml
+│       ├── 08-push-azure-credentials.yaml
+│       ├── 09-push-secret-store.yaml
+│       └── 10-push-secret.yaml
+└── UserNamespaces/
     ├── README.md
     └── ocp-manifests/
         ├── 01-namespace.yaml
-        ├── 02-external-secrets-config.yaml
-        ├── 03-azure-credentials-secret.yaml
-        ├── 04-secret-store.yaml
-        ├── 05-external-secret.yaml
-        ├── 06-pod-check.yaml
-        ├── 07-push-source-secret.yaml
-        ├── 08-push-azure-credentials.yaml
-        ├── 09-push-secret-store.yaml
-        └── 10-push-secret.yaml
+        ├── 02-deployment-no-userns.yaml
+        └── 03-deployment-with-userns.yaml
 ```

@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: userns-demo-host
+  namespace: userns-lab
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: userns-demo-host
+  template:
+    metadata:
+      labels:
+        app: userns-demo-host
+    spec:
+      hostUsers: true
+      containers:
+        - name: demo
+          image: registry.access.redhat.com/ubi9/ubi
+          command:
+            - /bin/bash
+            - -c
+            - |
+              echo "=== id ==="
+              id
+              echo
+              echo "=== uid_map ==="
+              cat /proc/self/uid_map || true
+              echo
+              echo "=== gid_map ==="
+              cat /proc/self/gid_map || true
+              echo
+              sleep 3600
