@@ -12,6 +12,7 @@ Cada diretório contém um laboratório independente com manifestos prontos para
 | 1 | [In-place Pod Vertical Scaling](./InplacePodverticalscaling/README.md) | Ajuste de CPU e Memória de Pods em execução **sem reinicialização** |
 | 2 | [External Secrets Operator](./ExternalSecretsOperator/README.md) | Sincronização bidirecional de segredos entre OpenShift e Azure Key Vault |
 | 3 | [User Namespaces](./UserNamespaces/README.md) | Isolamento de UID/GID do container em relação ao host com `hostUsers: false` |
+| 4 | [Managed Boot Images](./ManagedBootImages/README.md) | Atualização automática de imagens de boot nos MachineSets — provisionamento mais rápido |
 
 ---
 
@@ -54,10 +55,14 @@ whatsnewsocp/
 │       ├── 08-push-azure-credentials.yaml
 │       ├── 09-push-secret-store.yaml
 │       └── 10-push-secret.yaml
-└── UserNamespaces/
+├── UserNamespaces/
+│   ├── README.md
+│   └── ocp-manifests/
+│       ├── 01-namespace.yaml
+│       ├── 02-deployment-no-userns.yaml
+│       └── 03-deployment-with-userns.yaml
+└── ManagedBootImages/
     ├── README.md
     └── ocp-manifests/
-        ├── 01-namespace.yaml
-        ├── 02-deployment-no-userns.yaml
-        └── 03-deployment-with-userns.yaml
+        └── 01-machine-configuration.yaml
 ```
