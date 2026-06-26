@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: secret-check
+  namespace: eso-demo
+spec:
+  restartPolicy: Never
+  containers:
+    - name: check
+      image: registry.access.redhat.com/ubi9/ubi
+      command:
+        - /bin/bash
+        - -c
+        - |
+          echo "APP_PASSWORD=$APP_PASSWORD"
+          sleep 3600
+      env:
+        - name: APP_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: demo-app-secret
+              key: APP_PASSWORD
