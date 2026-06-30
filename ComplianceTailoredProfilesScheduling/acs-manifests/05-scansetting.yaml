@@ -1,0 +1,17 @@
+# Alternativa manual ao "Schedules" do RHACS: cria o agendamento de scan
+# diretamente via Compliance Operator. Use este caminho se preferir não
+# depender da página Compliance > Schedules do RHACS (Passo 4 do README).
+apiVersion: compliance.openshift.io/v1alpha1
+kind: ScanSetting
+metadata:
+  name: lab-weekly-scan-setting
+  namespace: openshift-compliance
+rawResultStorage:
+  size: "1Gi"
+  rotation: 3
+schedule: "0 6 * * 1"
+roles:
+  - worker
+  - master
+showNotApplicable: false
+strictNodeScan: true
