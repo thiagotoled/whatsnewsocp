@@ -159,3 +159,5 @@ Acesse o Azure Key Vault e confirme que o segredo `minha-secret-na-keyvault` foi
 ## Referências
 
 - [Documentação oficial: External Secrets Operator no OCP 4.20](https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/security_and_compliance/external-secrets-operator-for-red-hat-openshift)
+
+teste
