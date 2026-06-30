@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-latest-tag
+  labels:
+    app: app-latest-tag
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: app-latest-tag
+  template:
+    metadata:
+      labels:
+        app: app-latest-tag
+    spec:
+      containers:
+        - name: app
+          # Usa a tag "latest" de propósito, para violar a política padrão
+          # "Latest tag" e servir de alvo de teste do escopo da política.
+          image: docker.io/library/nginx:latest
+          ports:
+            - containerPort: 80

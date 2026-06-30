@@ -1,0 +1,17 @@
+apiVersion: compliance.openshift.io/v1alpha1
+kind: TailoredProfile
+metadata:
+  name: lab-cis-tailored
+  namespace: openshift-compliance
+spec:
+  title: "Lab - CIS customizado"
+  description: "Perfil CIS do OpenShift customizado para o laboratório de Scheduling do RHACS 4.11"
+  extends: ocp4-cis
+  disableRules:
+    # Exemplo: desabilita uma regra específica, com justificativa registrada.
+    - name: ocp4-cis-scc-limit-container-allowed-capabilities
+      rationale: "Exceção temporária aprovada para o ambiente de laboratório (ticket LAB-001)"
+  setValues:
+    - name: ocp4-cis-var-selinux-state
+      rationale: "Valor padrão do ambiente de laboratório"
+      value: enforcing

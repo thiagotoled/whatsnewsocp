@@ -1,6 +1,6 @@
-# What's New in OpenShift — Laboratórios Práticos
+# What's New in OpenShift & ACS — Laboratórios Práticos
 
-Repositório com exercícios práticos sobre as novidades do **Red Hat OpenShift 4.20+**.  
+Repositório com exercícios práticos sobre as novidades do **Red Hat OpenShift 4.20+** e do **Red Hat Advanced Cluster Security for Kubernetes (RHACS) 4.11**.
 Cada diretório contém um laboratório independente com manifestos prontos para aplicar no cluster.
 
 ---
@@ -13,6 +13,10 @@ Cada diretório contém um laboratório independente com manifestos prontos para
 | 2 | [External Secrets Operator](./ExternalSecretsOperator/README.md) | Sincronização bidirecional de segredos entre OpenShift e Azure Key Vault |
 | 3 | [User Namespaces](./UserNamespaces/README.md) | Isolamento de UID/GID do container em relação ao host com `hostUsers: false` |
 | 4 | [Managed Boot Images](./ManagedBootImages/README.md) | Atualização automática de imagens de boot nos MachineSets — provisionamento mais rápido |
+| 5 | [Enhanced Vulnerability Management Reporting](./VulnerabilityManagementReporting/README.md) | Novas colunas (NVD CVSS, EPSS, Advisory, Component Version) nos relatórios de vulnerabilidade do RHACS 4.11 |
+| 6 | [Policy Scope com Labels de Cluster/Namespace](./PolicyScopeLabels/README.md) | Restringir políticas do RHACS a clusters/namespaces específicos usando seletores de label |
+| 7 | [Policy para oc debug / pods attach](./PolicyDebugPodAttach/README.md) | Detecção e enforcement de `pods/attach` (cobrindo `oc debug`, `oc attach`) no RHACS 4.11 |
+| 8 | [Scheduling de Compliance Operator Tailored Profiles](./ComplianceTailoredProfilesScheduling/README.md) | Agendar scans de perfis de compliance customizados direto pela página Schedules do RHACS 4.11 |
 
 ---
 
@@ -61,8 +65,35 @@ whatsnewsocp/
 │       ├── 01-namespace.yaml
 │       ├── 02-deployment-no-userns.yaml
 │       └── 03-deployment-with-userns.yaml
-└── ManagedBootImages/
+├── ManagedBootImages/
+│   ├── README.md
+│   └── ocp-manifests/
+│       └── 01-machine-configuration.yaml
+├── VulnerabilityManagementReporting/
+│   ├── README.md
+│   └── acs-manifests/
+│       ├── 01-namespace.yaml
+│       ├── 02-vulnerable-deployment.yaml
+│       └── 03-report-on-demand.sh
+├── PolicyScopeLabels/
+│   ├── README.md
+│   └── acs-manifests/
+│       ├── 01-namespace-prod.yaml
+│       ├── 02-namespace-dev.yaml
+│       ├── 03-deployment-latest-tag.yaml
+│       └── 04-policy-as-code-example.yaml
+├── PolicyDebugPodAttach/
+│   ├── README.md
+│   └── acs-manifests/
+│       ├── 01-namespace.yaml
+│       └── 02-deployment.yaml
+└── ComplianceTailoredProfilesScheduling/
     ├── README.md
-    └── ocp-manifests/
-        └── 01-machine-configuration.yaml
+    └── acs-manifests/
+        ├── 01-namespace.yaml
+        ├── 02-operatorgroup.yaml
+        ├── 03-subscription.yaml
+        ├── 04-tailored-profile.yaml
+        ├── 05-scansetting.yaml
+        └── 06-scansettingbinding.yaml
 ```

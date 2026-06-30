@@ -1,0 +1,38 @@
+# Exemplo de referência (Policy-as-Code) usando o formato de configuração
+# declarativa do RHACS (CRD config.stackrox.io/v1alpha1, processada pelo
+# roxctl e reconciliada pelo Central — não é aplicada com "oc apply" direto
+# num cluster gerenciado, e sim transformada em ConfigMap/Secret montado
+# no Central). Use como referência para quem gerencia políticas via GitOps;
+# o passo a passo principal deste lab usa a UI do RHACS.
+kind: SecurityPolicy
+apiVersion: config.stackrox.io/v1alpha1
+metadata:
+  name: latest-tag-restrict-to-prod
+spec:
+  policyName: "Lab - Latest Tag (somente Production)"
+  description: "Detecta uso da tag 'latest' restrito aos namespaces marcados como ambiente de produção"
+  categories:
+    - "Docker CIS"
+  disabled: false
+  lifecycleStages:
+    - DEPLOY
+  severity: MEDIUM_SEVERITY
+  policySections:
+    - sectionName: "Rule 1"
+      policyGroups:
+        - fieldName: "Image Tag"
+          booleanOperator: OR
+          negate: false
+          values:
+            - value: "latest"
+  # "scope" restringe em quais clusters/namespaces a política é avaliada.
+  # cluster: nome ou ID do cluster registrado no RHACS.
+  # namespace e label aceitam regex RE2.
+  scope:
+    - cluster: ""
+      namespace: ""
+      label:
+        key: "environment"
+        value: "production"
+  rationale: "Imagens com tag 'latest' não garantem rastreabilidade de versão e dificultam rollback em produção"
+  remediation: "Use uma tag de versão imutável (ex.: digest ou semver) ao publicar a imagem"
