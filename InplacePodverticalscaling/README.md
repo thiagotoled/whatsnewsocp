@@ -22,7 +22,7 @@ oc get pods -n lab-inplace-scaling
 
 ---
 
-## 👀 Passo 2: Monitorar em Tempo Real (Abra um novo terminal)
+##  Passo 2: Monitorar em Tempo Real (Abra um novo terminal)
 
 Abra uma nova janela de terminal e execute o comando abaixo para monitorar os recursos e o status do Pod continuamente:
 
