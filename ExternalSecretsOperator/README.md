@@ -10,7 +10,6 @@ O exercício está dividido em duas partes:
 
 ## Pré-requisitos
 
-- OpenShift 4.18+ (ESO está disponível via OperatorHub no OCP 4.18+)
 - Acesso a um Azure Key Vault com um Service Principal configurado
 - CLI `oc` autenticado no cluster
 
@@ -23,11 +22,13 @@ O exercício está dividido em duas partes:
 Instale o operador via OperatorHub no console do OpenShift ou via CLI:
 
 ```bash
-oc apply -f ExternalSecretsOperator/ocp-manifests/02-external-secrets-config.yaml
+oc apply -f ExternalSecretsOperator/ocp-manifests/01-operator-config.yaml
 ```
 
-Aguarde o operador ficar disponível antes de prosseguir.
-
+Aguarde o operador ficar disponível antes de prosseguir
+```bash
+oc apply -f ExternalSecretsOperator/ocp-manifests/02-external-secrets-config.yaml
+```
 ---
 
 ### Passo 2: Criar o Namespace e as Credenciais do Azure
@@ -110,7 +111,7 @@ APP_PASSWORD=<valor-do-seu-segredo-no-keyvault>
 oc new-project app
 ```
 
-Edite `07-push-source-secret.yaml` com o valor desejado para `password`, depois aplique:
+Edite `ExternalSecretsOperator/ocp-manifests/07-push-source-secret.yaml` com o valor desejado para `password`, depois aplique:
 
 ```bash
 oc apply -f ExternalSecretsOperator/ocp-manifests/07-push-source-secret.yaml
