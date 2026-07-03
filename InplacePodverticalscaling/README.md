@@ -45,10 +45,8 @@ Execute o seguinte comando no seu terminal principal:
 
 ```bash
 oc patch pod nginx-inplace-5b6d99df49-jzhxg -p '{"spec": {"containers": [{"name": "nginx", "resources": { "requests" :{ "cpu" : 2, "memory": "512Mi"}, "limits" :{ "cpu" : 3, "memory" : "3Gi" } } }] }}' --subresource=resize -n lab-inplace-scaling
-
-nginx-inplace-5b6d99df49-jzhxg = trocar pelo nome do pod em execução, verificado no Passo 2. 
-
 ```
+nginx-inplace-5b6d99df49-jzhxg = trocar pelo nome do pod em execução, verificado no Passo 2. 
 
 ###  O que verificar agora?
 
