@@ -44,16 +44,10 @@ Vamos aumentar os recursos do container de forma dinâmica usando o comando `oc 
 Execute o seguinte comando no seu terminal principal:
 
 ```bash
-oc patch deployment nginx-inplace -n lab-inplace-scaling --type=json -p='[
-  {
-    "op": "replace",
-    "path": "/spec/template/spec/containers/0/resources",
-    "value": {
-      "requests": {"cpu": "300m", "memory": "256Mi"},
-      "limits": {"cpu": "500m", "memory": "512Mi"}
-    }
-  }
-]'
+oc patch pod nginx-inplace-5b6d99df49-jzhxg -p '{"spec": {"containers": [{"name": "nginx", "resources": { "requests" :{ "cpu" : 2, "memory": "512Mi"}, "limits" :{ "cpu" : 3, "memory" : "3Gi" } } }] }}' --subresource=resize -n lab-inplace-scaling
+
+nginx-inplace-5b6d99df49-jzhxg = trocar pelo nome do pod em execução, verificado no Passo 2. 
+
 ```
 
 ###  O que verificar agora?
@@ -80,16 +74,8 @@ O processo inverso também é suportado. Vamos reduzir os recursos de volta para
 Execute o comando de patch para diminuir:
 
 ```bash
-oc patch deployment nginx-inplace -n lab-inplace-scaling --type=json -p='[
-  {
-    "op": "replace",
-    "path": "/spec/template/spec/containers/0/resources",
-    "value": {
-      "requests": {"cpu": "100m", "memory": "128Mi"},
-      "limits": {"cpu": "200m", "memory": "256Mi"}
-    }
-  }
-]'
+oc patch pod nginx-inplace-5b6d99df49-jzhxg -p '{"spec": {"containers": [{"name": "nginx", "resources": { "requests" :{ "cpu" : 1, "memory": "128Mi"}, "limits" :{ "cpu" : 1, "memory" : "1Gi" } } }] }}' --subresource=resize -n lab-inplace-scaling
+
 ```
 
 ###  Verificação Final:
@@ -97,5 +83,6 @@ oc patch deployment nginx-inplace -n lab-inplace-scaling --type=json -p='[
 Confirme novamente que os recursos foram alterados com sucesso e o container permaneceu online o tempo todo:
 
 ```bash
-oc get pod -n lab-inplace-scaling -l app=nginx-inplace -o jsonpath='{.items[0].spec.containers[0].resources}'
+oc get pod -n lab-inplace-scaling -l app=nginx-inplace -o jsonpath='{.items[0].spec.containers[0].resources}' ; echo
+oc describe pod -n lab-inplace-scaling -l app=nginx-inplace | grep -A 5 Requests
 ```
