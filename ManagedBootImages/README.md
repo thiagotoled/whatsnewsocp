@@ -22,7 +22,6 @@ Com o Managed Boot Images habilitado:
 
 ## Pré-requisitos
 
-- OpenShift 4.10+ (GA para MAPI MachineSets)
 - Acesso de administrador ao cluster
 - CLI `oc` autenticado
 
