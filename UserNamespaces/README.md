@@ -78,35 +78,6 @@ Dentro do container o processo se vê como `root`, mas no host ele é `UID 65536
 
 ---
 
-## Passo 4: Confirmar o Mapeamento no Host
-
-Para ver o UID real no host, verifique em qual nó o Pod está rodando e inspecione o processo:
-
-```bash
-POD=$(oc get pod -n userns-lab -l app=userns-demo-isolated -o jsonpath='{.items[0].metadata.name}')
-oc get pod $POD -n userns-lab -o wide
-```
-
-Acesse o nó via debug e confirme o UID do processo:
-
-```bash
-oc debug node/<nome-do-no>
-chroot /host
-ps aux | grep sleep
-```
-
-O processo `sleep 3600` aparecerá com UID `65536+` — não como root.
-
----
-
-## Limpeza
-
-```bash
-oc delete namespace userns-lab
-```
-
----
-
 ## Referências
 
 - [Documentação oficial: User Namespaces no OCP 4.20](https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/nodes/nodes-pods-user-namespaces)
