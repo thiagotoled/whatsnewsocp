@@ -1,0 +1,13 @@
+apiVersion: cluster.open-cluster-management.io/v1beta1
+kind: Placement
+metadata:
+  name: placement-whatsnewsocp-labs
+  namespace: whatsnewsocp-policies
+spec:
+  clusterSets:
+    - whatsnewsocp-labs
+  predicates:
+    - requiredClusterSelector:
+        labelSelector:
+          matchLabels:
+            whatsnewsocp-lab: "true"

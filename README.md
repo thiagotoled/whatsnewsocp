@@ -21,6 +21,15 @@ Cada diretório contém um laboratório independente com manifestos prontos para
 
 ---
 
+## Automação via ACM (em preparação)
+
+O diretório [`acm-hub/`](./acm-hub/README.md) contém o esqueleto de Policies do RHACM (Advanced
+Cluster Management) para pré-carregar o "boilerplate" de cada lab (namespace, deployment, operador)
+nos clusters, deixando só a parte que É a lição para aplicação manual. Ainda depende de um hub ACM
+que será criado — ver detalhes e cuidados (principalmente o do PDB do Lab 9) no README do diretório.
+
+---
+
 ## Como usar
 
 1. Clone o repositório:
@@ -97,11 +106,21 @@ whatsnewsocp/
 │       ├── 04-tailored-profile.yaml
 │       ├── 05-scansetting.yaml
 │       └── 06-scansettingbinding.yaml
-└── UpgradeRecommendPrecheck/
+├── UpgradeRecommendPrecheck/
+│   ├── README.md
+│   └── ocp-manifests/
+│       ├── 01-namespace.yaml
+│       ├── 02-deployment.yaml
+│       ├── 03-poddisruptionbudget-blocking.yaml
+│       └── 04-poddisruptionbudget-fixed.yaml
+└── acm-hub/
     ├── README.md
-    └── ocp-manifests/
-        ├── 01-namespace.yaml
-        ├── 02-deployment.yaml
-        ├── 03-poddisruptionbudget-blocking.yaml
-        └── 04-poddisruptionbudget-fixed.yaml
+    ├── placement/
+    │   ├── 00-namespace.yaml
+    │   ├── 01-managedclusterset.yaml
+    │   ├── 02-managedclustersetbinding.yaml
+    │   └── 03-placement.yaml
+    └── policies/
+        ├── kustomization.yaml
+        └── policy-generator-config.yaml
 ```

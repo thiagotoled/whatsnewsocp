@@ -1,0 +1,87 @@
+# Gera as Policies de "baseline" (boilerplate) para cada lab do repo.
+# Build: kustomize build --enable-alpha-plugins acm-hub/policies | oc apply -f -
+# (precisa do binário policy-generator-plugin instalado como exec plugin do kustomize)
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: whatsnewsocp-lab-baselines
+placementBindingDefaults:
+  name: binding-whatsnewsocp-lab-baselines
+policyDefaults:
+  namespace: whatsnewsocp-policies
+  remediationAction: enforce
+  severity: low
+  placement:
+    placementName: placement-whatsnewsocp-labs
+policies:
+  # Lab 1 - InplacePodverticalscaling: a lição é o "oc patch --subresource=resize".
+  # Namespace + Deployment já rodando são só prep.
+  - name: policy-lab01-inplace-pod-vertical-scaling-baseline
+    manifests:
+      - path: ../../InplacePodverticalscaling/ocp-manifests/01-namespace.yaml
+      - path: ../../InplacePodverticalscaling/ocp-manifests/02-deployment.yaml
+
+  # Lab 2 - ExternalSecretsOperator: a lição é a sincronização (pull e push).
+  # Só o operador instalado é boilerplate.
+  - name: policy-lab02-external-secrets-operator-baseline
+    manifests:
+      - path: ../../ExternalSecretsOperator/ocp-manifests/01-namespace.yaml
+      - path: ../../ExternalSecretsOperator/ocp-manifests/01-operator-config.yaml
+
+  # Lab 3 - UserNamespaces: a lição é comparar o Deployment com e sem hostUsers:false.
+  # Só o namespace é boilerplate — os dois Deployments ficam manuais de propósito.
+  - name: policy-lab03-user-namespaces-baseline
+    manifests:
+      - path: ../../UserNamespaces/ocp-manifests/01-namespace.yaml
+
+  # Lab 4 - ManagedBootImages: não entra aqui.
+  # O único manifesto do lab (habilitar managedBootImages) É a lição inteira.
+
+  # Lab 5 - VulnerabilityManagementReporting: a lição é gerar/ler o relatório (03-report-on-demand.sh).
+  # Namespace + deployment vulnerável são só prep para existir CVE pra reportar.
+  - name: policy-lab05-vulnerability-management-reporting-baseline
+    manifests:
+      - path: ../../VulnerabilityManagementReporting/acs-manifests/01-namespace.yaml
+      - path: ../../VulnerabilityManagementReporting/acs-manifests/02-vulnerable-deployment.yaml
+
+  # Lab 6 - PolicyScopeLabels: a lição é o 04-policy-as-code-example.yaml (escopo por label).
+  # Namespaces prod/dev + deployment com tag latest são só prep.
+  - name: policy-lab06-policy-scope-labels-baseline
+    manifests:
+      - path: ../../PolicyScopeLabels/acs-manifests/01-namespace-prod.yaml
+      - path: ../../PolicyScopeLabels/acs-manifests/02-namespace-dev.yaml
+      - path: ../../PolicyScopeLabels/acs-manifests/03-deployment-latest-tag.yaml
+
+  # Lab 7 - PolicyDebugPodAttach: a lição é rodar oc debug/attach e ver o RHACS reagir.
+  # Namespace + deployment são só prep.
+  - name: policy-lab07-policy-debug-pod-attach-baseline
+    manifests:
+      - path: ../../PolicyDebugPodAttach/acs-manifests/01-namespace.yaml
+      - path: ../../PolicyDebugPodAttach/acs-manifests/02-deployment.yaml
+
+  # Lab 8 - ComplianceTailoredProfilesScheduling: a lição é agendar o scan pela UI do RHACS
+  # (Schedules) e validar o ScanSettingBinding automático. Instalar o Compliance Operator e
+  # criar o TailoredProfile são boilerplate. 05/06 (ScanSetting/ScanSettingBinding manuais)
+  # ficam de fora — são a alternativa 100% manual mostrada no fim do lab.
+  - name: policy-lab08-compliance-tailored-profiles-baseline
+    manifests:
+      - path: ../../ComplianceTailoredProfilesScheduling/acs-manifests/01-namespace.yaml
+      - path: ../../ComplianceTailoredProfilesScheduling/acs-manifests/02-operatorgroup.yaml
+      - path: ../../ComplianceTailoredProfilesScheduling/acs-manifests/03-subscription.yaml
+      - path: ../../ComplianceTailoredProfilesScheduling/acs-manifests/04-tailored-profile.yaml
+
+  # Lab 9 - UpgradeRecommendPrecheck: a lição é corrigir o PDB e ver o precheck do
+  # oc adm upgrade recommend refletir a mudança. Namespace + deployment são boilerplate normal.
+  - name: policy-lab09-upgrade-recommend-precheck-baseline
+    manifests:
+      - path: ../../UpgradeRecommendPrecheck/ocp-manifests/01-namespace.yaml
+      - path: ../../UpgradeRecommendPrecheck/ocp-manifests/02-deployment.yaml
+
+  # PDB restritivo em policy SEPARADA de propósito: precisa ser semeado ~1h antes do lab
+  # por causa do "for: 60m" do alerta PodDisruptionBudgetAtLimit (ver acm-hub/README.md).
+  # IMPORTANTE: por estar em remediationAction=enforce, ela vai reverter a correção manual
+  # do Passo 5 do lab se ficar habilitada — desabilite esta policy específica antes de
+  # liberar a turma para aplicar o 04-poddisruptionbudget-fixed.yaml.
+  - name: policy-lab09-upgrade-recommend-precheck-pdb-seed
+    manifests:
+      - path: ../../UpgradeRecommendPrecheck/ocp-manifests/03-poddisruptionbudget-blocking.yaml
