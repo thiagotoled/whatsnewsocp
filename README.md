@@ -17,6 +17,7 @@ Cada diretório contém um laboratório independente com manifestos prontos para
 | 6 | [Policy Scope com Labels de Cluster/Namespace](./PolicyScopeLabels/README.md) | Restringir políticas do RHACS a clusters/namespaces específicos usando seletores de label |
 | 7 | [Policy para oc debug / pods attach](./PolicyDebugPodAttach/README.md) | Detecção e enforcement de `pods/attach` (cobrindo `oc debug`, `oc attach`) no RHACS 4.11 |
 | 8 | [Scheduling de Compliance Operator Tailored Profiles](./ComplianceTailoredProfilesScheduling/README.md) | Agendar scans de perfis de compliance customizados direto pela página Schedules do RHACS 4.11 |
+| 9 | [Encontrando Problemas Antes de Atualizar o Cluster](./UpgradeRecommendPrecheck/README.md) | Uso do `oc adm upgrade recommend` (GA no OCP 4.20) para identificar riscos (ex.: PodDisruptionBudget restritivo) antes de iniciar um update do OpenShift |
 
 ---
 
@@ -87,13 +88,20 @@ whatsnewsocp/
 │   └── acs-manifests/
 │       ├── 01-namespace.yaml
 │       └── 02-deployment.yaml
-└── ComplianceTailoredProfilesScheduling/
+├── ComplianceTailoredProfilesScheduling/
+│   ├── README.md
+│   └── acs-manifests/
+│       ├── 01-namespace.yaml
+│       ├── 02-operatorgroup.yaml
+│       ├── 03-subscription.yaml
+│       ├── 04-tailored-profile.yaml
+│       ├── 05-scansetting.yaml
+│       └── 06-scansettingbinding.yaml
+└── UpgradeRecommendPrecheck/
     ├── README.md
-    └── acs-manifests/
+    └── ocp-manifests/
         ├── 01-namespace.yaml
-        ├── 02-operatorgroup.yaml
-        ├── 03-subscription.yaml
-        ├── 04-tailored-profile.yaml
-        ├── 05-scansetting.yaml
-        └── 06-scansettingbinding.yaml
+        ├── 02-deployment.yaml
+        ├── 03-poddisruptionbudget-blocking.yaml
+        └── 04-poddisruptionbudget-fixed.yaml
 ```

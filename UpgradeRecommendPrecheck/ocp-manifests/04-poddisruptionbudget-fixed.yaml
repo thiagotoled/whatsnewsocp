@@ -1,0 +1,10 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: nginx-pdb-demo-strict
+  namespace: lab-upgrade-status
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: nginx-pdb-demo
