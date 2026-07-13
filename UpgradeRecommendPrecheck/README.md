@@ -94,7 +94,34 @@ Rode o precheck novamente:
 oc adm upgrade recommend
 ```
 
-A saída deve reportar um alerta do tipo **Warning** para `PodDisruptionBudgetAtLimit`, apontando o namespace `lab-upgrade-status` e o PDB `nginx-pdb-demo-strict` como risco para o drain de nós durante o update — exatamente o tipo de problema que o comando foi feito para pegar **antes** de você iniciar o update.
+> **Atenção ao timing:** o `oc adm upgrade recommend` só reporta alertas no estado `firing`. A regra `PodDisruptionBudgetAtLimit` tem `for: 60m` — ou seja, a condição (`ALLOWED DISRUPTIONS: 0`) precisa persistir por **1 hora** antes do alerta virar `firing` e aparecer na saída do comando. Logo depois de criar o PDB, é esperado ver `no known issues relevant to this cluster`.
+
+Para confirmar que o Prometheus já reconheceu o problema (estado `pending`, contando o tempo para virar `firing`), consulte o Thanos Querier diretamente:
+
+```bash
+HOST=$(oc get route thanos-querier -n openshift-monitoring -o jsonpath='{.spec.host}')
+TOKEN=$(oc create token prometheus-k8s -n openshift-monitoring)
+
+curl -sk -H "Authorization: Bearer $TOKEN" \
+  "https://$HOST/api/v1/query?query=ALERTS%7Balertname%3D%22PodDisruptionBudgetAtLimit%22%7D" | jq .
+```
+
+Saída esperada, com `alertstate: "pending"` apontando o namespace e o PDB do lab:
+
+```json
+{
+  "metric": {
+    "__name__": "ALERTS",
+    "alertname": "PodDisruptionBudgetAtLimit",
+    "alertstate": "pending",
+    "namespace": "lab-upgrade-status",
+    "poddisruptionbudget": "nginx-pdb-demo-strict",
+    "severity": "warning"
+  }
+}
+```
+
+Se quiser ver o alerta em `firing` e refletido no `oc adm upgrade recommend`, deixe o PDB restritivo aplicado e repita a consulta após ~1 hora — o `alertstate` deve mudar de `pending` para `firing`, e só então o comando passa a listar o risco na versão recomendada.
 
 ---
 
@@ -129,11 +156,20 @@ nginx-pdb-demo-strict    N/A             1                 1                    
 
 ## Passo 6: Confirmar que o Alerta Desapareceu
 
+Consulte novamente o Thanos Querier — a métrica `ALERTS` para esse namespace/PDB deve desaparecer assim que o Prometheus reavaliar a expressão (a condição `current_healthy == desired_healthy` deixa de ser verdadeira com `maxUnavailable: 1`):
+
+```bash
+curl -sk -H "Authorization: Bearer $TOKEN" \
+  "https://$HOST/api/v1/query?query=ALERTS%7Balertname%3D%22PodDisruptionBudgetAtLimit%22%2Cnamespace%3D%22lab-upgrade-status%22%7D" | jq .
+```
+
+Resultado esperado: `"result": []` (vazio).
+
+Se o alerta já tivesse alcançado o estado `firing` (após a espera de 60 minutos do Passo 4), o `oc adm upgrade recommend` também deixaria de listar o `PodDisruptionBudgetAtLimit` para este namespace:
+
 ```bash
 oc adm upgrade recommend
 ```
-
-O alerta `PodDisruptionBudgetAtLimit` referente ao namespace `lab-upgrade-status` não deve mais aparecer.
 
 ---
 
