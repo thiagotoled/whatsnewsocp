@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vuln-scan-demo
+  namespace: lab-console-vulnerabilities
+  labels:
+    app: vuln-scan-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vuln-scan-demo
+  template:
+    metadata:
+      labels:
+        app: vuln-scan-demo
+    spec:
+      containers:
+        - name: vuln-scan-demo
+          # Imagem RHEL9 real do próprio stack do ACM (console do multicluster-engine),
+          # escolhida de propósito: distros EOL (ex.: nginx:1.14.0, base Debian 9) saem do feed
+          # de CVE do Scanner V4 e voltam sempre "0 CVEs" — não serve pra este lab. Uma imagem
+          # RHEL/UBI ainda coberta pelo feed da Red Hat garante CVEs de verdade e reprodutíveis
+          # (confirmado ao vivo: 178 CVEs / 25 fixable). command sobrescrito porque não
+          # precisamos que o console do MCE rode de verdade, só que a imagem seja puxada pro
+          # nó e escaneada.
+          image: registry.redhat.io/multicluster-engine/console-mce-rhel9@sha256:da1946f16bff1343624b2afdf4df794e97b24f260ca9f272329a56bd1f73c70e
+          command: ["sleep", "infinity"]

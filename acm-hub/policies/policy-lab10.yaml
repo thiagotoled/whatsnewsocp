@@ -1,0 +1,53 @@
+# Lab 10 - WorkloadVulnerabilitiesConsole: a lição é abrir Security > Vulnerabilities no
+# console do OCP e explorar os dados. Namespace + deployment (imagem RHEL9 real, com CVEs
+# de verdade no feed do Scanner V4) são boilerplate normal. O plugin advanced-cluster-security
+# em si é habilitado por policy-acs-secured-cluster (não é específico deste lab).
+apiVersion: policy.open-cluster-management.io/v1
+kind: Policy
+metadata:
+  name: policy-lab10
+  namespace: whatsnewsocp-policies
+  annotations:
+    policy.open-cluster-management.io/categories: CM Configuration Management
+    policy.open-cluster-management.io/controls: CM-2 Baseline Configuration
+    policy.open-cluster-management.io/standards: NIST SP 800-53
+    argocd.argoproj.io/compare-options: IgnoreExtraneous
+spec:
+  disabled: false
+  policy-templates:
+  - objectDefinition:
+      apiVersion: policy.open-cluster-management.io/v1
+      kind: ConfigurationPolicy
+      metadata:
+        name: policy-lab10
+      spec:
+        remediationAction: enforce
+        severity: low
+        object-templates:
+        - complianceType: musthave
+          objectDefinition:
+            apiVersion: v1
+            kind: Namespace
+            metadata:
+              name: lab-console-vulnerabilities
+        - complianceType: musthave
+          objectDefinition:
+            apiVersion: apps/v1
+            kind: Deployment
+            metadata:
+              name: vuln-scan-demo
+              namespace: lab-console-vulnerabilities
+            spec:
+              replicas: 1
+              selector:
+                matchLabels:
+                  app: vuln-scan-demo
+              template:
+                metadata:
+                  labels:
+                    app: vuln-scan-demo
+                spec:
+                  containers:
+                    - name: vuln-scan-demo
+                      image: registry.redhat.io/multicluster-engine/console-mce-rhel9@sha256:da1946f16bff1343624b2afdf4df794e97b24f260ca9f272329a56bd1f73c70e
+                      command: ["sleep", "infinity"]

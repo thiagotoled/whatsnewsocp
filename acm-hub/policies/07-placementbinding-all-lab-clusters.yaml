@@ -30,3 +30,6 @@ subjects:
   - apiGroup: policy.open-cluster-management.io
     kind: Policy
     name: policy-lab09
+  - apiGroup: policy.open-cluster-management.io
+    kind: Policy
+    name: policy-lab10
