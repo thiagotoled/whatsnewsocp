@@ -1,18 +1,12 @@
 # Baseado em ACM_OCP/Politicas/policy-htpasswd.yaml, renomeado porque o conteúdo é a
 # configuração de OAuth do cluster como um todo (HTPasswd + Entra ID/AAD via OIDC), não só
-# o htpasswd. Os valores reais (hash do htpasswd, client secret e dados do app registration
-# do Entra ID) NÃO foram copiados de propósito — são específicos do outro hub/tenant e o
-# app registration para ESTE hub ainda nem existe (precisa da URL do console, que só existe
-# depois do cluster criado). Preencha os placeholders abaixo antes de aplicar:
+# o htpasswd. Valores copiados do mesmo app registration usado no outro hub (reaproveitado
+# entre clusters).
 #
-# 1. Gere o htpasswd:
-#      htpasswd -c -B -b /tmp/htpasswd admin '<senha>'
-#      cat /tmp/htpasswd | base64 -w0
-#    Cole o resultado no lugar de CHANGEME_HTPASSWD_HASH.
-#
-# 2. Crie o app registration no Entra ID com Redirect URI:
-#      https://oauth-openshift.apps.<domínio-do-hub>/oauth2callback/AAD
-#    Preencha AAD_CLIENT_ID, AAD_TENANT_ID e o client secret (base64) abaixo.
+# AÇÃO NECESSÁRIA: adicionar o Redirect URI deste hub novo no app registration no Entra ID
+# (Azure Portal > App registrations > Authentication):
+#   https://oauth-openshift.apps.<domínio-deste-hub>/oauth2callback/AAD
+# Sem isso, o login via AAD falha com redirect_uri_mismatch mesmo com a policy Compliant.
 apiVersion: policy.open-cluster-management.io/v1
 kind: Policy
 metadata:
@@ -24,7 +18,7 @@ metadata:
     policy.open-cluster-management.io/standards: NIST SP 800-53
     argocd.argoproj.io/compare-options: IgnoreExtraneous
 spec:
-  disabled: true # habilitar só depois de preencher os placeholders abaixo
+  disabled: false
   policy-templates:
   - objectDefinition:
       apiVersion: policy.open-cluster-management.io/v1
@@ -40,11 +34,11 @@ spec:
             apiVersion: v1
             kind: Secret
             metadata:
-              name: htpasswd-whatsnewsocp
+              name: htpasswd-2cr76
               namespace: openshift-config
             type: Opaque
             data:
-              htpasswd: CHANGEME_HTPASSWD_HASH_BASE64
+              htpasswd: YWRtaW46JDJ5JDA1JHdSVWYwY1JYSHNQMEd0aVkxV0F1WXUyNTh0bW1NSVBwek1wdkdUM3BzR1hDNDg1SE55OGV1
   - objectDefinition:
       apiVersion: policy.open-cluster-management.io/v1
       kind: ConfigurationPolicy
@@ -63,7 +57,7 @@ spec:
               namespace: openshift-config
             type: Opaque
             data:
-              clientSecret: CHANGEME_AAD_CLIENT_SECRET_BASE64
+              clientSecret: bUlWOFF+M2o1MndTNVRhTm1PTF90MXBtMjVpaUFiZmVfLTZjTGEzcg==
   - extraDependencies:
     - apiVersion: policy.open-cluster-management.io/v1
       compliance: Compliant
@@ -95,18 +89,18 @@ spec:
                 type: HTPasswd
                 htpasswd:
                   fileData:
-                    name: htpasswd-whatsnewsocp
+                    name: htpasswd-2cr76
               - name: AAD
                 mappingMethod: claim
                 type: OpenID
                 openID:
-                  clientID: CHANGEME_AAD_CLIENT_ID
+                  clientID: ecb2c027-2a5f-4324-9e05-3aa819ab351e
                   clientSecret:
                     name: aad-client-secret
                   extraScopes:
                   - email
                   - profile
-                  issuer: https://login.microsoftonline.com/CHANGEME_AAD_TENANT_ID/v2.0
+                  issuer: https://login.microsoftonline.com/64dc69e4-d083-49fc-9569-ebece1dd1408/v2.0
                   claims:
                     preferredUsername:
                     - email

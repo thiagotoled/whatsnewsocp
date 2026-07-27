@@ -75,13 +75,21 @@ oc patch policy policy-lab09-pdb-seed \
 
 ---
 
-## ⚠️ Cuidado com a `policy-oauth-configuration` (segredos placeholder)
+## ⚠️ Cuidado com a `policy-oauth-configuration` (Redirect URI do Entra ID)
 
-Essa policy vem com `spec.disabled: true` e valores `CHANGEME_*` no lugar do hash do htpasswd,
-do client secret do Entra ID e do client ID/tenant ID — **de propósito**, não copiei os valores
-reais do `ACM_OCP/Politicas/policy-htpasswd.yaml` porque são de outro tenant/hub. Siga os
-comentários no topo do arquivo (gerar htpasswd, criar o app registration no Entra ID com o
-Redirect URI do hub novo) antes de preencher os placeholders e trocar `disabled` para `false`.
+Essa policy reaproveita o **mesmo app registration** do Entra ID usado em `ACM_OCP/Politicas`
+(hash do htpasswd, client secret e client ID/tenant ID iguais) — já vem `disabled: false` e com
+os valores reais.
+
+**Falta um passo manual no Azure**, que a policy não resolve sozinha: adicionar o Redirect URI
+deste hub novo no app registration (Azure Portal > App registrations > Authentication):
+
+```
+https://oauth-openshift.apps.<domínio-deste-hub>/oauth2callback/AAD
+```
+
+Sem isso, a policy fica `Compliant` normalmente (ela só cria Secrets e o `OAuth` CR), mas o
+login via AAD falha com `redirect_uri_mismatch` na hora de autenticar de verdade.
 
 ---
 
@@ -169,8 +177,8 @@ do repo real — sem exec plugin, sem `--enable-alpha-plugins`.
    oc apply -k acm-hub/policies
    ```
    As policies de bootstrap (`policy-gitops-operator-install`, `policy-webterminal-install`,
-   `policy-oauth-configuration`) vão junto — mas a de OAuth só faz efeito depois que você
-   preencher os placeholders e habilitar (ver aviso acima).
+   `policy-oauth-configuration`) vão junto — a de OAuth só some `Compliant` mesmo assim; falta
+   o Redirect URI no Entra ID pro login funcionar de fato (ver aviso acima).
 5. **Conferir compliance**:
    ```bash
    oc get policy -n whatsnewsocp-policies
