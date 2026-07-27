@@ -11,3 +11,6 @@ subjects:
   - apiGroup: policy.open-cluster-management.io
     kind: Policy
     name: policy-webterminal-install
+  - apiGroup: policy.open-cluster-management.io
+    kind: Policy
+    name: policy-acs-operator-install

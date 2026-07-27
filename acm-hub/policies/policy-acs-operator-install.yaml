@@ -1,0 +1,54 @@
+# Instala só o rhacs-operator, sem CR nenhum — compartilhado entre Central (hub) e
+# SecuredCluster (managed clusters), que dependem dele mas não do mesmo jeito. Bound em
+# placement-all porque tanto o hub quanto qualquer managed cluster precisam do operator
+# instalado antes de criar a CR específica de cada papel.
+apiVersion: policy.open-cluster-management.io/v1
+kind: Policy
+metadata:
+  name: policy-acs-operator-install
+  namespace: whatsnewsocp-policies
+  annotations:
+    policy.open-cluster-management.io/categories: CM Configuration Management
+    policy.open-cluster-management.io/controls: CM-2 Baseline Configuration
+    policy.open-cluster-management.io/standards: NIST SP 800-53
+    argocd.argoproj.io/compare-options: IgnoreExtraneous
+spec:
+  disabled: false
+  policy-templates:
+  - objectDefinition:
+      apiVersion: policy.open-cluster-management.io/v1
+      kind: ConfigurationPolicy
+      metadata:
+        name: policy-acs-operator-namespace
+      spec:
+        remediationAction: enforce
+        severity: low
+        object-templates:
+        - complianceType: musthave
+          objectDefinition:
+            apiVersion: v1
+            kind: Namespace
+            metadata:
+              name: rhacs-operator
+  - extraDependencies:
+    - apiVersion: policy.open-cluster-management.io/v1
+      compliance: Compliant
+      kind: ConfigurationPolicy
+      name: policy-acs-operator-namespace
+    objectDefinition:
+      apiVersion: policy.open-cluster-management.io/v1beta1
+      kind: OperatorPolicy
+      metadata:
+        name: policy-acs-operator-install
+      spec:
+        complianceType: musthave
+        remediationAction: enforce
+        severity: critical
+        subscription:
+          channel: stable
+          name: rhacs-operator
+          namespace: rhacs-operator
+          source: redhat-operators
+          sourceNamespace: openshift-marketplace
+        upgradeApproval: Automatic
+        versions: []
