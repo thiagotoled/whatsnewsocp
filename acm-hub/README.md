@@ -43,6 +43,7 @@ Se isso for pré-criado, o aluno perde o "antes/depois" e a lição não acontec
 | 6. PolicyScopeLabels | *(sem policy — fora do escopo por ora)* | tudo manual |
 | 7. PolicyDebugPodAttach | *(sem policy — fora do escopo por ora)* | tudo manual |
 | 8. UpgradeRecommendPrecheck | namespace + deployment **+ PDB restritivo (ver aviso abaixo)** | corrigir o PDB e ver o precheck refletir |
+| 9. SigstoreImagePolicy | namespace + deployment | aplicar/trocar o `ClusterImagePolicy` (chave errada bloqueia, chave real da Red Hat libera) |
 
 Além do boilerplate por lab, existem 4 policies de **bootstrap do próprio hub** (não são de nenhum
 lab específico), trazidas do repo real `ACM_OCP/Politicas` e adaptadas:
@@ -109,7 +110,7 @@ mundo, sem afetar os outros:
 | `placement-local-cluster` | só o hub (`local-cluster=true`) | gitops-operator-install |
 | `placement-azure` | qualquer managed cluster OpenShift na Azure, **hub incluído** (`cloud=Azure` + `vendor=OpenShift`, sem exigir `whatsnewsocp-lab`) | policy-oauth-configuration |
 | `placement-vmware-lab-clusters` | clusters de **lab** na VMware (`whatsnewsocp-lab=true` + `cloud=VMware`) | *(nenhuma ainda — pronto pra quando divergir)* |
-| `placement-all-lab-clusters` | qualquer cluster de lab, qualquer nuvem (`whatsnewsocp-lab=true`) | as 4 policies de baseline dos labs (nenhuma é específica de nuvem hoje) |
+| `placement-all-lab-clusters` | qualquer cluster de lab, qualquer nuvem (`whatsnewsocp-lab=true`) | as 5 policies de baseline dos labs (nenhuma é específica de nuvem hoje) |
 | `placement-all` | qualquer managed cluster OpenShift, sem filtro (inclui o hub) | webterminal-install |
 
 > **Assimetria de propósito:** `placement-azure` NÃO exige `whatsnewsocp-lab` (cobre o hub, que
@@ -136,7 +137,7 @@ acm-hub/
     ├── 04-placement-azure.yaml                    # placement-azure (hub incluído)
     ├── 05-placement-vmware.yaml                   # sem binding ainda, ver tabela acima
     ├── 06-placement-all-lab-clusters.yaml
-    ├── 07-placementbinding-all-lab-clusters.yaml  # as 4 policies de baseline dos labs
+    ├── 07-placementbinding-all-lab-clusters.yaml  # as 5 policies de baseline dos labs
     ├── 08-placement-all.yaml
     ├── 09-placementbinding-all.yaml                # policy-webterminal-install
     ├── 10-placementbinding-azure.yaml              # policy-oauth-configuration, policy-cluster-admin-rbac
@@ -147,7 +148,8 @@ acm-hub/
     ├── policy-lab01.yaml
     ├── policy-lab02.yaml
     ├── policy-lab03.yaml
-    └── policy-lab08.yaml                            # 2 ConfigurationPolicy: baseline + PDB seed
+    ├── policy-lab08.yaml                            # 2 ConfigurationPolicy: baseline + PDB seed
+    └── policy-lab09.yaml
 ```
 
 Sem PolicyGenerator de propósito — time não gosta, e o `ACM_OCP/Politicas` real também não usa
@@ -180,7 +182,7 @@ do repo real — sem exec plugin, sem `--enable-alpha-plugins`.
    > Se o cluster for VMware/vSphere, confira o valor real do label `cloud` no comando acima —
    > `05-placement-vmware.yaml` assume `VMware`, ajuste se vier diferente (ex.: `vSphere`).
 4. **Aplicar tudo** (namespace, ManagedClusterSetBinding, os 5 Placements, os 3
-   PlacementBindings que já têm subject, e as 8 policies — YAML puro, sem plugin nenhum):
+   PlacementBindings que já têm subject, e as 9 policies — YAML puro, sem plugin nenhum):
    ```bash
    oc apply -k acm-hub/policies
    ```

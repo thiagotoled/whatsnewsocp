@@ -1,0 +1,52 @@
+# Lab 9 - SigstoreImagePolicy: a lição é aplicar/trocar o ClusterImagePolicy e ver o pull
+# ser bloqueado (chave errada) ou liberado (chave real da Red Hat). Namespace + deployment
+# são boilerplate normal — o ClusterImagePolicy fica manual de propósito.
+apiVersion: policy.open-cluster-management.io/v1
+kind: Policy
+metadata:
+  name: policy-lab09
+  namespace: whatsnewsocp-policies
+  annotations:
+    policy.open-cluster-management.io/categories: CM Configuration Management
+    policy.open-cluster-management.io/controls: CM-2 Baseline Configuration
+    policy.open-cluster-management.io/standards: NIST SP 800-53
+    argocd.argoproj.io/compare-options: IgnoreExtraneous
+spec:
+  disabled: false
+  policy-templates:
+  - objectDefinition:
+      apiVersion: policy.open-cluster-management.io/v1
+      kind: ConfigurationPolicy
+      metadata:
+        name: policy-lab09
+      spec:
+        remediationAction: enforce
+        severity: low
+        object-templates:
+        - complianceType: musthave
+          objectDefinition:
+            apiVersion: v1
+            kind: Namespace
+            metadata:
+              name: lab-sigstore-policy
+        - complianceType: musthave
+          objectDefinition:
+            apiVersion: apps/v1
+            kind: Deployment
+            metadata:
+              name: demo-app
+              namespace: lab-sigstore-policy
+            spec:
+              replicas: 1
+              selector:
+                matchLabels:
+                  app: demo-app
+              template:
+                metadata:
+                  labels:
+                    app: demo-app
+                spec:
+                  containers:
+                    - name: demo-app
+                      image: registry.access.redhat.com/ubi9/ubi-micro:latest
+                      command: ["sleep", "infinity"]

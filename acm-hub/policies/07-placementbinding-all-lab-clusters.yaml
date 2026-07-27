@@ -1,4 +1,4 @@
-# As 4 policies de baseline dos labs vão aqui porque hoje nenhuma tem nada específico de
+# As 5 policies de baseline dos labs vão aqui porque hoje nenhuma tem nada específico de
 # nuvem (é só namespace/deployment/operador — roda igual em Azure ou VMware). Quando uma
 # policy de lab precisar valer só numa nuvem, tira o subject daqui e cria/edita um
 # PlacementBinding apontando pro placement-vmware-lab-clusters (05-placement-vmware.yaml) só
@@ -27,3 +27,6 @@ subjects:
   - apiGroup: policy.open-cluster-management.io
     kind: Policy
     name: policy-lab08
+  - apiGroup: policy.open-cluster-management.io
+    kind: Policy
+    name: policy-lab09
