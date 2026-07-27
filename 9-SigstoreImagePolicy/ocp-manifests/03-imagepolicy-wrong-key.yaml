@@ -1,0 +1,23 @@
+# Chave pública EC descartável, gerada só pra este lab (openssl ecparam -genkey -name
+# prime256v1). Não corresponde à chave real que assinou a imagem — é exatamente o ponto:
+# a verificação criptográfica vai falhar contra ela.
+#
+# ImagePolicy = mesmo schema do ClusterImagePolicy, mas namespace-scoped: só afeta pods
+# deste namespace, não o cluster inteiro. Se precisar exigir assinatura pra TODO mundo que
+# usar esse escopo de imagem (incluindo operadores e outros namespaces), o objeto seria
+# `kind: ClusterImagePolicy` (sem `metadata.namespace`) — mesma spec, só isso muda.
+apiVersion: config.openshift.io/v1
+kind: ImagePolicy
+metadata:
+  name: lab-require-signature
+  namespace: lab-sigstore-policy
+spec:
+  scopes:
+    - registry.access.redhat.com/ubi9/ubi-micro
+  policy:
+    rootOfTrust:
+      policyType: PublicKey
+      publicKey:
+        keyData: LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUZrd0V3WUhLb1pJemowQ0FRWUlLb1pJemowREFRY0RRZ0FFaHN2VGF5OEF3RDJXYTFRWXVIOVlmTFJscUlNbwppMTFtRU1oSVV6MmxIaitQSmk0cDViaW9WcmlZR2dWOVNMQUVrTC9SZEZJYnY3eVBsai9JRFdKaTlnPT0KLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0tCg==
+    signedIdentity:
+      matchPolicy: MatchRepoDigestOrExact

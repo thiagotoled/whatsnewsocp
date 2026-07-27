@@ -43,7 +43,7 @@ Se isso for pré-criado, o aluno perde o "antes/depois" e a lição não acontec
 | 6. PolicyScopeLabels | *(sem policy — fora do escopo por ora)* | tudo manual |
 | 7. PolicyDebugPodAttach | *(sem policy — fora do escopo por ora)* | tudo manual |
 | 8. UpgradeRecommendPrecheck | namespace + deployment **+ PDB restritivo (ver aviso abaixo)** | corrigir o PDB e ver o precheck refletir |
-| 9. SigstoreImagePolicy | namespace + deployment | aplicar/trocar o `ClusterImagePolicy` (chave errada bloqueia, chave real da Red Hat libera) |
+| 9. SigstoreImagePolicy | namespace + deployment | aplicar/trocar o `ImagePolicy` (chave errada bloqueia, chave real da Red Hat libera) |
 
 Além do boilerplate por lab, existem 4 policies de **bootstrap do próprio hub** (não são de nenhum
 lab específico), trazidas do repo real `ACM_OCP/Politicas` e adaptadas:

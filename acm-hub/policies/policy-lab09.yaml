@@ -1,6 +1,6 @@
-# Lab 9 - SigstoreImagePolicy: a lição é aplicar/trocar o ClusterImagePolicy e ver o pull
+# Lab 9 - SigstoreImagePolicy: a lição é aplicar/trocar o ImagePolicy e ver o pull
 # ser bloqueado (chave errada) ou liberado (chave real da Red Hat). Namespace + deployment
-# são boilerplate normal — o ClusterImagePolicy fica manual de propósito.
+# são boilerplate normal — o ImagePolicy fica manual de propósito.
 apiVersion: policy.open-cluster-management.io/v1
 kind: Policy
 metadata:

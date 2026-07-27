@@ -2,9 +2,10 @@
 # chave de release real da Red Hat, publicada em:
 # https://security.access.redhat.com/data/63405576.txt
 apiVersion: config.openshift.io/v1
-kind: ClusterImagePolicy
+kind: ImagePolicy
 metadata:
   name: lab-require-signature
+  namespace: lab-sigstore-policy
 spec:
   scopes:
     - registry.access.redhat.com/ubi9/ubi-micro

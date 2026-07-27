@@ -17,7 +17,7 @@ Cada diretório contém um laboratório independente com manifestos prontos para
 | 6 | [Policy Scope com Labels de Cluster/Namespace](./6-PolicyScopeLabels/README.md) **(candidato a remoção)** | Restringir políticas do RHACS a clusters/namespaces específicos usando seletores de label |
 | 7 | [Policy para oc debug / pods attach](./7-PolicyDebugPodAttach/README.md) **(candidato a remoção)** | Detecção e enforcement de `pods/attach` (cobrindo `oc debug`, `oc attach`) no RHACS 4.11 |
 | 8 | [Encontrando Problemas Antes de Atualizar o Cluster](./8-UpgradeRecommendPrecheck/README.md) | Uso do `oc adm upgrade recommend` (GA no OCP 4.20) para identificar riscos (ex.: PodDisruptionBudget restritivo) antes de iniciar um update do OpenShift |
-| 9 | [Verificação de Assinatura de Imagens com Sigstore](./9-SigstoreImagePolicy/README.md) | Uso do `ClusterImagePolicy` (GA no OCP 4.20) para exigir assinatura sigstore antes do pull — bloqueia com chave errada, libera com a chave real da Red Hat |
+| 9 | [Verificação de Assinatura de Imagens com Sigstore](./9-SigstoreImagePolicy/README.md) | Uso do `ImagePolicy` (GA no OCP 4.20) para exigir assinatura sigstore antes do pull — bloqueia com chave errada, libera com a chave real da Red Hat |
 
 ---
 
@@ -110,8 +110,8 @@ oc login --token=<TOKEN> --server=<API_URL>
 │   └── ocp-manifests
 │       ├── 01-namespace.yaml
 │       ├── 02-deployment.yaml
-│       ├── 03-clusterimagepolicy-wrong-key.yaml
-│       └── 04-clusterimagepolicy-redhat-key.yaml
+│       ├── 03-imagepolicy-wrong-key.yaml
+│       └── 04-imagepolicy-redhat-key.yaml
 ├── README.md
 └── acm-hub
     ├── README.md
