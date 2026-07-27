@@ -19,8 +19,4 @@ resources:
   - policy-lab01.yaml
   - policy-lab02.yaml
   - policy-lab03.yaml
-  - policy-lab05.yaml
-  - policy-lab06.yaml
-  - policy-lab07.yaml
-  - policy-lab09.yaml
-  - policy-lab09-pdb-seed.yaml
+  - policy-lab08.yaml

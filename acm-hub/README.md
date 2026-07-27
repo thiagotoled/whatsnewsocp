@@ -18,7 +18,7 @@ Dois motivos, não um só:
 1. **Reduzir trabalho repetitivo**: parte de cada lab é só "prep" (namespace, deployment,
    operador instalado) — não é a lição em si. Isso pode ficar pronto no cluster antes da
    sessão começar.
-2. **Resolver o problema de timing do Lab 9**: o alerta `PodDisruptionBudgetAtLimit` só vira
+2. **Resolver o problema de timing do Lab 8**: o alerta `PodDisruptionBudgetAtLimit` só vira
    `firing` depois de **60 minutos** (`for: 60m` na regra do Prometheus). Se o PDB for criado
    na hora do lab, o `oc adm upgrade recommend` não vai mostrar nada. Semeando o PDB via
    Policy com bastante antecedência, ele já está `firing` quando a turma chega nesse passo.
@@ -39,10 +39,10 @@ Se isso for pré-criado, o aluno perde o "antes/depois" e a lição não acontec
 | 2. ExternalSecretsOperator | namespace + instalação do operador | SecretStore/ExternalSecret (pull e push) |
 | 3. UserNamespaces | namespace | os dois Deployments (comparação é a lição) |
 | 4. ManagedBootImages | *(nada)* | o único manifesto do lab é a lição inteira |
-| 5. VulnerabilityManagementReporting | namespace + deployment vulnerável | gerar/ler o relatório |
-| 6. PolicyScopeLabels | namespaces prod/dev + deployment latest-tag | a Policy com escopo por label |
-| 7. PolicyDebugPodAttach | namespace + deployment | `oc debug`/`oc attach` + reação do RHACS |
-| 9. UpgradeRecommendPrecheck | namespace + deployment **+ PDB restritivo (ver aviso abaixo)** | corrigir o PDB e ver o precheck refletir |
+| 5. VulnerabilityManagementReporting | *(sem policy — fora do escopo por ora)* | tudo manual |
+| 6. PolicyScopeLabels | *(sem policy — fora do escopo por ora)* | tudo manual |
+| 7. PolicyDebugPodAttach | *(sem policy — fora do escopo por ora)* | tudo manual |
+| 8. UpgradeRecommendPrecheck | namespace + deployment **+ PDB restritivo (ver aviso abaixo)** | corrigir o PDB e ver o precheck refletir |
 
 Além do boilerplate por lab, existem 3 policies de **bootstrap do próprio hub** (não são de nenhum
 lab específico), trazidas do repo real `ACM_OCP/Politicas` e adaptadas:
@@ -55,19 +55,22 @@ lab específico), trazidas do repo real `ACM_OCP/Politicas` e adaptadas:
 
 ---
 
-## ⚠️ Cuidado com o PDB do Lab 9 (drift/enforce)
+## ⚠️ Cuidado com o PDB do Lab 8 (drift/enforce)
 
-A policy `policy-lab09-pdb-seed` roda em `remediationAction: enforce`
-de propósito, para o PDB existir com bastante antecedência (fluxo do "por que" acima). Só que,
-em `enforce`, o ACM **reverte qualquer mudança manual** assim que detecta drift.
+A `policy-lab08` tem dois `ConfigurationPolicy` dentro: `policy-lab08-baseline` (namespace +
+deployment) e `policy-lab08-pdb-seed` (o PDB restritivo). Esse segundo roda em
+`remediationAction: enforce` de propósito, para o PDB existir com bastante antecedência (fluxo
+do "por que" acima). Só que, em `enforce`, o ACM **reverte qualquer mudança manual** assim que
+detecta drift.
 
 Isso quebra o Passo 5 do lab (o aluno aplica `04-poddisruptionbudget-fixed.yaml` para corrigir
 o PDB) — a policy vai desfazer a correção do aluno.
 
-**Antes de liberar a turma para o Passo 5**, desabilite só essa policy:
+**Antes de liberar a turma para o Passo 5**, desabilite a policy inteira (não tem problema
+pausar o namespace/deployment junto — já estão criados e estáveis nesse ponto do lab):
 
 ```bash
-oc patch policy policy-lab09-pdb-seed \
+oc patch policy policy-lab08 \
   -n whatsnewsocp-policies --type merge -p '{"spec":{"disabled":true}}'
 ```
 
@@ -105,7 +108,7 @@ mundo, sem afetar os outros:
 | `placement-local-cluster` | só o hub (`local-cluster=true`) | gitops-operator-install |
 | `placement-azure` | qualquer managed cluster OpenShift na Azure, **hub incluído** (`cloud=Azure` + `vendor=OpenShift`, sem exigir `whatsnewsocp-lab`) | policy-oauth-configuration |
 | `placement-vmware-lab-clusters` | clusters de **lab** na VMware (`whatsnewsocp-lab=true` + `cloud=VMware`) | *(nenhuma ainda — pronto pra quando divergir)* |
-| `placement-all-lab-clusters` | qualquer cluster de lab, qualquer nuvem (`whatsnewsocp-lab=true`) | as 8 policies de baseline dos labs (nenhuma é específica de nuvem hoje) |
+| `placement-all-lab-clusters` | qualquer cluster de lab, qualquer nuvem (`whatsnewsocp-lab=true`) | as 4 policies de baseline dos labs (nenhuma é específica de nuvem hoje) |
 | `placement-all` | qualquer managed cluster OpenShift, sem filtro (inclui o hub) | webterminal-install |
 
 > **Assimetria de propósito:** `placement-azure` NÃO exige `whatsnewsocp-lab` (cobre o hub, que
@@ -132,14 +135,17 @@ acm-hub/
     ├── 04-placement-azure.yaml                    # placement-azure (hub incluído)
     ├── 05-placement-vmware.yaml                   # sem binding ainda, ver tabela acima
     ├── 06-placement-all-lab-clusters.yaml
-    ├── 07-placementbinding-all-lab-clusters.yaml  # as 8 policies de baseline dos labs
+    ├── 07-placementbinding-all-lab-clusters.yaml  # as 4 policies de baseline dos labs
     ├── 08-placement-all.yaml
     ├── 09-placementbinding-all.yaml                # policy-webterminal-install
     ├── 10-placementbinding-azure.yaml              # policy-oauth-configuration
     ├── policy-gitops-operator-install.yaml         # bootstrap do hub (ver tabela acima)
     ├── policy-webterminal-install.yaml             # bootstrap "all"
     ├── policy-oauth-configuration.yaml             # bootstrap "azure" — tem placeholders, ver aviso acima
-    └── policy-lab01.yaml … policy-lab09-pdb-seed.yaml # 1 Policy por lab, YAML puro (sem PolicyGenerator)
+    ├── policy-lab01.yaml
+    ├── policy-lab02.yaml
+    ├── policy-lab03.yaml
+    └── policy-lab08.yaml                            # 2 ConfigurationPolicy: baseline + PDB seed
 ```
 
 Sem PolicyGenerator de propósito — time não gosta, e o `ACM_OCP/Politicas` real também não usa
@@ -172,7 +178,7 @@ do repo real — sem exec plugin, sem `--enable-alpha-plugins`.
    > Se o cluster for VMware/vSphere, confira o valor real do label `cloud` no comando acima —
    > `05-placement-vmware.yaml` assume `VMware`, ajuste se vier diferente (ex.: `vSphere`).
 4. **Aplicar tudo** (namespace, ManagedClusterSetBinding, os 5 Placements, os 3
-   PlacementBindings que já têm subject, e as 11 policies — YAML puro, sem plugin nenhum):
+   PlacementBindings que já têm subject, e as 7 policies — YAML puro, sem plugin nenhum):
    ```bash
    oc apply -k acm-hub/policies
    ```
@@ -183,9 +189,9 @@ do repo real — sem exec plugin, sem `--enable-alpha-plugins`.
    ```bash
    oc get policy -n whatsnewsocp-policies
    ```
-6. Pelo menos **1h antes** de rodar o Lab 9 com a turma, confirme que a policy do PDB já foi
+6. Pelo menos **1h antes** de rodar o Lab 8 com a turma, confirme que a policy do PDB já foi
    aplicada (para o alerta ter tempo de virar `firing`).
-7. Antes do Passo 5 do Lab 9, aplique o `oc patch ... disabled:true` da seção de aviso acima.
+7. Antes do Passo 5 do Lab 8, aplique o `oc patch ... disabled:true` da seção de aviso acima.
 
 ---
 

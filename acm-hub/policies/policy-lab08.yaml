@@ -1,9 +1,16 @@
-# Lab 9 - UpgradeRecommendPrecheck: a lição é corrigir o PDB e ver o precheck do
+# Lab 8 - UpgradeRecommendPrecheck: a lição é corrigir o PDB e ver o precheck do
 # oc adm upgrade recommend refletir a mudança. Namespace + deployment são boilerplate normal.
+#
+# O PDB restritivo (segundo ConfigurationPolicy abaixo) precisa ser semeado ~1h antes do lab
+# por causa do "for: 60m" do alerta PodDisruptionBudgetAtLimit (ver acm-hub/README.md).
+# IMPORTANTE: por estar em remediationAction=enforce, ele vai reverter a correção manual do
+# Passo 5 do lab se a policy ficar habilitada — desabilite a policy inteira antes de liberar
+# a turma pra aplicar o 04-poddisruptionbudget-fixed.yaml (não tem problema pausar também o
+# namespace/deployment — já estão criados e estáveis nesse ponto do lab).
 apiVersion: policy.open-cluster-management.io/v1
 kind: Policy
 metadata:
-  name: policy-lab09
+  name: policy-lab08
   namespace: whatsnewsocp-policies
   annotations:
     policy.open-cluster-management.io/categories: CM Configuration Management
@@ -17,7 +24,7 @@ spec:
       apiVersion: policy.open-cluster-management.io/v1
       kind: ConfigurationPolicy
       metadata:
-        name: policy-lab09
+        name: policy-lab08-baseline
       spec:
         remediationAction: enforce
         severity: low
@@ -50,3 +57,24 @@ spec:
                       image: quay.io/packit/nginx-unprivileged:latest
                       ports:
                         - containerPort: 8080
+  - objectDefinition:
+      apiVersion: policy.open-cluster-management.io/v1
+      kind: ConfigurationPolicy
+      metadata:
+        name: policy-lab08-pdb-seed
+      spec:
+        remediationAction: enforce
+        severity: low
+        object-templates:
+        - complianceType: musthave
+          objectDefinition:
+            apiVersion: policy/v1
+            kind: PodDisruptionBudget
+            metadata:
+              name: nginx-pdb-demo-strict
+              namespace: lab-upgrade-status
+            spec:
+              minAvailable: 100%
+              selector:
+                matchLabels:
+                  app: nginx-pdb-demo
