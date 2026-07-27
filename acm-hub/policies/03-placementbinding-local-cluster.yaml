@@ -11,6 +11,3 @@ subjects:
   - apiGroup: policy.open-cluster-management.io
     kind: Policy
     name: policy-gitops-operator-install
-  - apiGroup: policy.open-cluster-management.io
-    kind: Policy
-    name: policy-webterminal-install
