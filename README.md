@@ -19,6 +19,7 @@ Cada diretório contém um laboratório independente com manifestos prontos para
 | 8 | [Encontrando Problemas Antes de Atualizar o Cluster](./8-UpgradeRecommendPrecheck/README.md) | Uso do `oc adm upgrade recommend` (GA no OCP 4.20) para identificar riscos (ex.: PodDisruptionBudget restritivo) antes de iniciar um update do OpenShift |
 | 9 | [Verificação de Assinatura de Imagens com Sigstore](./9-SigstoreImagePolicy/README.md) | Uso do `ImagePolicy` (GA no OCP 4.20) para exigir assinatura sigstore antes do pull — bloqueia com chave errada, libera com a chave real da Red Hat |
 | 10 | [Vulnerabilidades de Workload Direto no Console do OpenShift](./10-WorkloadVulnerabilitiesConsole/README.md) | Plugin `advanced-cluster-security` do RHACS integrado ao console web do OpenShift (Security → Vulnerabilities), sem precisar de acesso separado ao Central |
+| 11 | [Mais Controle sobre o Cluster Registration Secret (CRS)](./11-CRSMoreControl/README.md) | Novos controles de **validade** (data/horas) e **max registrations** na geração do CRS via UI do Central (RHACS 4.11) |
 
 ---
 
@@ -118,6 +119,8 @@ oc login --token=<TOKEN> --server=<API_URL>
 │   └── ocp-manifests
 │       ├── 01-namespace.yaml
 │       └── 02-deployment.yaml
+├── 11-CRSMoreControl
+│   └── README.md
 ├── README.md
 └── acm-hub
     ├── README.md
