@@ -10,6 +10,11 @@
 # gerar um novo CRS em Central, `oc apply` o secret de novo no hub, nada muda aqui.
 # clusterName usa hub templating (.ManagedClusterName) porque cada cluster precisa de um nome
 # único dentro do StackRox — não dá pra hardcodar como central-cr.
+# policy-acs-console-plugin habilita o plugin "advanced-cluster-security" no Console (operator.
+# openshift.io/v1 Console/cluster spec.plugins) — sem isso o operator instala o ConsolePlugin
+# mas ele fica Disabled e as views de violação/vulnerabilidade não aparecem no console OCP.
+# musthave em array faz merge (não substitui a lista), então os outros plugins já habilitados
+# (acm, gitops-plugin, mce, etc.) não são removidos.
 apiVersion: policy.open-cluster-management.io/v1
 kind: Policy
 metadata:
@@ -88,3 +93,21 @@ spec:
               namespace: stackrox
             spec:
               clusterName: '{{hub .ManagedClusterName hub}}'
+  - objectDefinition:
+      apiVersion: policy.open-cluster-management.io/v1
+      kind: ConfigurationPolicy
+      metadata:
+        name: policy-acs-console-plugin
+      spec:
+        remediationAction: enforce
+        severity: low
+        object-templates:
+        - complianceType: musthave
+          objectDefinition:
+            apiVersion: operator.openshift.io/v1
+            kind: Console
+            metadata:
+              name: cluster
+            spec:
+              plugins:
+              - advanced-cluster-security
