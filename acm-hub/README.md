@@ -51,7 +51,7 @@ lab específico), trazidas do repo real `ACM_OCP/Politicas` e adaptadas:
 |---|---|---|
 | `policy-gitops-operator-install` | Instala o OpenShift GitOps operator | `local-cluster` (o hub) |
 | `policy-webterminal-install` | Instala o Web Terminal operator | **`all`** — todo managed cluster OpenShift |
-| `policy-oauth-configuration` | Configura OAuth (HTPasswd + Entra ID/AAD via OIDC) | **`all`** — todo managed cluster OpenShift (hub + Azure + VMware), mesmo login em qualquer console |
+| `policy-oauth-configuration` | Configura OAuth (HTPasswd + Entra ID/AAD via OIDC) | **`azure`** — qualquer managed cluster OpenShift na Azure, hub incluído |
 
 ---
 
@@ -87,21 +87,27 @@ Redirect URI do hub novo) antes de preencher os placeholders e trocar `disabled`
 
 ## Estrutura
 
-Cinco `Placement`s independentes, cada um com seu próprio `PlacementBinding` — de propósito, para
-que uma policy possa valer só para Azure, só para VMware, só para o hub, só pros clusters de lab
-(qualquer nuvem), ou literalmente pra todo mundo, sem afetar os outros:
+Seis `Placement`s independentes, cada um com seu próprio `PlacementBinding` — de propósito, para
+que uma policy possa valer só para Azure (hub incluído), só pros clusters de lab de uma nuvem
+específica, só pros clusters de lab (qualquer nuvem), só para o hub, ou literalmente pra todo
+mundo, sem afetar os outros:
 
 | Placement | Seleciona | Quem tá vinculado hoje |
 |---|---|---|
 | `placement-local-cluster` | só o hub (`local-cluster=true`) | gitops-operator-install |
-| `placement-azure-lab-clusters` | clusters de lab na Azure (`whatsnewsocp-lab=true` + `cloud=Azure`) | *(nenhuma ainda — pronto pra quando divergir)* |
-| `placement-vmware-lab-clusters` | clusters de lab na VMware (`whatsnewsocp-lab=true` + `cloud=VMware`) | *(nenhuma ainda — pronto pra quando divergir)* |
+| `placement-azure` | qualquer managed cluster OpenShift na Azure, **hub incluído** (`cloud=Azure` + `vendor=OpenShift`, sem exigir `whatsnewsocp-lab`) | policy-oauth-configuration |
+| `placement-vmware-lab-clusters` | clusters de **lab** na VMware (`whatsnewsocp-lab=true` + `cloud=VMware`) | *(nenhuma ainda — pronto pra quando divergir)* |
 | `placement-all-lab-clusters` | qualquer cluster de lab, qualquer nuvem (`whatsnewsocp-lab=true`) | as 8 policies de baseline dos labs (nenhuma é específica de nuvem hoje) |
-| `placement-all` | qualquer managed cluster OpenShift, sem filtro (inclui o hub) | policy-oauth-configuration, webterminal-install |
+| `placement-all` | qualquer managed cluster OpenShift, sem filtro (inclui o hub) | webterminal-install |
+
+> **Assimetria de propósito:** `placement-azure` NÃO exige `whatsnewsocp-lab` (cobre o hub, que
+> é Azure); `placement-vmware-lab-clusters` exige (só clusters de lab VMware — o hub não é
+> VMware). Se um dia precisar de "só clusters de **lab** que sejam Azure" (sem o hub), crie um
+> placement novo em vez de reusar o `placement-azure`.
 
 Quando uma policy de lab precisar valer só numa nuvem: tira o `subject` de
 `07-placementbinding-all-lab-clusters.yaml` e bota num `PlacementBinding` novo apontando pro
-`placement-azure-lab-clusters` ou `placement-vmware-lab-clusters`.
+`placement-vmware-lab-clusters` (ou um placement novo de "lab clusters Azure", ver nota acima).
 
 Tudo numa pasta só (`policies/`), mesmo padrão flat do `ACM_OCP/Politicas` real — sem separar
 placement de policy em diretórios diferentes:
@@ -115,15 +121,16 @@ acm-hub/
     ├── 01-managedclustersetbinding.yaml           # vincula o clusterset "default" embutido
     ├── 02-placement-local-cluster.yaml
     ├── 03-placementbinding-local-cluster.yaml     # gitops-operator-install
-    ├── 04-placement-azure.yaml                    # sem binding ainda, ver tabela acima
+    ├── 04-placement-azure.yaml                    # placement-azure (hub incluído)
     ├── 05-placement-vmware.yaml                   # sem binding ainda, ver tabela acima
     ├── 06-placement-all-lab-clusters.yaml
     ├── 07-placementbinding-all-lab-clusters.yaml  # as 8 policies de baseline dos labs
     ├── 08-placement-all.yaml
-    ├── 09-placementbinding-all.yaml                # policy-oauth-configuration, webterminal-install
+    ├── 09-placementbinding-all.yaml                # policy-webterminal-install
+    ├── 10-placementbinding-azure.yaml              # policy-oauth-configuration
     ├── policy-gitops-operator-install.yaml         # bootstrap do hub (ver tabela acima)
     ├── policy-webterminal-install.yaml             # bootstrap "all"
-    ├── policy-oauth-configuration.yaml             # bootstrap "all" — tem placeholders, ver aviso acima
+    ├── policy-oauth-configuration.yaml             # bootstrap "azure" — tem placeholders, ver aviso acima
     └── policy-lab01.yaml … policy-lab09-pdb-seed.yaml # 1 Policy por lab, YAML puro (sem PolicyGenerator)
 ```
 
@@ -184,8 +191,9 @@ Sempre que um lab novo entrar no repo (ou um existente mudar), a mudança é só
    é YAML escrito na mão mesmo).
 3. Adicionar o arquivo em `policies/kustomization.yaml` e o nome da policy como `subject` em
    `policies/07-placementbinding-all-lab-clusters.yaml` — ou, se for específica de uma nuvem,
-   criar/editar um binding próprio apontando pro `placement-azure-lab-clusters` ou
-   `placement-vmware-lab-clusters` (`04-placement-azure.yaml` / `05-placement-vmware.yaml`).
+   criar/editar um binding próprio apontando pro `placement-vmware-lab-clusters`
+   (`05-placement-vmware.yaml`) ou, pra Azure, um placement novo de "lab clusters Azure" (o
+   `placement-azure` em `04-placement-azure.yaml` é genérico, inclui o hub — ver nota acima).
 4. Rodar de novo o `oc apply -k acm-hub/policies` no hub.
 
 Se o hub tiver um Channel/Subscription (ou Argo CD Application) apontando direto para este

@@ -1,13 +1,13 @@
 apiVersion: policy.open-cluster-management.io/v1
 kind: PlacementBinding
 metadata:
-  name: binding-all
+  name: binding-azure
   namespace: whatsnewsocp-policies
 placementRef:
   apiGroup: cluster.open-cluster-management.io
   kind: Placement
-  name: placement-all
+  name: placement-azure
 subjects:
   - apiGroup: policy.open-cluster-management.io
     kind: Policy
-    name: policy-webterminal-install
+    name: policy-oauth-configuration
