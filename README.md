@@ -9,14 +9,14 @@ Cada diretório contém um laboratório independente com manifestos prontos para
 
 | # | Exercício | Descrição |
 |---|-----------|-----------|
-| 1 | [In-place Pod Vertical Scaling](./InplacePodverticalscaling/README.md) | Ajuste de CPU e Memória de Pods em execução **sem reinicialização** |
-| 2 | [External Secrets Operator](./ExternalSecretsOperator/README.md) | Sincronização bidirecional de segredos entre OpenShift e Azure Key Vault |
-| 3 | [User Namespaces](./UserNamespaces/README.md) | Isolamento de UID/GID do container em relação ao host com `hostUsers: false` |
-| 9 | [Encontrando Problemas Antes de Atualizar o Cluster](./UpgradeRecommendPrecheck/README.md) | Uso do `oc adm upgrade recommend` (GA no OCP 4.20) para identificar riscos (ex.: PodDisruptionBudget restritivo) antes de iniciar um update do OpenShift |
-| 4 | [Managed Boot Images](./ManagedBootImages/README.md) | Atualização automática de imagens de boot nos MachineSets — provisionamento mais rápido |
-| 5 | [Enhanced Vulnerability Management Reporting](./VulnerabilityManagementReporting/README.md) | Novas colunas (NVD CVSS, EPSS, Advisory, Component Version) nos relatórios de vulnerabilidade do RHACS 4.11 |
-| 6 | [Policy Scope com Labels de Cluster/Namespace](./PolicyScopeLabels/README.md) | Restringir políticas do RHACS a clusters/namespaces específicos usando seletores de label |
-| 7 | [Policy para oc debug / pods attach](./PolicyDebugPodAttach/README.md) | Detecção e enforcement de `pods/attach` (cobrindo `oc debug`, `oc attach`) no RHACS 4.11 |
+| 1 | [In-place Pod Vertical Scaling](./1-InplacePodverticalscaling/README.md) | Ajuste de CPU e Memória de Pods em execução **sem reinicialização** |
+| 2 | [External Secrets Operator](./2-ExternalSecretsOperator/README.md) | Sincronização bidirecional de segredos entre OpenShift e Azure Key Vault |
+| 3 | [User Namespaces](./3-UserNamespaces/README.md) | Isolamento de UID/GID do container em relação ao host com `hostUsers: false` |
+| 4 | [Managed Boot Images](./4-ManagedBootImages/README.md) | Atualização automática de imagens de boot nos MachineSets — provisionamento mais rápido |
+| 5 | [Enhanced Vulnerability Management Reporting](./5-VulnerabilityManagementReporting/README.md) | Novas colunas (NVD CVSS, EPSS, Advisory, Component Version) nos relatórios de vulnerabilidade do RHACS 4.11 |
+| 6 | [Policy Scope com Labels de Cluster/Namespace](./6-PolicyScopeLabels/README.md) | Restringir políticas do RHACS a clusters/namespaces específicos usando seletores de label |
+| 7 | [Policy para oc debug / pods attach](./7-PolicyDebugPodAttach/README.md) | Detecção e enforcement de `pods/attach` (cobrindo `oc debug`, `oc attach`) no RHACS 4.11 |
+| 8 | [Encontrando Problemas Antes de Atualizar o Cluster](./8-UpgradeRecommendPrecheck/README.md) | Uso do `oc adm upgrade recommend` (GA no OCP 4.20) para identificar riscos (ex.: PodDisruptionBudget restritivo) antes de iniciar um update do OpenShift |
 
 ---
 
@@ -49,16 +49,17 @@ oc login --token=<TOKEN> --server=<API_URL>
 ## Estrutura do Repositório
 
 ```
-whatsnewsocp/
-├── InplacePodverticalscaling/
+.
+├── 1-InplacePodverticalscaling
 │   ├── README.md
-│   └── ocp-manifests/
+│   └── ocp-manifests
 │       ├── 01-namespace.yaml
 │       └── 02-deployment.yaml
-├── ExternalSecretsOperator/
+├── 2-ExternalSecretsOperator
 │   ├── README.md
-│   └── ocp-manifests/
+│   └── ocp-manifests
 │       ├── 01-namespace.yaml
+│       ├── 01-operator-config.yaml
 │       ├── 02-external-secrets-config.yaml
 │       ├── 03-azure-credentials-secret.yaml
 │       ├── 04-secret-store.yaml
@@ -68,45 +69,45 @@ whatsnewsocp/
 │       ├── 08-push-azure-credentials.yaml
 │       ├── 09-push-secret-store.yaml
 │       └── 10-push-secret.yaml
-├── UserNamespaces/
+├── 3-UserNamespaces
 │   ├── README.md
-│   └── ocp-manifests/
+│   └── ocp-manifests
 │       ├── 01-namespace.yaml
 │       ├── 02-deployment-no-userns.yaml
 │       └── 03-deployment-with-userns.yaml
-├── ManagedBootImages/
+├── 4-ManagedBootImages
 │   ├── README.md
-│   └── ocp-manifests/
+│   └── ocp-manifests
 │       └── 01-machine-configuration.yaml
-├── VulnerabilityManagementReporting/
+├── 5-VulnerabilityManagementReporting
 │   ├── README.md
-│   └── acs-manifests/
+│   └── acs-manifests
 │       ├── 01-namespace.yaml
 │       ├── 02-vulnerable-deployment.yaml
 │       └── 03-report-on-demand.sh
-├── PolicyScopeLabels/
+├── 6-PolicyScopeLabels
 │   ├── README.md
-│   └── acs-manifests/
+│   └── acs-manifests
 │       ├── 01-namespace-prod.yaml
 │       ├── 02-namespace-dev.yaml
 │       ├── 03-deployment-latest-tag.yaml
 │       └── 04-policy-as-code-example.yaml
-├── PolicyDebugPodAttach/
+├── 7-PolicyDebugPodAttach
 │   ├── README.md
-│   └── acs-manifests/
+│   └── acs-manifests
 │       ├── 01-namespace.yaml
 │       └── 02-deployment.yaml
-├── UpgradeRecommendPrecheck/
+├── 8-UpgradeRecommendPrecheck
 │   ├── README.md
-│   └── ocp-manifests/
+│   └── ocp-manifests
 │       ├── 01-namespace.yaml
 │       ├── 02-deployment.yaml
 │       ├── 03-poddisruptionbudget-blocking.yaml
 │       └── 04-poddisruptionbudget-fixed.yaml
-└── acm-hub/
+├── README.md
+└── acm-hub
     ├── README.md
-    └── policies/
-        ├── kustomization.yaml
+    └── policies
         ├── 00-namespace.yaml
         ├── 01-managedclustersetbinding.yaml
         ├── 02-placement-local-cluster.yaml
@@ -117,16 +118,16 @@ whatsnewsocp/
         ├── 07-placementbinding-all-lab-clusters.yaml
         ├── 08-placement-all.yaml
         ├── 09-placementbinding-all.yaml
-        ├── 10-placementbinding-azure.yaml
+        ├── kustomization.yaml
         ├── policy-gitops-operator-install.yaml
-        ├── policy-webterminal-install.yaml
+        ├── policy-lab01-inplace-pod-vertical-scaling-baseline.yaml
+        ├── policy-lab02-external-secrets-operator-baseline.yaml
+        ├── policy-lab03-user-namespaces-baseline.yaml
+        ├── policy-lab05-vulnerability-management-reporting-baseline.yaml
+        ├── policy-lab06-policy-scope-labels-baseline.yaml
+        ├── policy-lab07-policy-debug-pod-attach-baseline.yaml
+        ├── policy-lab09-upgrade-recommend-precheck-baseline.yaml
+        ├── policy-lab09-upgrade-recommend-precheck-pdb-seed.yaml
         ├── policy-oauth-configuration.yaml
-        ├── policy-lab01.yaml
-        ├── policy-lab02.yaml
-        ├── policy-lab03.yaml
-        ├── policy-lab05.yaml
-        ├── policy-lab06.yaml
-        ├── policy-lab07.yaml
-        ├── policy-lab09.yaml
-        └── policy-lab09-pdb-seed.yaml
+        └── policy-webterminal-install.yaml
 ```

@@ -15,8 +15,8 @@ Neste laboratório, você vai aprender a restringir onde uma política de segura
 ## Passo 1: Criar os namespaces de teste com labels diferentes
 
 ```bash
-oc apply -f PolicyScopeLabels/acs-manifests/01-namespace-prod.yaml
-oc apply -f PolicyScopeLabels/acs-manifests/02-namespace-dev.yaml
+oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/6-PolicyScopeLabels/acs-manifests/01-namespace-prod.yaml
+oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/6-PolicyScopeLabels/acs-manifests/02-namespace-dev.yaml
 ```
 
 Confirme as labels aplicadas:
@@ -32,8 +32,8 @@ oc get ns lab-acs-scope-prod lab-acs-scope-dev --show-labels
 O Deployment abaixo usa a tag `latest`, que viola a política padrão **Latest tag** do RHACS. Vamos aplicá-lo nos dois namespaces para depois comparar o comportamento:
 
 ```bash
-oc apply -n lab-acs-scope-prod -f PolicyScopeLabels/acs-manifests/03-deployment-latest-tag.yaml
-oc apply -n lab-acs-scope-dev  -f PolicyScopeLabels/acs-manifests/03-deployment-latest-tag.yaml
+oc apply -n lab-acs-scope-prod -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/6-PolicyScopeLabels/acs-manifests/03-deployment-latest-tag.yaml
+oc apply -n lab-acs-scope-dev  -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/6-PolicyScopeLabels/acs-manifests/03-deployment-latest-tag.yaml
 ```
 
 ---

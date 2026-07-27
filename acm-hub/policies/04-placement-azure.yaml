@@ -1,10 +1,7 @@
-# Qualquer managed cluster OpenShift na Azure, hub incluído — sem exigir whatsnewsocp-lab
-# (isso é diferente de "lab clusters na Azure"; se precisar de um placement só pra clusters
-# de lab que sejam Azure, crie um novo em vez de reusar este).
 apiVersion: cluster.open-cluster-management.io/v1beta1
 kind: Placement
 metadata:
-  name: placement-azure
+  name: placement-azure-lab-clusters
   namespace: whatsnewsocp-policies
 spec:
   tolerations:
@@ -16,5 +13,6 @@ spec:
     - requiredClusterSelector:
         labelSelector:
           matchLabels:
+            whatsnewsocp-lab: "true"
             cloud: Azure
             vendor: OpenShift

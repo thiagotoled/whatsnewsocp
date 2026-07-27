@@ -10,9 +10,10 @@ Neste laboratório, você vai aprender a modificar os recursos de CPU e Memória
 2. Aplique os manifestos do repositório para criar o Namespace e o Deployment:
 
 ```bash
-oc apply -f InplacePodverticalscaling/ocp-manifests/01-namespace.yaml
-oc apply -f InplacePodverticalscaling/ocp-manifests/02-deployment.yaml
+oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/1-InplacePodverticalscaling/ocp-manifests/01-namespace.yaml
+oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/1-InplacePodverticalscaling/ocp-manifests/02-deployment.yaml
 ```
+
 
 3. Verifique se o Pod está rodando e **observe o tempo de vida (AGE)** e o ID do container:
 

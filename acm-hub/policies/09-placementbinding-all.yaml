@@ -10,4 +10,4 @@ placementRef:
 subjects:
   - apiGroup: policy.open-cluster-management.io
     kind: Policy
-    name: policy-webterminal-install
+    name: policy-oauth-configuration
