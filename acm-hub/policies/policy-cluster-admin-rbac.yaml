@@ -1,0 +1,42 @@
+# Trazido de ACM_OCP/Politicas/policy-cluster-admin-rbac.yaml (mesmo Object ID do grupo Entra
+# ID/AAD usado em policy-oauth-configuration.yaml — reaproveitado, é o mesmo tenant/app
+# registration). Dá cluster-admin pro grupo que faz login via AAD.
+apiVersion: policy.open-cluster-management.io/v1
+kind: Policy
+metadata:
+  name: policy-cluster-admin-rbac
+  namespace: whatsnewsocp-policies
+  annotations:
+    policy.open-cluster-management.io/categories: CM Configuration Management
+    policy.open-cluster-management.io/controls: CM-2 Baseline Configuration
+    policy.open-cluster-management.io/standards: NIST SP 800-53
+    argocd.argoproj.io/compare-options: IgnoreExtraneous
+spec:
+  disabled: false
+  policy-templates:
+  - objectDefinition:
+      apiVersion: policy.open-cluster-management.io/v1
+      kind: ConfigurationPolicy
+      metadata:
+        name: policy-cluster-admin-rbac
+      spec:
+        remediationAction: enforce
+        severity: high
+        object-templates:
+        - complianceType: musthave
+          objectDefinition:
+            apiVersion: rbac.authorization.k8s.io/v1
+            kind: ClusterRoleBinding
+            metadata:
+              name: cluster-admin-view-namespace-and-htpasswd-admin
+            subjects:
+            - kind: Group
+              apiGroup: rbac.authorization.k8s.io
+              name: 6a758b5d-bbfb-498c-ae13-0cea9803de29
+            - kind: User
+              apiGroup: rbac.authorization.k8s.io
+              name: admin
+            roleRef:
+              apiGroup: rbac.authorization.k8s.io
+              kind: ClusterRole
+              name: cluster-admin

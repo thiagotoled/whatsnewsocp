@@ -44,7 +44,7 @@ Se isso for pré-criado, o aluno perde o "antes/depois" e a lição não acontec
 | 7. PolicyDebugPodAttach | *(sem policy — fora do escopo por ora)* | tudo manual |
 | 8. UpgradeRecommendPrecheck | namespace + deployment **+ PDB restritivo (ver aviso abaixo)** | corrigir o PDB e ver o precheck refletir |
 
-Além do boilerplate por lab, existem 3 policies de **bootstrap do próprio hub** (não são de nenhum
+Além do boilerplate por lab, existem 4 policies de **bootstrap do próprio hub** (não são de nenhum
 lab específico), trazidas do repo real `ACM_OCP/Politicas` e adaptadas:
 
 | Policy | O que faz | Onde roda |
@@ -52,6 +52,7 @@ lab específico), trazidas do repo real `ACM_OCP/Politicas` e adaptadas:
 | `policy-gitops-operator-install` | Instala o OpenShift GitOps operator | `local-cluster` (o hub) |
 | `policy-webterminal-install` | Instala o Web Terminal operator | **`all`** — todo managed cluster OpenShift |
 | `policy-oauth-configuration` | Configura OAuth (HTPasswd + Entra ID/AAD via OIDC) | **`azure`** — qualquer managed cluster OpenShift na Azure, hub incluído |
+| `policy-cluster-admin-rbac` | `ClusterRoleBinding` de `cluster-admin` pro grupo Entra ID (Object ID `6a758b5d-bbfb-498c-ae13-0cea9803de29`, mesmo grupo do oauth) + user `admin` | **`azure`** — mesmo lugar do oauth, já que só faz sentido onde o AAD consegue logar |
 
 ---
 
@@ -138,10 +139,11 @@ acm-hub/
     ├── 07-placementbinding-all-lab-clusters.yaml  # as 4 policies de baseline dos labs
     ├── 08-placement-all.yaml
     ├── 09-placementbinding-all.yaml                # policy-webterminal-install
-    ├── 10-placementbinding-azure.yaml              # policy-oauth-configuration
+    ├── 10-placementbinding-azure.yaml              # policy-oauth-configuration, policy-cluster-admin-rbac
     ├── policy-gitops-operator-install.yaml         # bootstrap do hub (ver tabela acima)
     ├── policy-webterminal-install.yaml             # bootstrap "all"
     ├── policy-oauth-configuration.yaml             # bootstrap "azure" — tem placeholders, ver aviso acima
+    ├── policy-cluster-admin-rbac.yaml              # bootstrap "azure"
     ├── policy-lab01.yaml
     ├── policy-lab02.yaml
     ├── policy-lab03.yaml
@@ -178,13 +180,14 @@ do repo real — sem exec plugin, sem `--enable-alpha-plugins`.
    > Se o cluster for VMware/vSphere, confira o valor real do label `cloud` no comando acima —
    > `05-placement-vmware.yaml` assume `VMware`, ajuste se vier diferente (ex.: `vSphere`).
 4. **Aplicar tudo** (namespace, ManagedClusterSetBinding, os 5 Placements, os 3
-   PlacementBindings que já têm subject, e as 7 policies — YAML puro, sem plugin nenhum):
+   PlacementBindings que já têm subject, e as 8 policies — YAML puro, sem plugin nenhum):
    ```bash
    oc apply -k acm-hub/policies
    ```
    As policies de bootstrap (`policy-gitops-operator-install`, `policy-webterminal-install`,
-   `policy-oauth-configuration`) vão junto — a de OAuth só some `Compliant` mesmo assim; falta
-   o Redirect URI no Entra ID pro login funcionar de fato (ver aviso acima).
+   `policy-oauth-configuration`, `policy-cluster-admin-rbac`) vão junto — a de OAuth só some
+   `Compliant` mesmo assim; falta o Redirect URI no Entra ID pro login funcionar de fato
+   (ver aviso acima).
 5. **Conferir compliance**:
    ```bash
    oc get policy -n whatsnewsocp-policies

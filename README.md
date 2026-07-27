@@ -123,6 +123,7 @@ oc login --token=<TOKEN> --server=<API_URL>
         ├── policy-gitops-operator-install.yaml
         ├── policy-webterminal-install.yaml
         ├── policy-oauth-configuration.yaml
+        ├── policy-cluster-admin-rbac.yaml
         ├── policy-lab01.yaml
         ├── policy-lab02.yaml
         ├── policy-lab03.yaml
