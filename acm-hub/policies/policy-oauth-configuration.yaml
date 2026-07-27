@@ -7,6 +7,11 @@
 # (Azure Portal > App registrations > Authentication):
 #   https://oauth-openshift.apps.<domínio-deste-hub>/oauth2callback/AAD
 # Sem isso, o login via AAD falha com redirect_uri_mismatch mesmo com a policy Compliant.
+#
+# Os secrets reais (htpasswd-2cr76, aad-client-secret) são aplicados manualmente no namespace
+# whatsnewsocp-policies do hub (NÃO commitados — este repo é público) e copiados pra
+# openshift-config via fromSecret no hub template abaixo, mesmo padrão do
+# policy-acs-secured-cluster. Pra reaplicar/rotacionar, veja os arquivos-fonte fora do repo.
 apiVersion: policy.open-cluster-management.io/v1
 kind: Policy
 metadata:
@@ -38,7 +43,7 @@ spec:
               namespace: openshift-config
             type: Opaque
             data:
-              htpasswd: YWRtaW46JDJ5JDA1JHdSVWYwY1JYSHNQMEd0aVkxV0F1WXUyNTh0bW1NSVBwek1wdkdUM3BzR1hDNDg1SE55OGV1
+              htpasswd: '{{hub fromSecret "whatsnewsocp-policies" "htpasswd-2cr76" "htpasswd" hub}}'
   - objectDefinition:
       apiVersion: policy.open-cluster-management.io/v1
       kind: ConfigurationPolicy
@@ -57,7 +62,7 @@ spec:
               namespace: openshift-config
             type: Opaque
             data:
-              clientSecret: bUlWOFF+M2o1MndTNVRhTm1PTF90MXBtMjVpaUFiZmVfLTZjTGEzcg==
+              clientSecret: '{{hub fromSecret "whatsnewsocp-policies" "aad-client-secret" "clientSecret" hub}}'
   - extraDependencies:
     - apiVersion: policy.open-cluster-management.io/v1
       compliance: Compliant
