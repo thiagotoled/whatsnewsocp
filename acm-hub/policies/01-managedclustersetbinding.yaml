@@ -1,7 +1,7 @@
 apiVersion: cluster.open-cluster-management.io/v1beta2
 kind: ManagedClusterSetBinding
 metadata:
-  name: whatsnewsocp-labs
+  name: default
   namespace: whatsnewsocp-policies
 spec:
-  clusterSet: whatsnewsocp-labs
+  clusterSet: default

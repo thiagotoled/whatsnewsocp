@@ -1,0 +1,53 @@
+# Trazido de ACM_OCP/Politicas/policy-gitops-operator-install.yaml (sem alterações de conteúdo,
+# só o namespace da Policy). Instala o OpenShift GitOps operator no local-cluster (o próprio hub),
+# pra rodar o Argo CD que sincroniza este mesmo repositório.
+apiVersion: policy.open-cluster-management.io/v1
+kind: Policy
+metadata:
+  name: policy-gitops-operator-install
+  namespace: whatsnewsocp-policies
+  annotations:
+    policy.open-cluster-management.io/categories: CM Configuration Management
+    policy.open-cluster-management.io/controls: CM-2 Baseline Configuration
+    policy.open-cluster-management.io/standards: NIST SP 800-53
+    argocd.argoproj.io/compare-options: IgnoreExtraneous
+spec:
+  disabled: false
+  policy-templates:
+  - objectDefinition:
+      apiVersion: policy.open-cluster-management.io/v1
+      kind: ConfigurationPolicy
+      metadata:
+        name: policy-gitops-operator-namespace
+      spec:
+        remediationAction: enforce
+        severity: medium
+        object-templates:
+        - complianceType: musthave
+          objectDefinition:
+            apiVersion: v1
+            kind: Namespace
+            metadata:
+              name: openshift-gitops-operator
+  - extraDependencies:
+    - apiVersion: policy.open-cluster-management.io/v1
+      compliance: Compliant
+      kind: ConfigurationPolicy
+      name: policy-gitops-operator-namespace
+    objectDefinition:
+      apiVersion: policy.open-cluster-management.io/v1beta1
+      kind: OperatorPolicy
+      metadata:
+        name: policy-gitops-operator-install
+      spec:
+        complianceType: musthave
+        remediationAction: enforce
+        severity: critical
+        subscription:
+          channel: latest
+          name: openshift-gitops-operator
+          namespace: openshift-gitops-operator
+          source: redhat-operators
+          sourceNamespace: openshift-marketplace
+        upgradeApproval: Automatic
+        versions: []

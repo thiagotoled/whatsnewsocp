@@ -1,2 +1,25 @@
-generators:
-  - policy-generator-config.yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - 00-namespace.yaml
+  - 01-managedclustersetbinding.yaml
+  - 02-placement-local-cluster.yaml
+  - 03-placementbinding-local-cluster.yaml
+  - 04-placement-azure.yaml
+  - 05-placement-vmware.yaml
+  - 06-placement-all-lab-clusters.yaml
+  - 07-placementbinding-all-lab-clusters.yaml
+  - 08-placement-all.yaml
+  - 09-placementbinding-all.yaml
+  - policy-gitops-operator-install.yaml
+  - policy-webterminal-install.yaml
+  - policy-oauth-configuration.yaml
+  - policy-lab01-inplace-pod-vertical-scaling-baseline.yaml
+  - policy-lab02-external-secrets-operator-baseline.yaml
+  - policy-lab03-user-namespaces-baseline.yaml
+  - policy-lab05-vulnerability-management-reporting-baseline.yaml
+  - policy-lab06-policy-scope-labels-baseline.yaml
+  - policy-lab07-policy-debug-pod-attach-baseline.yaml
+  - policy-lab09-upgrade-recommend-precheck-baseline.yaml
+  - policy-lab09-upgrade-recommend-precheck-pdb-seed.yaml

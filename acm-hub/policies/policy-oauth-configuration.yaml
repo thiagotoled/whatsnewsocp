@@ -1,0 +1,119 @@
+# Baseado em ACM_OCP/Politicas/policy-htpasswd.yaml, renomeado porque o conteúdo é a
+# configuração de OAuth do cluster como um todo (HTPasswd + Entra ID/AAD via OIDC), não só
+# o htpasswd. Os valores reais (hash do htpasswd, client secret e dados do app registration
+# do Entra ID) NÃO foram copiados de propósito — são específicos do outro hub/tenant e o
+# app registration para ESTE hub ainda nem existe (precisa da URL do console, que só existe
+# depois do cluster criado). Preencha os placeholders abaixo antes de aplicar:
+#
+# 1. Gere o htpasswd:
+#      htpasswd -c -B -b /tmp/htpasswd admin '<senha>'
+#      cat /tmp/htpasswd | base64 -w0
+#    Cole o resultado no lugar de CHANGEME_HTPASSWD_HASH.
+#
+# 2. Crie o app registration no Entra ID com Redirect URI:
+#      https://oauth-openshift.apps.<domínio-do-hub>/oauth2callback/AAD
+#    Preencha AAD_CLIENT_ID, AAD_TENANT_ID e o client secret (base64) abaixo.
+apiVersion: policy.open-cluster-management.io/v1
+kind: Policy
+metadata:
+  name: policy-oauth-configuration
+  namespace: whatsnewsocp-policies
+  annotations:
+    policy.open-cluster-management.io/categories: CM Configuration Management
+    policy.open-cluster-management.io/controls: CM-2 Baseline Configuration
+    policy.open-cluster-management.io/standards: NIST SP 800-53
+    argocd.argoproj.io/compare-options: IgnoreExtraneous
+spec:
+  disabled: true # habilitar só depois de preencher os placeholders abaixo
+  policy-templates:
+  - objectDefinition:
+      apiVersion: policy.open-cluster-management.io/v1
+      kind: ConfigurationPolicy
+      metadata:
+        name: policy-htpasswd-secret
+      spec:
+        remediationAction: enforce
+        severity: medium
+        object-templates:
+        - complianceType: musthave
+          objectDefinition:
+            apiVersion: v1
+            kind: Secret
+            metadata:
+              name: htpasswd-whatsnewsocp
+              namespace: openshift-config
+            type: Opaque
+            data:
+              htpasswd: CHANGEME_HTPASSWD_HASH_BASE64
+  - objectDefinition:
+      apiVersion: policy.open-cluster-management.io/v1
+      kind: ConfigurationPolicy
+      metadata:
+        name: policy-aad-secret
+      spec:
+        remediationAction: enforce
+        severity: medium
+        object-templates:
+        - complianceType: musthave
+          objectDefinition:
+            apiVersion: v1
+            kind: Secret
+            metadata:
+              name: aad-client-secret
+              namespace: openshift-config
+            type: Opaque
+            data:
+              clientSecret: CHANGEME_AAD_CLIENT_SECRET_BASE64
+  - extraDependencies:
+    - apiVersion: policy.open-cluster-management.io/v1
+      compliance: Compliant
+      kind: ConfigurationPolicy
+      name: policy-htpasswd-secret
+    - apiVersion: policy.open-cluster-management.io/v1
+      compliance: Compliant
+      kind: ConfigurationPolicy
+      name: policy-aad-secret
+    objectDefinition:
+      apiVersion: policy.open-cluster-management.io/v1
+      kind: ConfigurationPolicy
+      metadata:
+        name: policy-oauth-cluster
+      spec:
+        remediationAction: enforce
+        severity: medium
+        object-templates:
+        - complianceType: musthave
+          objectDefinition:
+            apiVersion: config.openshift.io/v1
+            kind: OAuth
+            metadata:
+              name: cluster
+            spec:
+              identityProviders:
+              - name: htpasswd
+                mappingMethod: claim
+                type: HTPasswd
+                htpasswd:
+                  fileData:
+                    name: htpasswd-whatsnewsocp
+              - name: AAD
+                mappingMethod: claim
+                type: OpenID
+                openID:
+                  clientID: CHANGEME_AAD_CLIENT_ID
+                  clientSecret:
+                    name: aad-client-secret
+                  extraScopes:
+                  - email
+                  - profile
+                  issuer: https://login.microsoftonline.com/CHANGEME_AAD_TENANT_ID/v2.0
+                  claims:
+                    preferredUsername:
+                    - email
+                    - preferred_username
+                    name:
+                    - name
+                    email:
+                    - email
+                    groups:
+                    - groups

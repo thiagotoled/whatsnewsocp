@@ -1,0 +1,22 @@
+# Valor "VMware" para o label cloud segue o mesmo padrão auto-detectado pelo ACM usado em
+# ACM_OCP/Politicas para Azure (label cloud=Azure, populado automaticamente no import). Confirmar
+# o valor exato assim que o primeiro cluster VMware/vSphere for importado no hub
+# (oc get managedcluster <nome> -o jsonpath='{.metadata.labels.cloud}').
+apiVersion: cluster.open-cluster-management.io/v1beta1
+kind: Placement
+metadata:
+  name: placement-vmware-lab-clusters
+  namespace: whatsnewsocp-policies
+spec:
+  tolerations:
+    - key: cluster.open-cluster-management.io/unreachable
+      operator: Exists
+    - key: cluster.open-cluster-management.io/unavailable
+      operator: Exists
+  predicates:
+    - requiredClusterSelector:
+        labelSelector:
+          matchLabels:
+            whatsnewsocp-lab: "true"
+            cloud: VMware
+            vendor: OpenShift

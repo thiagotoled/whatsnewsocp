@@ -17,7 +17,6 @@ Cada diretório contém um laboratório independente com manifestos prontos para
 | 5 | [Enhanced Vulnerability Management Reporting](./VulnerabilityManagementReporting/README.md) | Novas colunas (NVD CVSS, EPSS, Advisory, Component Version) nos relatórios de vulnerabilidade do RHACS 4.11 |
 | 6 | [Policy Scope com Labels de Cluster/Namespace](./PolicyScopeLabels/README.md) | Restringir políticas do RHACS a clusters/namespaces específicos usando seletores de label |
 | 7 | [Policy para oc debug / pods attach](./PolicyDebugPodAttach/README.md) | Detecção e enforcement de `pods/attach` (cobrindo `oc debug`, `oc attach`) no RHACS 4.11 |
-| 8 | [Scheduling de Compliance Operator Tailored Profiles](./ComplianceTailoredProfilesScheduling/README.md) | Agendar scans de perfis de compliance customizados direto pela página Schedules do RHACS 4.11 |
 
 ---
 
@@ -97,15 +96,6 @@ whatsnewsocp/
 │   └── acs-manifests/
 │       ├── 01-namespace.yaml
 │       └── 02-deployment.yaml
-├── ComplianceTailoredProfilesScheduling/
-│   ├── README.md
-│   └── acs-manifests/
-│       ├── 01-namespace.yaml
-│       ├── 02-operatorgroup.yaml
-│       ├── 03-subscription.yaml
-│       ├── 04-tailored-profile.yaml
-│       ├── 05-scansetting.yaml
-│       └── 06-scansettingbinding.yaml
 ├── UpgradeRecommendPrecheck/
 │   ├── README.md
 │   └── ocp-manifests/
@@ -115,12 +105,27 @@ whatsnewsocp/
 │       └── 04-poddisruptionbudget-fixed.yaml
 └── acm-hub/
     ├── README.md
-    ├── placement/
-    │   ├── 00-namespace.yaml
-    │   ├── 01-managedclusterset.yaml
-    │   ├── 02-managedclustersetbinding.yaml
-    │   └── 03-placement.yaml
     └── policies/
         ├── kustomization.yaml
-        └── policy-generator-config.yaml
+        ├── 00-namespace.yaml
+        ├── 01-managedclustersetbinding.yaml
+        ├── 02-placement-local-cluster.yaml
+        ├── 03-placementbinding-local-cluster.yaml
+        ├── 04-placement-azure.yaml
+        ├── 05-placement-vmware.yaml
+        ├── 06-placement-all-lab-clusters.yaml
+        ├── 07-placementbinding-all-lab-clusters.yaml
+        ├── 08-placement-all.yaml
+        ├── 09-placementbinding-all.yaml
+        ├── policy-gitops-operator-install.yaml
+        ├── policy-webterminal-install.yaml
+        ├── policy-oauth-configuration.yaml
+        ├── policy-lab01-inplace-pod-vertical-scaling-baseline.yaml
+        ├── policy-lab02-external-secrets-operator-baseline.yaml
+        ├── policy-lab03-user-namespaces-baseline.yaml
+        ├── policy-lab05-vulnerability-management-reporting-baseline.yaml
+        ├── policy-lab06-policy-scope-labels-baseline.yaml
+        ├── policy-lab07-policy-debug-pod-attach-baseline.yaml
+        ├── policy-lab09-upgrade-recommend-precheck-baseline.yaml
+        └── policy-lab09-upgrade-recommend-precheck-pdb-seed.yaml
 ```

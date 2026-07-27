@@ -1,0 +1,19 @@
+# Diferente do placement-all (08): esse aqui exige o label whatsnewsocp-lab=true, então NÃO
+# inclui o local-cluster nem qualquer outro managed cluster que o hub gerencie fora dos labs.
+# É pra onde vão as 9 policies de baseline dos labs, que hoje rodam igual em Azure e VMware.
+apiVersion: cluster.open-cluster-management.io/v1beta1
+kind: Placement
+metadata:
+  name: placement-all-lab-clusters
+  namespace: whatsnewsocp-policies
+spec:
+  tolerations:
+    - key: cluster.open-cluster-management.io/unreachable
+      operator: Exists
+    - key: cluster.open-cluster-management.io/unavailable
+      operator: Exists
+  predicates:
+    - requiredClusterSelector:
+        labelSelector:
+          matchLabels:
+            whatsnewsocp-lab: "true"
