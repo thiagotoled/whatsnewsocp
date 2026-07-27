@@ -1,0 +1,81 @@
+# Instala o RHACS (StackRox) Central no local-cluster: namespace stackrox + rhacs-operator +
+# CR Central. Não inclui SecuredCluster/init-bundle de propósito — o init-bundle só existe
+# depois que o Central já está Running de verdade (é gerado por ele via roxctl/API, não dá
+# pra pré-provisionar como os outros secrets deste repo). Aplicar SecuredCluster + init-bundle
+# é passo manual, depois que essa policy ficar Compliant.
+apiVersion: policy.open-cluster-management.io/v1
+kind: Policy
+metadata:
+  name: policy-acs-central
+  namespace: whatsnewsocp-policies
+  annotations:
+    policy.open-cluster-management.io/categories: CM Configuration Management
+    policy.open-cluster-management.io/controls: CM-2 Baseline Configuration
+    policy.open-cluster-management.io/standards: NIST SP 800-53
+    argocd.argoproj.io/compare-options: IgnoreExtraneous
+spec:
+  disabled: false
+  policy-templates:
+  - objectDefinition:
+      apiVersion: policy.open-cluster-management.io/v1
+      kind: ConfigurationPolicy
+      metadata:
+        name: policy-acs-central-namespace
+      spec:
+        remediationAction: enforce
+        severity: low
+        object-templates:
+        - complianceType: musthave
+          objectDefinition:
+            apiVersion: v1
+            kind: Namespace
+            metadata:
+              name: stackrox
+  - extraDependencies:
+    - apiVersion: policy.open-cluster-management.io/v1
+      compliance: Compliant
+      kind: ConfigurationPolicy
+      name: policy-acs-central-namespace
+    objectDefinition:
+      apiVersion: policy.open-cluster-management.io/v1beta1
+      kind: OperatorPolicy
+      metadata:
+        name: policy-acs-operator-install
+      spec:
+        complianceType: musthave
+        remediationAction: enforce
+        severity: critical
+        subscription:
+          channel: stable
+          name: rhacs-operator
+          namespace: rhacs-operator
+          source: redhat-operators
+          sourceNamespace: openshift-marketplace
+        upgradeApproval: Automatic
+        versions: []
+  - extraDependencies:
+    - apiVersion: policy.open-cluster-management.io/v1
+      compliance: Compliant
+      kind: OperatorPolicy
+      name: policy-acs-operator-install
+    objectDefinition:
+      apiVersion: policy.open-cluster-management.io/v1
+      kind: ConfigurationPolicy
+      metadata:
+        name: policy-acs-central-cr
+      spec:
+        remediationAction: enforce
+        severity: low
+        object-templates:
+        - complianceType: musthave
+          objectDefinition:
+            apiVersion: platform.stackrox.io/v1alpha1
+            kind: Central
+            metadata:
+              name: stackrox-central-services
+              namespace: stackrox
+            spec:
+              central:
+                exposure:
+                  route:
+                    enabled: true
