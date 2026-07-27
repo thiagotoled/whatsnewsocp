@@ -13,8 +13,6 @@ resources:
   - 08-placement-all.yaml
   - 09-placementbinding-all.yaml
   - 10-placementbinding-azure.yaml
-  - 11-placement-managed-clusters.yaml
-  - 12-placementbinding-managed-clusters.yaml
   - policy-gitops-operator-install.yaml
   - policy-webterminal-install.yaml
   - policy-oauth-configuration.yaml

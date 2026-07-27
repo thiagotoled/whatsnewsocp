@@ -1,7 +1,7 @@
-# Instala só o rhacs-operator, sem CR nenhum — compartilhado entre Central (hub) e
-# SecuredCluster (managed clusters), que dependem dele mas não do mesmo jeito. Bound em
-# placement-all porque tanto o hub quanto qualquer managed cluster precisam do operator
-# instalado antes de criar a CR específica de cada papel.
+# Instala só o rhacs-operator, sem CR nenhum — compartilhado entre Central (só hub) e
+# SecuredCluster (todo cluster, hub incluído), que dependem dele mas não do mesmo jeito.
+# Bound em placement-all porque todo cluster precisa do operator instalado antes de criar
+# a CR específica de cada papel.
 apiVersion: policy.open-cluster-management.io/v1
 kind: Policy
 metadata:

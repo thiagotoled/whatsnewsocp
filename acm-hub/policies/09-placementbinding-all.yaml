@@ -14,3 +14,6 @@ subjects:
   - apiGroup: policy.open-cluster-management.io
     kind: Policy
     name: policy-acs-operator-install
+  - apiGroup: policy.open-cluster-management.io
+    kind: Policy
+    name: policy-acs-secured-cluster
