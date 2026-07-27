@@ -54,7 +54,7 @@ spec:
         upgradeApproval: Automatic
         versions: []
   - extraDependencies:
-    - apiVersion: policy.open-cluster-management.io/v1
+    - apiVersion: policy.open-cluster-management.io/v1beta1
       compliance: Compliant
       kind: OperatorPolicy
       name: policy-acs-operator-install
