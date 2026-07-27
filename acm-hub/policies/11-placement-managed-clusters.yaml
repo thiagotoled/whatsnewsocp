@@ -1,0 +1,21 @@
+# Todo managed cluster OpenShift, exceto o hub (local-cluster: "false" é o label que o
+# próprio ACM seta em todo managed cluster que não é o hub). Para policies que só fazem
+# sentido em clusters "de fora", nunca no hub — ex.: SecuredCluster do ACS (o hub já roda
+# o Central, não precisa se auto-registrar como secured cluster).
+apiVersion: cluster.open-cluster-management.io/v1beta1
+kind: Placement
+metadata:
+  name: placement-managed-clusters
+  namespace: whatsnewsocp-policies
+spec:
+  tolerations:
+    - key: cluster.open-cluster-management.io/unreachable
+      operator: Exists
+    - key: cluster.open-cluster-management.io/unavailable
+      operator: Exists
+  predicates:
+    - requiredClusterSelector:
+        labelSelector:
+          matchLabels:
+            vendor: OpenShift
+            local-cluster: "false"
