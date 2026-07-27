@@ -1,9 +1,9 @@
-# Lab 9 - UpgradeRecommendPrecheck: a lição é corrigir o PDB e ver o precheck do
-# oc adm upgrade recommend refletir a mudança. Namespace + deployment são boilerplate normal.
+# Lab 7 - PolicyDebugPodAttach: a lição é rodar oc debug/attach e ver o RHACS reagir.
+# Namespace + deployment são só prep.
 apiVersion: policy.open-cluster-management.io/v1
 kind: Policy
 metadata:
-  name: policy-lab09-upgrade-recommend-precheck-baseline
+  name: policy-lab07
   namespace: whatsnewsocp-policies
   annotations:
     policy.open-cluster-management.io/categories: CM Configuration Management
@@ -17,7 +17,7 @@ spec:
       apiVersion: policy.open-cluster-management.io/v1
       kind: ConfigurationPolicy
       metadata:
-        name: policy-lab09-upgrade-recommend-precheck-baseline
+        name: policy-lab07
       spec:
         remediationAction: enforce
         severity: low
@@ -27,26 +27,27 @@ spec:
             apiVersion: v1
             kind: Namespace
             metadata:
-              name: lab-upgrade-status
+              name: lab-acs-debug-attach
         - complianceType: musthave
           objectDefinition:
             apiVersion: apps/v1
             kind: Deployment
             metadata:
-              name: nginx-pdb-demo
-              namespace: lab-upgrade-status
+              name: target-app
+              namespace: lab-acs-debug-attach
+              labels:
+                app: target-app
             spec:
-              replicas: 3
+              replicas: 1
               selector:
                 matchLabels:
-                  app: nginx-pdb-demo
+                  app: target-app
               template:
                 metadata:
                   labels:
-                    app: nginx-pdb-demo
+                    app: target-app
                 spec:
                   containers:
-                    - name: nginx
-                      image: quay.io/packit/nginx-unprivileged:latest
-                      ports:
-                        - containerPort: 8080
+                    - name: app
+                      image: registry.access.redhat.com/ubi9/ubi-minimal:latest
+                      command: ["sleep", "infinity"]

@@ -3,7 +3,7 @@
 apiVersion: policy.open-cluster-management.io/v1
 kind: Policy
 metadata:
-  name: policy-lab03-user-namespaces-baseline
+  name: policy-lab03
   namespace: whatsnewsocp-policies
   annotations:
     policy.open-cluster-management.io/categories: CM Configuration Management
@@ -17,7 +17,7 @@ spec:
       apiVersion: policy.open-cluster-management.io/v1
       kind: ConfigurationPolicy
       metadata:
-        name: policy-lab03-user-namespaces-baseline
+        name: policy-lab03
       spec:
         remediationAction: enforce
         severity: low

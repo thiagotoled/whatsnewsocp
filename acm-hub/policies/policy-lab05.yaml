@@ -3,7 +3,7 @@
 apiVersion: policy.open-cluster-management.io/v1
 kind: Policy
 metadata:
-  name: policy-lab05-vulnerability-management-reporting-baseline
+  name: policy-lab05
   namespace: whatsnewsocp-policies
   annotations:
     policy.open-cluster-management.io/categories: CM Configuration Management
@@ -17,7 +17,7 @@ spec:
       apiVersion: policy.open-cluster-management.io/v1
       kind: ConfigurationPolicy
       metadata:
-        name: policy-lab05-vulnerability-management-reporting-baseline
+        name: policy-lab05
       spec:
         remediationAction: enforce
         severity: low

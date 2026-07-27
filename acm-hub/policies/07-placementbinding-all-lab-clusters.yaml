@@ -15,25 +15,25 @@ placementRef:
 subjects:
   - apiGroup: policy.open-cluster-management.io
     kind: Policy
-    name: policy-lab01-inplace-pod-vertical-scaling-baseline
+    name: policy-lab01
   - apiGroup: policy.open-cluster-management.io
     kind: Policy
-    name: policy-lab02-external-secrets-operator-baseline
+    name: policy-lab02
   - apiGroup: policy.open-cluster-management.io
     kind: Policy
-    name: policy-lab03-user-namespaces-baseline
+    name: policy-lab03
   - apiGroup: policy.open-cluster-management.io
     kind: Policy
-    name: policy-lab05-vulnerability-management-reporting-baseline
+    name: policy-lab05
   - apiGroup: policy.open-cluster-management.io
     kind: Policy
-    name: policy-lab06-policy-scope-labels-baseline
+    name: policy-lab06
   - apiGroup: policy.open-cluster-management.io
     kind: Policy
-    name: policy-lab07-policy-debug-pod-attach-baseline
+    name: policy-lab07
   - apiGroup: policy.open-cluster-management.io
     kind: Policy
-    name: policy-lab09-upgrade-recommend-precheck-baseline
+    name: policy-lab09
   - apiGroup: policy.open-cluster-management.io
     kind: Policy
-    name: policy-lab09-upgrade-recommend-precheck-pdb-seed
+    name: policy-lab09-pdb-seed

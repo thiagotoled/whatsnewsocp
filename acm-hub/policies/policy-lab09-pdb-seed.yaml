@@ -6,7 +6,7 @@
 apiVersion: policy.open-cluster-management.io/v1
 kind: Policy
 metadata:
-  name: policy-lab09-upgrade-recommend-precheck-pdb-seed
+  name: policy-lab09-pdb-seed
   namespace: whatsnewsocp-policies
   annotations:
     policy.open-cluster-management.io/categories: CM Configuration Management
@@ -20,7 +20,7 @@ spec:
       apiVersion: policy.open-cluster-management.io/v1
       kind: ConfigurationPolicy
       metadata:
-        name: policy-lab09-upgrade-recommend-precheck-pdb-seed
+        name: policy-lab09-pdb-seed
       spec:
         remediationAction: enforce
         severity: low

@@ -50,14 +50,14 @@ lab específico), trazidas do repo real `ACM_OCP/Politicas` e adaptadas:
 | Policy | O que faz | Onde roda |
 |---|---|---|
 | `policy-gitops-operator-install` | Instala o OpenShift GitOps operator | `local-cluster` (o hub) |
-| `policy-webterminal-install` | Instala o Web Terminal operator | `local-cluster` (o hub) |
+| `policy-webterminal-install` | Instala o Web Terminal operator | **`all`** — todo managed cluster OpenShift |
 | `policy-oauth-configuration` | Configura OAuth (HTPasswd + Entra ID/AAD via OIDC) | **`all`** — todo managed cluster OpenShift (hub + Azure + VMware), mesmo login em qualquer console |
 
 ---
 
 ## ⚠️ Cuidado com o PDB do Lab 9 (drift/enforce)
 
-A policy `policy-lab09-upgrade-recommend-precheck-pdb-seed` roda em `remediationAction: enforce`
+A policy `policy-lab09-pdb-seed` roda em `remediationAction: enforce`
 de propósito, para o PDB existir com bastante antecedência (fluxo do "por que" acima). Só que,
 em `enforce`, o ACM **reverte qualquer mudança manual** assim que detecta drift.
 
@@ -67,7 +67,7 @@ o PDB) — a policy vai desfazer a correção do aluno.
 **Antes de liberar a turma para o Passo 5**, desabilite só essa policy:
 
 ```bash
-oc patch policy policy-lab09-upgrade-recommend-precheck-pdb-seed \
+oc patch policy policy-lab09-pdb-seed \
   -n whatsnewsocp-policies --type merge -p '{"spec":{"disabled":true}}'
 ```
 
@@ -93,11 +93,11 @@ que uma policy possa valer só para Azure, só para VMware, só para o hub, só 
 
 | Placement | Seleciona | Quem tá vinculado hoje |
 |---|---|---|
-| `placement-local-cluster` | só o hub (`local-cluster=true`) | gitops-operator-install, webterminal-install |
+| `placement-local-cluster` | só o hub (`local-cluster=true`) | gitops-operator-install |
 | `placement-azure-lab-clusters` | clusters de lab na Azure (`whatsnewsocp-lab=true` + `cloud=Azure`) | *(nenhuma ainda — pronto pra quando divergir)* |
 | `placement-vmware-lab-clusters` | clusters de lab na VMware (`whatsnewsocp-lab=true` + `cloud=VMware`) | *(nenhuma ainda — pronto pra quando divergir)* |
 | `placement-all-lab-clusters` | qualquer cluster de lab, qualquer nuvem (`whatsnewsocp-lab=true`) | as 8 policies de baseline dos labs (nenhuma é específica de nuvem hoje) |
-| `placement-all` | qualquer managed cluster OpenShift, sem filtro (inclui o hub) | policy-oauth-configuration |
+| `placement-all` | qualquer managed cluster OpenShift, sem filtro (inclui o hub) | policy-oauth-configuration, webterminal-install |
 
 Quando uma policy de lab precisar valer só numa nuvem: tira o `subject` de
 `07-placementbinding-all-lab-clusters.yaml` e bota num `PlacementBinding` novo apontando pro
@@ -114,23 +114,28 @@ acm-hub/
     ├── 00-namespace.yaml                          # namespace whatsnewsocp-policies
     ├── 01-managedclustersetbinding.yaml           # vincula o clusterset "default" embutido
     ├── 02-placement-local-cluster.yaml
-    ├── 03-placementbinding-local-cluster.yaml     # gitops-operator-install, webterminal-install
+    ├── 03-placementbinding-local-cluster.yaml     # gitops-operator-install
     ├── 04-placement-azure.yaml                    # sem binding ainda, ver tabela acima
     ├── 05-placement-vmware.yaml                   # sem binding ainda, ver tabela acima
     ├── 06-placement-all-lab-clusters.yaml
     ├── 07-placementbinding-all-lab-clusters.yaml  # as 8 policies de baseline dos labs
     ├── 08-placement-all.yaml
-    ├── 09-placementbinding-all.yaml                # policy-oauth-configuration
+    ├── 09-placementbinding-all.yaml                # policy-oauth-configuration, webterminal-install
     ├── policy-gitops-operator-install.yaml         # bootstrap do hub (ver tabela acima)
-    ├── policy-webterminal-install.yaml             # bootstrap do hub
+    ├── policy-webterminal-install.yaml             # bootstrap "all"
     ├── policy-oauth-configuration.yaml             # bootstrap "all" — tem placeholders, ver aviso acima
-    └── policy-lab01-...yaml … policy-lab09-...yaml # 1 Policy por lab, YAML puro (sem PolicyGenerator)
+    └── policy-lab01.yaml … policy-lab09-pdb-seed.yaml # 1 Policy por lab, YAML puro (sem PolicyGenerator)
 ```
 
 Sem PolicyGenerator de propósito — time não gosta, e o `ACM_OCP/Politicas` real também não usa
 ("managed manually for simplicity"). Cada policy de lab é um arquivo próprio, YAML pronto pra
 `oc apply`, mesmo padrão de `policy-apps-namespaces.yaml`/`policy-resourcequota-limitrange.yaml`
 do repo real — sem exec plugin, sem `--enable-alpha-plugins`.
+
+> **Nomes curtos de propósito:** o webhook do ACM rejeita uma Policy se `namespace + name`
+> passar de 62 caracteres. Com o namespace `whatsnewsocp-policies` (21 chars), nomes descritivos
+> tipo `policy-lab01-inplace-pod-vertical-scaling-baseline` estouram o limite — por isso os
+> arquivos de lab usam só `policy-labNN` (a descrição já está no comentário no topo do arquivo).
 
 ---
 

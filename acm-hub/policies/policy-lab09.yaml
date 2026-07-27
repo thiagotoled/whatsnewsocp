@@ -1,9 +1,9 @@
-# Lab 7 - PolicyDebugPodAttach: a lição é rodar oc debug/attach e ver o RHACS reagir.
-# Namespace + deployment são só prep.
+# Lab 9 - UpgradeRecommendPrecheck: a lição é corrigir o PDB e ver o precheck do
+# oc adm upgrade recommend refletir a mudança. Namespace + deployment são boilerplate normal.
 apiVersion: policy.open-cluster-management.io/v1
 kind: Policy
 metadata:
-  name: policy-lab07-policy-debug-pod-attach-baseline
+  name: policy-lab09
   namespace: whatsnewsocp-policies
   annotations:
     policy.open-cluster-management.io/categories: CM Configuration Management
@@ -17,7 +17,7 @@ spec:
       apiVersion: policy.open-cluster-management.io/v1
       kind: ConfigurationPolicy
       metadata:
-        name: policy-lab07-policy-debug-pod-attach-baseline
+        name: policy-lab09
       spec:
         remediationAction: enforce
         severity: low
@@ -27,27 +27,26 @@ spec:
             apiVersion: v1
             kind: Namespace
             metadata:
-              name: lab-acs-debug-attach
+              name: lab-upgrade-status
         - complianceType: musthave
           objectDefinition:
             apiVersion: apps/v1
             kind: Deployment
             metadata:
-              name: target-app
-              namespace: lab-acs-debug-attach
-              labels:
-                app: target-app
+              name: nginx-pdb-demo
+              namespace: lab-upgrade-status
             spec:
-              replicas: 1
+              replicas: 3
               selector:
                 matchLabels:
-                  app: target-app
+                  app: nginx-pdb-demo
               template:
                 metadata:
                   labels:
-                    app: target-app
+                    app: nginx-pdb-demo
                 spec:
                   containers:
-                    - name: app
-                      image: registry.access.redhat.com/ubi9/ubi-minimal:latest
-                      command: ["sleep", "infinity"]
+                    - name: nginx
+                      image: quay.io/packit/nginx-unprivileged:latest
+                      ports:
+                        - containerPort: 8080

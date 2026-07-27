@@ -120,12 +120,12 @@ whatsnewsocp/
         ├── policy-gitops-operator-install.yaml
         ├── policy-webterminal-install.yaml
         ├── policy-oauth-configuration.yaml
-        ├── policy-lab01-inplace-pod-vertical-scaling-baseline.yaml
-        ├── policy-lab02-external-secrets-operator-baseline.yaml
-        ├── policy-lab03-user-namespaces-baseline.yaml
-        ├── policy-lab05-vulnerability-management-reporting-baseline.yaml
-        ├── policy-lab06-policy-scope-labels-baseline.yaml
-        ├── policy-lab07-policy-debug-pod-attach-baseline.yaml
-        ├── policy-lab09-upgrade-recommend-precheck-baseline.yaml
-        └── policy-lab09-upgrade-recommend-precheck-pdb-seed.yaml
+        ├── policy-lab01.yaml
+        ├── policy-lab02.yaml
+        ├── policy-lab03.yaml
+        ├── policy-lab05.yaml
+        ├── policy-lab06.yaml
+        ├── policy-lab07.yaml
+        ├── policy-lab09.yaml
+        └── policy-lab09-pdb-seed.yaml
 ```

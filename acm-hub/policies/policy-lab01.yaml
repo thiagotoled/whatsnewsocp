@@ -3,7 +3,7 @@
 apiVersion: policy.open-cluster-management.io/v1
 kind: Policy
 metadata:
-  name: policy-lab01-inplace-pod-vertical-scaling-baseline
+  name: policy-lab01
   namespace: whatsnewsocp-policies
   annotations:
     policy.open-cluster-management.io/categories: CM Configuration Management
@@ -17,7 +17,7 @@ spec:
       apiVersion: policy.open-cluster-management.io/v1
       kind: ConfigurationPolicy
       metadata:
-        name: policy-lab01-inplace-pod-vertical-scaling-baseline
+        name: policy-lab01
       spec:
         remediationAction: enforce
         severity: low
