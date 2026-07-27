@@ -50,7 +50,7 @@ oc get machineset -n openshift-machine-api -o jsonpath='{range .items[*]}{.metad
 Aplique o manifesto que habilita o gerenciamento automático para todos os MachineSets MAPI:
 
 ```bash
-oc apply -f ManagedBootImages/ocp-manifests/01-machine-configuration.yaml
+oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/4-ManagedBootImages/ocp-manifests/01-machine-configuration.yaml
 ```
 
 O campo `selection.mode: All` instrui o MCO a gerenciar **todos** os MachineSets do grupo `machine.openshift.io`.

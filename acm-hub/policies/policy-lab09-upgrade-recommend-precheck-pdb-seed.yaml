@@ -1,0 +1,39 @@
+# PDB restritivo em policy SEPARADA de propósito: precisa ser semeado ~1h antes do lab por
+# causa do "for: 60m" do alerta PodDisruptionBudgetAtLimit (ver acm-hub/README.md).
+# IMPORTANTE: por estar em remediationAction=enforce, ela vai reverter a correção manual do
+# Passo 5 do lab se ficar habilitada — desabilite esta policy antes de liberar a turma pra
+# aplicar o 04-poddisruptionbudget-fixed.yaml.
+apiVersion: policy.open-cluster-management.io/v1
+kind: Policy
+metadata:
+  name: policy-lab09-upgrade-recommend-precheck-pdb-seed
+  namespace: whatsnewsocp-policies
+  annotations:
+    policy.open-cluster-management.io/categories: CM Configuration Management
+    policy.open-cluster-management.io/controls: CM-2 Baseline Configuration
+    policy.open-cluster-management.io/standards: NIST SP 800-53
+    argocd.argoproj.io/compare-options: IgnoreExtraneous
+spec:
+  disabled: false
+  policy-templates:
+  - objectDefinition:
+      apiVersion: policy.open-cluster-management.io/v1
+      kind: ConfigurationPolicy
+      metadata:
+        name: policy-lab09-upgrade-recommend-precheck-pdb-seed
+      spec:
+        remediationAction: enforce
+        severity: low
+        object-templates:
+        - complianceType: musthave
+          objectDefinition:
+            apiVersion: policy/v1
+            kind: PodDisruptionBudget
+            metadata:
+              name: nginx-pdb-demo-strict
+              namespace: lab-upgrade-status
+            spec:
+              minAvailable: 100%
+              selector:
+                matchLabels:
+                  app: nginx-pdb-demo

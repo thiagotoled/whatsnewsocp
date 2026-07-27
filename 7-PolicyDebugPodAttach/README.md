@@ -22,8 +22,8 @@ Sem cobertura de `pods/attach`, alguém poderia contornar uma política de "bloq
 ## Passo 1: Implantar a carga de trabalho alvo
 
 ```bash
-oc apply -f PolicyDebugPodAttach/acs-manifests/01-namespace.yaml
-oc apply -f PolicyDebugPodAttach/acs-manifests/02-deployment.yaml
+oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/7-PolicyDebugPodAttach/acs-manifests/01-namespace.yaml
+oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/7-PolicyDebugPodAttach/acs-manifests/02-deployment.yaml
 oc get pods -n lab-acs-debug-attach -w
 ```
 

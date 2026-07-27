@@ -1,10 +1,8 @@
 # As 8 policies de baseline dos labs vão aqui porque hoje nenhuma tem nada específico de
 # nuvem (é só namespace/deployment/operador — roda igual em Azure ou VMware). Quando uma
 # policy de lab precisar valer só numa nuvem, tira o subject daqui e cria/edita um
-# PlacementBinding apontando pro placement-vmware-lab-clusters (05-placement-vmware.yaml) só
-# com essa policy. Para Azure: o 04-placement-azure.yaml foi repurposado pra "qualquer cluster
-# Azure, incluindo o hub" (usado pelo oauth) — se precisar de "só lab clusters Azure", crie
-# um placement novo em vez de reusar esse.
+# PlacementBinding apontando pro placement-azure-lab-clusters ou placement-vmware-lab-clusters
+# (04-placement-azure.yaml / 05-placement-vmware.yaml) só com essa policy.
 apiVersion: policy.open-cluster-management.io/v1
 kind: PlacementBinding
 metadata:
@@ -17,25 +15,25 @@ placementRef:
 subjects:
   - apiGroup: policy.open-cluster-management.io
     kind: Policy
-    name: policy-lab01
+    name: policy-lab01-inplace-pod-vertical-scaling-baseline
   - apiGroup: policy.open-cluster-management.io
     kind: Policy
-    name: policy-lab02
+    name: policy-lab02-external-secrets-operator-baseline
   - apiGroup: policy.open-cluster-management.io
     kind: Policy
-    name: policy-lab03
+    name: policy-lab03-user-namespaces-baseline
   - apiGroup: policy.open-cluster-management.io
     kind: Policy
-    name: policy-lab05
+    name: policy-lab05-vulnerability-management-reporting-baseline
   - apiGroup: policy.open-cluster-management.io
     kind: Policy
-    name: policy-lab06
+    name: policy-lab06-policy-scope-labels-baseline
   - apiGroup: policy.open-cluster-management.io
     kind: Policy
-    name: policy-lab07
+    name: policy-lab07-policy-debug-pod-attach-baseline
   - apiGroup: policy.open-cluster-management.io
     kind: Policy
-    name: policy-lab09
+    name: policy-lab09-upgrade-recommend-precheck-baseline
   - apiGroup: policy.open-cluster-management.io
     kind: Policy
-    name: policy-lab09-pdb-seed
+    name: policy-lab09-upgrade-recommend-precheck-pdb-seed
