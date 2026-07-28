@@ -10,6 +10,14 @@
 # gerar um novo CRS em Central, `oc apply` o secret de novo no hub, nada muda aqui.
 # clusterName usa hub templating (.ManagedClusterName) porque cada cluster precisa de um nome
 # único dentro do StackRox — não dá pra hardcodar como central-cr.
+# centralEndpoint É OBRIGATÓRIO aqui -- sem ele o default é central.stackrox.svc:443 (DNS
+# interno do cluster), que só resolve quando Central roda no MESMO cluster do SecuredCluster.
+# Bug real encontrado ao vivo no primeiro managed cluster importado (ms35vuo5): sensor init
+# container ficava em CrashLoopBackOff eterno, log "dial tcp: lookup central.stackrox.svc:
+# no such host" -- a policy tinha ficado Compliant mesmo assim, porque ConfigurationPolicy só
+# valida que o objeto SecuredCluster bate com o spec desejado, não que os pods gerados por ele
+# estão saudáveis. Usar a rota externa do Central funciona tanto no hub (self-monitoring)
+# quanto em qualquer managed cluster, então dá pra usar o mesmo valor pros dois casos.
 # policy-acs-console-plugin habilita o plugin "advanced-cluster-security" no Console (operator.
 # openshift.io/v1 Console/cluster spec.plugins) — sem isso o operator instala o ConsolePlugin
 # mas ele fica Disabled e as views de violação/vulnerabilidade não aparecem no console OCP.
@@ -93,6 +101,7 @@ spec:
               namespace: stackrox
             spec:
               clusterName: '{{hub .ManagedClusterName hub}}'
+              centralEndpoint: 'central-stackrox.apps.rms36u23q91da15275.eastus.aroapp.io:443'
   - objectDefinition:
       apiVersion: policy.open-cluster-management.io/v1
       kind: ConfigurationPolicy
