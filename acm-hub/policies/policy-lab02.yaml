@@ -1,5 +1,7 @@
 # Lab 2 - ExternalSecretsOperator: a lição é a sincronização (pull e push).
-# Só o operador instalado é boilerplate.
+# Só o operador instalado é boilerplate. O namespace do operator usa kind: Namespace (não
+# Project) de propósito — Project deu NonCompliant permanente em cluster novo importado
+# ("watch not supported on this resource"), confirmado ao vivo no ms35vuo5.
 apiVersion: policy.open-cluster-management.io/v1
 kind: Policy
 metadata:
@@ -30,15 +32,10 @@ spec:
               name: eso-demo
         - complianceType: musthave
           objectDefinition:
-            apiVersion: project.openshift.io/v1
-            kind: Project
+            apiVersion: v1
+            kind: Namespace
             metadata:
               name: external-secrets-operator
-              labels:
-                kubernetes.io/metadata.name: external-secrets-operator
-            spec:
-              finalizers:
-                - kubernetes
   - extraDependencies:
     - apiVersion: policy.open-cluster-management.io/v1
       compliance: Compliant
