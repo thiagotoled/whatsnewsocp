@@ -13,6 +13,15 @@ O exercício está dividido em duas partes:
 - Acesso a um Azure Key Vault com um Service Principal configurado
 - CLI `oc` autenticado no cluster
 
+**Antes do curso** (instrutor, uma vez só): rode [`setup-azure-keyvault.sh`](./setup-azure-keyvault.sh)
+pra provisionar o Resource Group + Key Vault + role no Service Principal. Ele reaproveita um App
+Registration já existente em vez de criar um novo (`az ad sp create-for-rbac` está quebrado em
+ambientes com Python 3.14 + az-cli 2.81 — erro `badly formed help string`; e criar App
+Registration nova pode falhar com `Insufficient privileges` se o tenant não permitir
+self-service). O Key Vault fica **compartilhado entre todos os alunos** — cada aluno usa seu
+próprio cluster/namespace, mas aponta pro mesmo Key Vault. Isso importa especialmente na Parte 2
+(veja a nota lá).
+
 ---
 
 ## Parte 1: ExternalSecret — Puxando Segredos do Azure Key Vault
@@ -29,6 +38,18 @@ Aguarde o operador ficar disponível antes de prosseguir
 ```bash
 oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/2-ExternalSecretsOperator/ocp-manifests/02-external-secrets-config.yaml
 ```
+
+Confirme que o controller de verdade do ESO subiu — ele fica num namespace **separado**
+(`external-secrets`), não no `external-secrets-operator` onde só roda o operator:
+
+```bash
+oc get pods -n external-secrets
+```
+
+Espere `external-secrets`, `external-secrets-cert-controller` e `external-secrets-webhook`
+`Running` antes de seguir — sem isso o `SecretStore`/`ExternalSecret` dos próximos passos ficam
+sem `STATUS`/`READY` (nada acontece, sem erro nenhum aparente).
+
 ---
 
 ### Passo 2: Criar o Namespace e as Credenciais do Azure
@@ -141,7 +162,15 @@ oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/head
 
 ### Passo 4: Criar o PushSecret
 
-O `PushSecret` publica o campo `password` do Secret `source-secret` no Azure Key Vault com o nome `minha-secret-na-keyvault`:
+O `PushSecret` publica o campo `password` do Secret `source-secret` no Azure Key Vault. Antes de
+aplicar, edite `10-push-secret.yaml` e troque `<SEU_NOME>` pelo seu nome (só letras, números e
+hífen):
+
+> **Se o Key Vault for compartilhado entre vários alunos** (mesmo Key Vault, clusters
+> diferentes): use `remoteKey: minha-secret-na-keyvault-<seu-nome>` — sem isso, todo mundo
+> escreve na mesma chave e cada aluno sobrescreve o secret do anterior. Também confirmado ao
+> vivo: o Azure Key Vault **não aceita `_` (underscore)** no nome do secret — só `-` (hífen).
+> Usar underscore falha com `BadParameter: The request URI contains an invalid name`.
 
 ```bash
 oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/2-ExternalSecretsOperator/ocp-manifests/10-push-secret.yaml
@@ -153,7 +182,8 @@ Verifique o status do `PushSecret`:
 oc get pushsecret push-local-secret-to-akv -n app
 ```
 
-Acesse o Azure Key Vault e confirme que o segredo `minha-secret-na-keyvault` foi criado com o valor correto.
+Acesse o Azure Key Vault e confirme que o segredo `minha-secret-na-keyvault-<seu-nome>` foi
+criado com o valor correto (ou via CLI: `az keyvault secret show --vault-name <KEYVAULT_NAME> --name minha-secret-na-keyvault-<seu-nome> --query value -o tsv`).
 
 ---
 
