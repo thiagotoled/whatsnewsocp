@@ -55,6 +55,13 @@ uid=0(root) gid=0(root) groups=0(root)
 
 O processo roda como `root` no host. Se escapar do container, tem privilégios totais no nó.
 
+> **Por que o manifesto concede SCC `anyuid`?** Sem isso, o `restricted-v2` (SCC padrão do
+> OpenShift) força um UID alto não-privilegiado mesmo com `hostUsers: true` — e o `id` mostraria
+> algo como `uid=1000770000`, não `uid=0(root)`. Pra comparação fazer sentido (rodar como root
+> DE VERDADE de um lado, isolado do outro), o Deployment sem User Namespaces também precisa de
+> `anyuid` + `runAsUser: 0` explícitos. Confirmado ao vivo: sem isso o "antes" do lab nunca
+> mostra root de verdade.
+
 ---
 
 ## Passo 3: Validar o Deployment COM User Namespaces (`hostUsers: false`)
@@ -67,14 +74,18 @@ oc exec -n userns-lab deploy/userns-demo-isolated -- cat /proc/self/uid_map
 oc exec -n userns-lab deploy/userns-demo-isolated -- cat /proc/self/gid_map
 ```
 
-Saída esperada — UID 0 dentro do container mapeado para UID alto no host:
+Saída esperada — UID 0 dentro do container mapeado para um UID alto no host:
 ```
 uid=0(root) gid=0(root) groups=0(root)
-         0      65536      65536
-         0      65536      65536
+         0 3093037056      65536
+         0 3093037056      65536
 ```
 
-Dentro do container o processo se vê como `root`, mas no host ele é `UID 65536` — sem nenhum privilégio.
+Dentro do container o processo se vê como `root`, mas no host ele é um UID sem privilégio
+nenhum. O segundo número do `uid_map` (o offset — `3093037056` no teste ao vivo) **não é fixo**:
+o kubelet/CRI-O aloca uma faixa de 65536 UIDs por Pod a partir de um pool grande e reservado
+para User Namespaces, então o offset exato varia a cada Pod recriado — o que importa é que ele
+está bem longe de qualquer UID real do sistema, não o valor específico.
 
 ---
 
