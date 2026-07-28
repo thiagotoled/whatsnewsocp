@@ -45,7 +45,7 @@ Vamos aumentar os recursos do container de forma dinâmica usando o comando `oc 
 Execute o seguinte comando no seu terminal principal:
 
 ```bash
-oc patch pod nginx-inplace-5b6d99df49-jzhxg -p '{"spec": {"containers": [{"name": "nginx", "resources": { "requests" :{ "cpu" : 2, "memory": "512Mi"}, "limits" :{ "cpu" : 3, "memory" : "3Gi" } } }] }}' --subresource=resize -n lab-inplace-scaling
+oc patch pod nginx-inplace-5b6d99df49-jzhxg -p '{"spec": {"containers": [{"name": "nginx", "resources": { "requests" :{ "cpu" : "300m", "memory": "256Mi"}, "limits" :{ "cpu" : "500m", "memory" : "512Mi" } } }] }}' --subresource=resize -n lab-inplace-scaling
 
 ```
 nginx-inplace-5b6d99df49-jzhxg = trocar pelo nome do pod em execução, verificado no Passo 2. 
@@ -69,16 +69,30 @@ oc describe pod -n lab-inplace-scaling -l app=nginx-inplace | grep -A 5 Requests
 
 ##  Passo 4: Realizar o Scale-Down (Diminuir Recursos)
 
-O processo inverso também é suportado. Vamos reduzir os recursos de volta para o estado inicial para economizar capacidade do cluster.
+O processo inverso também é suportado, com uma ressalva importante: **CPU e o *request* de
+memória podem ser reduzidos in-place livremente, mas o *limit* de memória não** — o
+Kubernetes bloqueia diminuição de memory limit com `resizePolicy: NotRequired` de propósito
+(memória é um recurso incompressível; reduzir o limit sem reiniciar o container arriscaria um
+OOM imediato). Se você tentar mesmo assim, o patch é rejeitado:
 
-Execute o comando de patch para diminuir:
+```
+The Pod "nginx-inplace-xxxxxxxxxx-xxxxx" is invalid: spec.containers[0].resources.limits[memory]:
+Forbidden: memory limits cannot be decreased unless resizePolicy is RestartContainer
+```
+
+Então o scale-down deste lab reduz CPU (request e limit) e o request de memória, mantendo o
+limit de memória como está — ainda 100% sem restart:
 
 ```bash
-oc patch pod nginx-inplace-5b6d99df49-jzhxg -p '{"spec": {"containers": [{"name": "nginx", "resources": { "requests" :{ "cpu" : 1, "memory": "128Mi"}, "limits" :{ "cpu" : 1, "memory" : "1Gi" } } }] }}' --subresource=resize -n lab-inplace-scaling
+oc patch pod nginx-inplace-5b6d99df49-jzhxg -p '{"spec": {"containers": [{"name": "nginx", "resources": { "requests" :{ "cpu" : "100m", "memory": "128Mi"}, "limits" :{ "cpu" : "200m", "memory" : "512Mi" } } }] }}' --subresource=resize -n lab-inplace-scaling
 
 ```
 
-nginx-inplace-5b6d99df49-jzhxg = trocar pelo nome do pod em execução, verificado no Passo 2. 
+nginx-inplace-5b6d99df49-jzhxg = trocar pelo nome do pod em execução, verificado no Passo 2.
+
+Quer ver o bloqueio na prática? Repita o comando trocando `"memory" : "512Mi"` por
+`"memory" : "128Mi"` no `limits` — vai receber o erro `Forbidden` acima, com o Pod intacto (o
+patch rejeitado nem chega a ser aplicado).
 
 ###  Verificação Final:
 
