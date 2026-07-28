@@ -25,6 +25,13 @@ Com o Managed Boot Images habilitado:
 - Acesso de administrador ao cluster
 - CLI `oc` autenticado
 
+> **Testado ao vivo (4.20, ARO/Azure)**: o `oc apply` do Passo 2 é rejeitado por uma
+> `ValidatingAdmissionPolicy` no próprio cluster (`managed-bootimages-platform-check`):
+> `This feature is only supported on these platforms: GCP, AWS, VSphere`. Como o título já diz
+> 4.21+ e este cluster é 4.20, ainda não foi possível confirmar se Azure entra na lista em
+> 4.21 — **re-testar quando houver um cluster 4.21 disponível** antes de rodar este lab ao vivo
+> num ambiente Azure/ARO.
+
 ---
 
 ## Passo 1: Verificar o Estado Atual
