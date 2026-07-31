@@ -13,13 +13,10 @@ Cada diretório contém um laboratório independente com manifestos prontos para
 | 2 | [External Secrets Operator](./2-ExternalSecretsOperator/README.md) | Sincronização bidirecional de segredos entre OpenShift e Azure Key Vault |
 | 3 | [User Namespaces](./3-UserNamespaces/README.md) | Isolamento de UID/GID do container em relação ao host com `hostUsers: false` |
 | 4 | [Managed Boot Images](./4-ManagedBootImages/README.md) | Atualização automática de imagens de boot nos MachineSets — provisionamento mais rápido |
-| 5 | [Enhanced Vulnerability Management Reporting](./5-VulnerabilityManagementReporting/README.md) **(candidato a remoção)** | Novas colunas (NVD CVSS, EPSS, Advisory, Component Version) nos relatórios de vulnerabilidade do RHACS 4.11 |
-| 6 | [Policy Scope com Labels de Cluster/Namespace](./6-PolicyScopeLabels/README.md) **(candidato a remoção)** | Restringir políticas do RHACS a clusters/namespaces específicos usando seletores de label |
-| 7 | [Policy para oc debug / pods attach](./7-PolicyDebugPodAttach/README.md) **(candidato a remoção)** | Detecção e enforcement de `pods/attach` (cobrindo `oc debug`, `oc attach`) no RHACS 4.11 |
-| 8 | [Encontrando Problemas Antes de Atualizar o Cluster](./8-UpgradeRecommendPrecheck/README.md) | Uso do `oc adm upgrade recommend` (GA no OCP 4.20) para identificar riscos (ex.: PodDisruptionBudget restritivo) antes de iniciar um update do OpenShift |
-| 9 | [Verificação de Assinatura de Imagens com Sigstore](./9-SigstoreImagePolicy/README.md) | Uso do `ImagePolicy` (GA no OCP 4.20) para exigir assinatura sigstore antes do pull — bloqueia com chave errada, libera com a chave real da Red Hat |
-| 10 | [Vulnerabilidades de Workload Direto no Console do OpenShift](./10-WorkloadVulnerabilitiesConsole/README.md) | Plugin `advanced-cluster-security` do RHACS integrado ao console web do OpenShift (Security → Vulnerabilities), sem precisar de acesso separado ao Central |
-| 11 | [Mais Controle sobre o Cluster Registration Secret (CRS)](./11-CRSMoreControl/README.md) | Novos controles de **validade** (data/horas) e **max registrations** na geração do CRS via UI do Central (RHACS 4.11) |
+| 5 | [Encontrando Problemas Antes de Atualizar o Cluster](./5-UpgradeRecommendPrecheck/README.md) | Uso do `oc adm upgrade recommend` (GA no OCP 4.20) para identificar riscos (ex.: PodDisruptionBudget restritivo) antes de iniciar um update do OpenShift |
+| 6 | [Verificação de Assinatura de Imagens com Sigstore](./6-SigstoreImagePolicy/README.md) | Uso do `ImagePolicy` (GA no OCP 4.20) para exigir assinatura sigstore antes do pull — bloqueia com chave errada, libera com a chave real da Red Hat |
+| 7 | [Vulnerabilidades de Workload Direto no Console do OpenShift](./7-WorkloadVulnerabilitiesConsole/README.md) | Plugin `advanced-cluster-security` do RHACS integrado ao console web do OpenShift (Security → Vulnerabilities), sem precisar de acesso separado ao Central |
+| 8 | [Mais Controle sobre o Cluster Registration Secret (CRS)](./8-CRSMoreControl/README.md) | Novos controles de **validade** (data/horas) e **max registrations** na geração do CRS via UI do Central (RHACS 4.11) |
 
 ---
 
@@ -28,7 +25,7 @@ Cada diretório contém um laboratório independente com manifestos prontos para
 O diretório [`acm-hub/`](./acm-hub/README.md) contém as Policies do RHACM (Advanced Cluster
 Management) que rodam de verdade no hub e pré-carregam o "boilerplate" de cada lab (namespace,
 deployment, operador) em todo cluster importado, deixando só a parte que É a lição para
-aplicação manual — ver a tabela completa, os cuidados (PDB do Lab 8, secrets que não estão no
+aplicação manual — ver a tabela completa, os cuidados (PDB do Lab 5, secrets que não estão no
 git, Redirect URI do Entra ID) e o passo a passo pra importar um cluster novo no README do
 diretório.
 
@@ -84,44 +81,26 @@ oc login --token=<TOKEN> --server=<API_URL>
 │   ├── README.md
 │   └── ocp-manifests
 │       └── 01-machine-configuration.yaml
-├── 5-VulnerabilityManagementReporting
-│   ├── README.md
-│   └── acs-manifests
-│       ├── 01-namespace.yaml
-│       ├── 02-vulnerable-deployment.yaml
-│       └── 03-report-on-demand.sh
-├── 6-PolicyScopeLabels
-│   ├── README.md
-│   └── acs-manifests
-│       ├── 01-namespace-prod.yaml
-│       ├── 02-namespace-dev.yaml
-│       ├── 03-deployment-latest-tag.yaml
-│       └── 04-policy-as-code-example.yaml
-├── 7-PolicyDebugPodAttach
-│   ├── README.md
-│   └── acs-manifests
-│       ├── 01-namespace.yaml
-│       └── 02-deployment.yaml
-├── 8-UpgradeRecommendPrecheck
+├── 5-UpgradeRecommendPrecheck
 │   ├── README.md
 │   └── ocp-manifests
 │       ├── 01-namespace.yaml
 │       ├── 02-deployment.yaml
 │       ├── 03-poddisruptionbudget-blocking.yaml
 │       └── 04-poddisruptionbudget-fixed.yaml
-├── 9-SigstoreImagePolicy
+├── 6-SigstoreImagePolicy
 │   ├── README.md
 │   └── ocp-manifests
 │       ├── 01-namespace.yaml
 │       ├── 02-deployment.yaml
 │       ├── 03-imagepolicy-wrong-key.yaml
 │       └── 04-imagepolicy-redhat-key.yaml
-├── 10-WorkloadVulnerabilitiesConsole
+├── 7-WorkloadVulnerabilitiesConsole
 │   ├── README.md
 │   └── ocp-manifests
 │       ├── 01-namespace.yaml
 │       └── 02-deployment.yaml
-├── 11-CRSMoreControl
+├── 8-CRSMoreControl
 │   └── README.md
 ├── README.md
 └── acm-hub
@@ -149,7 +128,7 @@ oc login --token=<TOKEN> --server=<API_URL>
         ├── policy-lab01.yaml
         ├── policy-lab02.yaml
         ├── policy-lab03.yaml
-        ├── policy-lab08.yaml
-        ├── policy-lab09.yaml
-        └── policy-lab10.yaml
+        ├── policy-lab05.yaml
+        ├── policy-lab06.yaml
+        └── policy-lab07.yaml
 ```

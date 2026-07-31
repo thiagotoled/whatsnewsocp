@@ -1,4 +1,4 @@
-# Exercício 11: Mais Controle sobre o Cluster Registration Secret (CRS)
+# Exercício 8: Mais Controle sobre o Cluster Registration Secret (CRS)
 
 Neste laboratório, você vai gerar um **Cluster Registration Secret (CRS)** pela **UI do
 Central** usando os dois controles novos do RHACS 4.11 — **validade** e **limite de

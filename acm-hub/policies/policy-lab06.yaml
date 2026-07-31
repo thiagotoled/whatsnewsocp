@@ -1,11 +1,10 @@
-# Lab 10 - WorkloadVulnerabilitiesConsole: a lição é abrir Security > Vulnerabilities no
-# console do OCP e explorar os dados. Namespace + deployment (imagem RHEL9 real, com CVEs
-# de verdade no feed do Scanner V4) são boilerplate normal. O plugin advanced-cluster-security
-# em si é habilitado por policy-acs-secured-cluster (não é específico deste lab).
+# Lab 6 - SigstoreImagePolicy: a lição é aplicar/trocar o ImagePolicy e ver o pull
+# ser bloqueado (chave errada) ou liberado (chave real da Red Hat). Namespace + deployment
+# são boilerplate normal — o ImagePolicy fica manual de propósito.
 apiVersion: policy.open-cluster-management.io/v1
 kind: Policy
 metadata:
-  name: policy-lab10
+  name: policy-lab06
   namespace: whatsnewsocp-policies
   annotations:
     policy.open-cluster-management.io/categories: CM Configuration Management
@@ -19,7 +18,7 @@ spec:
       apiVersion: policy.open-cluster-management.io/v1
       kind: ConfigurationPolicy
       metadata:
-        name: policy-lab10
+        name: policy-lab06
       spec:
         remediationAction: enforce
         severity: low
@@ -29,25 +28,25 @@ spec:
             apiVersion: v1
             kind: Namespace
             metadata:
-              name: lab-console-vulnerabilities
+              name: lab-sigstore-policy
         - complianceType: musthave
           objectDefinition:
             apiVersion: apps/v1
             kind: Deployment
             metadata:
-              name: vuln-scan-demo
-              namespace: lab-console-vulnerabilities
+              name: demo-app
+              namespace: lab-sigstore-policy
             spec:
               replicas: 1
               selector:
                 matchLabels:
-                  app: vuln-scan-demo
+                  app: demo-app
               template:
                 metadata:
                   labels:
-                    app: vuln-scan-demo
+                    app: demo-app
                 spec:
                   containers:
-                    - name: vuln-scan-demo
-                      image: registry.redhat.io/multicluster-engine/console-mce-rhel9@sha256:da1946f16bff1343624b2afdf4df794e97b24f260ca9f272329a56bd1f73c70e
+                    - name: demo-app
+                      image: registry.access.redhat.com/ubi9/ubi-micro:latest
                       command: ["sleep", "infinity"]

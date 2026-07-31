@@ -1,4 +1,4 @@
-# Exercício 9: Verificação de Assinatura de Imagens com Sigstore (`ImagePolicy`)
+# Exercício 6: Verificação de Assinatura de Imagens com Sigstore (`ImagePolicy`)
 
 Neste laboratório, você vai usar o `ImagePolicy` (GA no OpenShift 4.20) pra exigir que imagens
 de um determinado registry/repositório estejam assinadas via **sigstore** antes de serem
@@ -59,8 +59,8 @@ Aplique o namespace e o Deployment. Ele usa a imagem `ubi9/ubi-micro`, que vamos
 nos próximos passos:
 
 ```bash
-oc apply -f 9-SigstoreImagePolicy/ocp-manifests/01-namespace.yaml
-oc apply -f 9-SigstoreImagePolicy/ocp-manifests/02-deployment.yaml
+oc apply -f 6-SigstoreImagePolicy/ocp-manifests/01-namespace.yaml
+oc apply -f 6-SigstoreImagePolicy/ocp-manifests/02-deployment.yaml
 ```
 
 Confirme que sobe normal, sem policy nenhuma no caminho:
@@ -86,7 +86,7 @@ gerada só pra este lab (`openssl ecparam -genkey -name prime256v1`) — que **n
 que assinou a imagem:
 
 ```bash
-oc apply -f 9-SigstoreImagePolicy/ocp-manifests/03-imagepolicy-wrong-key.yaml
+oc apply -f 6-SigstoreImagePolicy/ocp-manifests/03-imagepolicy-wrong-key.yaml
 ```
 
 Acompanhe o rollout nos nós (isso demora — no teste, levou alguns minutos):
@@ -143,7 +143,7 @@ update), trocando a chave pela chave de release oficial da Red Hat, publicada em
 [security.access.redhat.com/data/63405576.txt](https://security.access.redhat.com/data/63405576.txt):
 
 ```bash
-oc apply -f 9-SigstoreImagePolicy/ocp-manifests/04-imagepolicy-redhat-key.yaml
+oc apply -f 6-SigstoreImagePolicy/ocp-manifests/04-imagepolicy-redhat-key.yaml
 ```
 
 De novo, espere o rollout do `MachineConfig` terminar (`oc get mcp -w`), e force um novo pull:

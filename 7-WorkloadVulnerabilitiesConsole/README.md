@@ -1,4 +1,4 @@
-# Exercício 10: Vulnerabilidades de Workload Direto no Console do OpenShift
+# Exercício 7: Vulnerabilidades de Workload Direto no Console do OpenShift
 
 Neste laboratório, você vai ver os dados de vulnerabilidade do RHACS (Central + Scanner V4)
 aparecerem **dentro do próprio console web do OpenShift**, sem precisar sair dele nem ter
@@ -10,8 +10,7 @@ pelo `rhacs-operator` e habilitado no `Console/cluster` (`operator.openshift.io/
 ## Conceito Rápido
 
 O RHACS já expõe vulnerabilidades de imagem há muito tempo na UI própria do Central
-(**Vulnerability Management → Workload CVEs**, ver [Exercício 5](../5-VulnerabilityManagementReporting/README.md)).
-O que muda aqui é **onde** você vê esse dado: o `rhacs-operator` publica um `ConsolePlugin`
+(**Vulnerability Management → Workload CVEs**). O que muda aqui é **onde** você vê esse dado: o `rhacs-operator` publica um `ConsolePlugin`
 que, uma vez habilitado, adiciona um item **Security → Vulnerabilities** direto no menu lateral
 do console do OpenShift — a mesma tela que você já usa pra Workloads, Networking, Storage etc.
 
@@ -70,8 +69,8 @@ do `multicluster-engine` já em uso no seu hub ACM, escaneada ao vivo com **178 
 fixable**:
 
 ```bash
-oc apply -f 10-WorkloadVulnerabilitiesConsole/ocp-manifests/01-namespace.yaml
-oc apply -f 10-WorkloadVulnerabilitiesConsole/ocp-manifests/02-deployment.yaml
+oc apply -f 7-WorkloadVulnerabilitiesConsole/ocp-manifests/01-namespace.yaml
+oc apply -f 7-WorkloadVulnerabilitiesConsole/ocp-manifests/02-deployment.yaml
 ```
 
 O `command: ["sleep", "infinity"]` é só pra não tentar rodar o binário do console do MCE de

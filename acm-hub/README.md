@@ -3,7 +3,7 @@
 Este diretório contém as `Policy`/`Placement`/`PlacementBinding` do RHACM que rodam **de
 verdade** no hub (`local-cluster`, ARO em `rms36u23q91da15275.eastus.aroapp.io`) e em qualquer
 managed cluster importado (hoje: `ms35vuo5`). O restante do repositório (`1-InplacePodverticalscaling/`,
-`8-UpgradeRecommendPrecheck/`, etc.) continua igual — cada lab é aplicado manualmente com
+`5-UpgradeRecommendPrecheck/`, etc.) continua igual — cada lab é aplicado manualmente com
 `oc apply -f` pelo aluno/instrutor, exatamente como antes; a Policy só cuida do boilerplate.
 
 Sincronizado via Argo CD (`openshift-gitops-acm`, Application `politicasdoacm-local-cluster`)
@@ -24,7 +24,7 @@ Dois motivos, não um só:
 1. **Reduzir trabalho repetitivo**: parte de cada lab é só "prep" (namespace, deployment,
    operador instalado) — não é a lição em si. Isso fica pronto no cluster antes da sessão
    começar, incluindo em clusters novos assim que são importados.
-2. **Resolver o problema de timing do Lab 8**: o alerta `PodDisruptionBudgetAtLimit` só vira
+2. **Resolver o problema de timing do Lab 5**: o alerta `PodDisruptionBudgetAtLimit` só vira
    `firing` depois de **60 minutos** (`for: 60m` na regra do Prometheus). Semeando o PDB via
    Policy com bastante antecedência, ele já está `firing` quando a turma chega nesse passo.
 
@@ -44,13 +44,14 @@ Se isso for pré-criado, o aluno perde o "antes/depois" e a lição não acontec
 | 2. ExternalSecretsOperator | namespace + instalação do operador (falta `ExternalSecretsConfig`, ver nota abaixo) | SecretStore/ExternalSecret (pull e push) |
 | 3. UserNamespaces | namespace | os dois Deployments (comparação é a lição) |
 | 4. ManagedBootImages | *(nada)* | o único manifesto do lab é a lição inteira (bloqueado em Azure/ARO no 4.20, ver README do lab) |
-| 5. VulnerabilityManagementReporting | *(sem policy — candidato a remoção)* | tudo manual |
-| 6. PolicyScopeLabels | *(sem policy — candidato a remoção)* | tudo manual |
-| 7. PolicyDebugPodAttach | *(sem policy — candidato a remoção)* | tudo manual |
-| 8. UpgradeRecommendPrecheck | namespace + deployment **+ PDB restritivo (ver aviso abaixo)** | corrigir o PDB e ver o precheck refletir |
-| 9. SigstoreImagePolicy | namespace + deployment | aplicar/trocar o `ImagePolicy` (chave errada bloqueia, chave real da Red Hat libera) |
-| 10. WorkloadVulnerabilitiesConsole | namespace + deployment (imagem RHEL9 real, com CVEs de verdade) | abrir Security → Vulnerabilities no console do OCP |
-| 11. CRSMoreControl | *(nada — lab é só geração via UI, nada pra pré-criar)* | criar o CRS pela UI com Validity period + Max registrations |
+| 5. UpgradeRecommendPrecheck | namespace + deployment **+ PDB restritivo (ver aviso abaixo)** | corrigir o PDB e ver o precheck refletir |
+| 6. SigstoreImagePolicy | namespace + deployment | aplicar/trocar o `ImagePolicy` (chave errada bloqueia, chave real da Red Hat libera) |
+| 7. WorkloadVulnerabilitiesConsole | namespace + deployment (imagem RHEL9 real, com CVEs de verdade) | abrir Security → Vulnerabilities no console do OCP |
+| 8. CRSMoreControl | *(nada — lab é só geração via UI, nada pra pré-criar)* | criar o CRS pela UI com Validity period + Max registrations |
+
+Labs "Enhanced Vulnerability Management Reporting", "Policy Scope com Labels de Cluster/Namespace"
+e "Policy para oc debug / pods attach" foram removidos do repositório (eram candidatos a remoção
+desde o início, nunca tiveram Policy de boilerplate).
 
 > **Nota lab 2**: `01-operator-config.yaml`/`02-external-secrets-config.yaml` (a instalação do
 > operator e o CR `ExternalSecretsConfig`) ainda não têm policy — hoje é aplicado manualmente
@@ -88,9 +89,9 @@ no managed cluster, não só o status da Policy no hub.
 
 ---
 
-## ⚠️ Cuidado com o PDB do Lab 8 (drift/enforce)
+## ⚠️ Cuidado com o PDB do Lab 5 (drift/enforce)
 
-A `policy-lab08` tem dois `ConfigurationPolicy` dentro: um com o namespace/deployment e outro
+A `policy-lab05` tem dois `ConfigurationPolicy` dentro: um com o namespace/deployment e outro
 com o PDB restritivo. Esse segundo roda em `remediationAction: enforce` de propósito, para o PDB
 existir com bastante antecedência (fluxo do "por que" acima). Só que, em `enforce`, o ACM
 **reverte qualquer mudança manual** assim que detecta drift — confirmado ao vivo: corrigi o PDB
@@ -104,7 +105,7 @@ o PDB) — a policy vai desfazer a correção do aluno.
 pausar o namespace/deployment junto — já estão criados e estáveis nesse ponto do lab):
 
 ```bash
-oc patch policy policy-lab08 \
+oc patch policy policy-lab05 \
   -n whatsnewsocp-policies --type merge -p '{"spec":{"disabled":true}}'
 ```
 
@@ -210,9 +211,9 @@ acm-hub/
     ├── policy-lab01.yaml
     ├── policy-lab02.yaml
     ├── policy-lab03.yaml
-    ├── policy-lab08.yaml                           # 2 ConfigurationPolicy: baseline + PDB seed
-    ├── policy-lab09.yaml
-    └── policy-lab10.yaml                           # (lab 11 não tem policy — só geração via UI)
+    ├── policy-lab05.yaml                           # 2 ConfigurationPolicy: baseline + PDB seed
+    ├── policy-lab06.yaml
+    └── policy-lab07.yaml                           # (lab 8 não tem policy — só geração via UI)
 ```
 
 Sem PolicyGenerator de propósito — time não gosta, e o `ACM_OCP/Politicas` real também não usa
@@ -247,9 +248,9 @@ do repo real — sem exec plugin, sem `--enable-alpha-plugins`.
    de verdade no managed cluster — ver aviso "`Compliant` não significa pods saudáveis" acima.
 4. **Redirect URI do Entra ID**: se o cluster for Azure, adicione o Redirect URI dele no app
    registration (ver aviso acima) — sem isso o login AAD falha mesmo com a policy `Compliant`.
-5. Pelo menos **1h antes** de rodar o Lab 8 com a turma nesse cluster, confirme que a policy do
+5. Pelo menos **1h antes** de rodar o Lab 5 com a turma nesse cluster, confirme que a policy do
    PDB já foi aplicada (para o alerta ter tempo de virar `firing`) — e não esqueça o passo 7.
-6. Antes do Passo 5 do Lab 8, aplique o `oc patch ... disabled:true` da seção de aviso acima.
+6. Antes do Passo 5 do Lab 5, aplique o `oc patch ... disabled:true` da seção de aviso acima.
 
 ---
 

@@ -1,4 +1,4 @@
-# Lab 8 - UpgradeRecommendPrecheck: a lição é corrigir o PDB e ver o precheck do
+# Lab 5 - UpgradeRecommendPrecheck: a lição é corrigir o PDB e ver o precheck do
 # oc adm upgrade recommend refletir a mudança. Namespace + deployment são boilerplate normal.
 #
 # O PDB restritivo (segundo ConfigurationPolicy abaixo) precisa ser semeado ~1h antes do lab
@@ -10,7 +10,7 @@
 apiVersion: policy.open-cluster-management.io/v1
 kind: Policy
 metadata:
-  name: policy-lab08
+  name: policy-lab05
   namespace: whatsnewsocp-policies
   annotations:
     policy.open-cluster-management.io/categories: CM Configuration Management
@@ -24,7 +24,7 @@ spec:
       apiVersion: policy.open-cluster-management.io/v1
       kind: ConfigurationPolicy
       metadata:
-        name: policy-lab08-baseline
+        name: policy-lab05-baseline
       spec:
         remediationAction: enforce
         severity: low
@@ -61,7 +61,7 @@ spec:
       apiVersion: policy.open-cluster-management.io/v1
       kind: ConfigurationPolicy
       metadata:
-        name: policy-lab08-pdb-seed
+        name: policy-lab05-pdb-seed
       spec:
         remediationAction: enforce
         severity: low
