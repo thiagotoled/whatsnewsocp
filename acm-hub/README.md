@@ -2,12 +2,12 @@
 
 Este diretório contém as `Policy`/`Placement`/`PlacementBinding` do RHACM que rodam **de
 verdade** no hub (`local-cluster`, ARO em `rms36u23q91da15275.eastus.aroapp.io`) e em qualquer
-managed cluster importado (hoje: `ms35vuo5`). O restante do repositório (`1-InplacePodverticalscaling/`,
-`5-UpgradeRecommendPrecheck/`, etc.) continua igual — cada lab é aplicado manualmente com
+managed cluster importado (hoje: `ms35vuo5`). O restante do repositório ([`1-InplacePodverticalscaling/`](../1-InplacePodverticalscaling/README.md),
+[`5-UpgradeRecommendPrecheck/`](../5-UpgradeRecommendPrecheck/README.md), etc.) continua igual, cada lab é aplicado manualmente com
 `oc apply -f` pelo aluno/instrutor, exatamente como antes; a Policy só cuida do boilerplate.
 
 Sincronizado via Argo CD (`openshift-gitops-acm`, Application `politicasdoacm-local-cluster`)
-com `selfHeal: true` — **qualquer `oc apply` direto no hub que não seja commitado/pushado é
+com `selfHeal: true`. **Qualquer `oc apply` direto no hub que não seja commitado/pushado é
 revertido** assim que o Argo reconcilia. Sempre `git commit` + `git push` antes ou logo depois
 de aplicar algo aqui manualmente, e force um refresh se precisar ver o efeito na hora:
 ```bash
@@ -22,7 +22,7 @@ oc annotate application.argoproj.io -n openshift-gitops-acm politicasdoacm-local
 Dois motivos, não um só:
 
 1. **Reduzir trabalho repetitivo**: parte de cada lab é só "prep" (namespace, deployment,
-   operador instalado) — não é a lição em si. Isso fica pronto no cluster antes da sessão
+   operador instalado), não é a lição em si. Isso fica pronto no cluster antes da sessão
    começar, incluindo em clusters novos assim que são importados.
 2. **Resolver o problema de timing do Lab 5**: o alerta `PodDisruptionBudgetAtLimit` só vira
    `firing` depois de **60 minutos** (`for: 60m` na regra do Prometheus). Semeando o PDB via
@@ -47,17 +47,17 @@ Se isso for pré-criado, o aluno perde o "antes/depois" e a lição não acontec
 | 5. UpgradeRecommendPrecheck | namespace + deployment **+ PDB restritivo (ver aviso abaixo)** | corrigir o PDB e ver o precheck refletir |
 | 6. SigstoreImagePolicy | namespace + deployment | aplicar/trocar o `ImagePolicy` (chave errada bloqueia, chave real da Red Hat libera) |
 | 7. WorkloadVulnerabilitiesConsole | namespace + deployment (imagem RHEL9 real, com CVEs de verdade) | abrir Security → Vulnerabilities no console do OCP |
-| 8. CRSMoreControl | *(nada — lab é só geração via UI, nada pra pré-criar)* | criar o CRS pela UI com Validity period + Max registrations |
+| 8. CRSMoreControl | *(nada: lab é só geração via UI, nada pra pré-criar)* | criar o CRS pela UI com Validity period + Max registrations |
 
 Labs "Enhanced Vulnerability Management Reporting", "Policy Scope com Labels de Cluster/Namespace"
 e "Policy para oc debug / pods attach" foram removidos do repositório (eram candidatos a remoção
 desde o início, nunca tiveram Policy de boilerplate).
 
-> **Nota lab 2**: `01-operator-config.yaml`/`02-external-secrets-config.yaml` (a instalação do
-> operator e o CR `ExternalSecretsConfig`) ainda não têm policy — hoje é aplicado manualmente
+> **Nota lab 2**: [`01-operator-config.yaml`](../2-ExternalSecretsOperator/ocp-manifests/01-operator-config.yaml)/[`02-external-secrets-config.yaml`](../2-ExternalSecretsOperator/ocp-manifests/02-external-secrets-config.yaml) (a instalação do
+> operator e o CR `ExternalSecretsConfig`) ainda não têm policy, hoje é aplicado manualmente
 > seguindo o README do lab. O `ExternalSecretsConfig` é fácil de esquecer (o operator sobe mas
-> o controller de verdade só nasce depois dele) — confirmado ao vivo, ver
-> `2-ExternalSecretsOperator/README.md`.
+> o controller de verdade só nasce depois dele). Confirmado ao vivo, ver
+> [`2-ExternalSecretsOperator/README.md`](../2-ExternalSecretsOperator/README.md).
 
 Além do boilerplate por lab, existem policies de **bootstrap do próprio hub** (não são de
 nenhum lab específico), trazidas do repo real `ACM_OCP/Politicas` e adaptadas:
@@ -65,12 +65,12 @@ nenhum lab específico), trazidas do repo real `ACM_OCP/Politicas` e adaptadas:
 | Policy | O que faz | Onde roda |
 |---|---|---|
 | `policy-gitops-operator-install` | Instala o OpenShift GitOps operator | `local-cluster` (o hub) |
-| `policy-webterminal-install` | Instala o Web Terminal operator | **`all`** — todo managed cluster OpenShift |
-| `policy-oauth-configuration` | Configura OAuth (HTPasswd + Entra ID/AAD via OIDC) | **`azure`** — qualquer managed cluster OpenShift na Azure, hub incluído |
+| `policy-webterminal-install` | Instala o Web Terminal operator | **`all`**: todo managed cluster OpenShift |
+| `policy-oauth-configuration` | Configura OAuth (HTPasswd + Entra ID/AAD via OIDC) | **`azure`**: qualquer managed cluster OpenShift na Azure, hub incluído |
 | `policy-cluster-admin-rbac` | `ClusterRoleBinding` de `cluster-admin` pro grupo Entra ID (Object ID `6a758b5d-bbfb-498c-ae13-0cea9803de29`, mesmo grupo do oauth) + user `admin` | **`azure`** |
 | `policy-acs-operator-install` | Instala o `rhacs-operator`, sem CR nenhum (compartilhado entre Central e SecuredCluster) | **`all`** |
 | `policy-acs-central` | Namespace `stackrox` + CR `Central` | `local-cluster` (só o hub roda Central) |
-| `policy-acs-secured-cluster` | Namespace + CRS (via `fromSecret`) + CR `SecuredCluster` + plugin `advanced-cluster-security` no console | **`all`** — hub incluído (o hub também monitora a si mesmo) |
+| `policy-acs-secured-cluster` | Namespace + CRS (via `fromSecret`) + CR `SecuredCluster` + plugin `advanced-cluster-security` no console | **`all`**: hub incluído (o hub também monitora a si mesmo) |
 
 ---
 
@@ -79,12 +79,12 @@ nenhum lab específico), trazidas do repo real `ACM_OCP/Politicas` e adaptadas:
 Achado real ao importar o primeiro managed cluster (`ms35vuo5`): `policy-acs-secured-cluster`
 ficou `Compliant` imediatamente, mas **todos** os pods do namespace `stackrox` ficaram travados
 em `ContainerCreating`/`CrashLoopBackOff` por mais de 1h. Causa: o `SecuredCluster` não tinha
-`spec.centralEndpoint`, então usava o default `central.stackrox.svc:443` — um DNS que só
+`spec.centralEndpoint`, então usava o default `central.stackrox.svc:443`, um DNS que só
 resolve quando o Central roda no **mesmo** cluster. `ConfigurationPolicy` só valida que o objeto
 bate com o spec desejado, não que os pods que esse objeto gera estão de pé.
 
 **Sempre que uma Policy cria um objeto que por sua vez cria pods** (Operator CRs, principalmente),
-`Compliant` é necessário mas não suficiente — confirme também com `oc get pods -n <namespace>`
+`Compliant` é necessário mas não suficiente. Confirme também com `oc get pods -n <namespace>`
 no managed cluster, não só o status da Policy no hub.
 
 ---
@@ -94,29 +94,29 @@ no managed cluster, não só o status da Policy no hub.
 A `policy-lab05` tem dois `ConfigurationPolicy` dentro: um com o namespace/deployment e outro
 com o PDB restritivo. Esse segundo roda em `remediationAction: enforce` de propósito, para o PDB
 existir com bastante antecedência (fluxo do "por que" acima). Só que, em `enforce`, o ACM
-**reverte qualquer mudança manual** assim que detecta drift — confirmado ao vivo: corrigi o PDB
+**reverte qualquer mudança manual** assim que detecta drift. Confirmado ao vivo: corrigi o PDB
 manualmente durante um teste e a policy reverteu de volta pra `100%` sem eu perceber, porque
 não tinha desabilitado a policy antes.
 
-Isso quebra o Passo 5 do lab (o aluno aplica `04-poddisruptionbudget-fixed.yaml` para corrigir
-o PDB) — a policy vai desfazer a correção do aluno.
+Isso quebra o Passo 5 do lab (o aluno aplica [`04-poddisruptionbudget-fixed.yaml`](../5-UpgradeRecommendPrecheck/ocp-manifests/04-poddisruptionbudget-fixed.yaml) para corrigir
+o PDB), a policy vai desfazer a correção do aluno.
 
 **Antes de liberar a turma para o Passo 5**, desabilite a policy inteira (não tem problema
-pausar o namespace/deployment junto — já estão criados e estáveis nesse ponto do lab):
+pausar o namespace/deployment junto, já estão criados e estáveis nesse ponto do lab):
 
 ```bash
 oc patch policy policy-lab05 \
   -n whatsnewsocp-policies --type merge -p '{"spec":{"disabled":true}}'
 ```
 
-(Ou delete a policy — o PDB já criado continua no cluster, só para de ser reconciliado.)
+(Ou delete a policy: o PDB já criado continua no cluster, só para de ser reconciliado.)
 
 ---
 
 ## ⚠️ Cuidado com secrets reais que NÃO estão no git
 
 Este repositório é **público**. Os seguintes valores são aplicados manualmente no namespace
-`whatsnewsocp-policies` do hub e referenciados pelas Policies via hub template `fromSecret` —
+`whatsnewsocp-policies` do hub e referenciados pelas Policies via hub template `fromSecret`,
 nunca commitados:
 
 | Secret (namespace `whatsnewsocp-policies` no hub) | Usado por | Onde reaplicar se precisar |
@@ -126,7 +126,7 @@ nunca commitados:
 | `cluster-registration-secret` | `policy-acs-secured-cluster` | gerar novo CRS em Central > Clusters > Cluster registration secrets, `oc apply` no hub |
 
 Se algum desses secrets sumir (ex.: reset do namespace `whatsnewsocp-policies`), as policies que
-dependem deles ficam `NonCompliant` até você reaplicar — o `fromSecret` não falha
+dependem deles ficam `NonCompliant` até você reaplicar. O `fromSecret` não falha
 silenciosamente, mas também não recria o secret-fonte sozinho.
 
 ---
@@ -134,10 +134,10 @@ silenciosamente, mas também não recria o secret-fonte sozinho.
 ## ⚠️ Cuidado com a `policy-oauth-configuration` (Redirect URI do Entra ID)
 
 Essa policy reaproveita o **mesmo app registration** do Entra ID usado em `ACM_OCP/Politicas`
-(`openshift-oauth-jdasilve`, appId `ecb2c027-2a5f-4324-9e05-3aa819ab351e`) em todo cluster Azure
-— hub e qualquer managed cluster importado.
+(`openshift-oauth-jdasilve`, appId `ecb2c027-2a5f-4324-9e05-3aa819ab351e`) em todo cluster Azure,
+hub e qualquer managed cluster importado.
 
-**Cada cluster novo precisa do próprio Redirect URI adicionado no app registration** — a policy
+**Cada cluster novo precisa do próprio Redirect URI adicionado no app registration**. A policy
 não resolve isso sozinha (ela só cria Secrets e o `OAuth` CR). Sem o Redirect URI, a policy fica
 `Compliant` normalmente, mas o login via AAD falha com `redirect_uri_mismatch` na hora de
 autenticar de verdade:
@@ -160,7 +160,7 @@ URI do cluster: `https://oauth-openshift.apps.<domínio-do-cluster>/oauth2callba
 
 ## Estrutura
 
-Seis `Placement`s independentes, cada um com seu próprio `PlacementBinding` — de propósito, para
+Seis `Placement`s independentes, cada um com seu próprio `PlacementBinding`, de propósito, para
 que uma policy possa valer só para Azure (hub incluído), só pros clusters de lab de uma nuvem
 específica, só pros clusters de lab (qualquer nuvem), só para o hub, ou literalmente pra todo
 mundo, sem afetar os outros:
@@ -169,20 +169,20 @@ mundo, sem afetar os outros:
 |---|---|---|
 | `placement-local-cluster` | só o hub (`local-cluster=true`) | gitops-operator-install, policy-acs-central |
 | `placement-azure` | qualquer managed cluster OpenShift na Azure, **hub incluído** (`cloud=Azure` + `vendor=OpenShift`, sem exigir `whatsnewsocp-lab`) | policy-oauth-configuration, policy-cluster-admin-rbac |
-| `placement-vmware-lab-clusters` | clusters de **lab** na VMware (`whatsnewsocp-lab=true` + `cloud=VMware`) | *(nenhuma ainda — pronto pra quando divergir)* |
+| `placement-vmware-lab-clusters` | clusters de **lab** na VMware (`whatsnewsocp-lab=true` + `cloud=VMware`) | *(nenhuma ainda, pronto pra quando divergir)* |
 | `placement-all-lab-clusters` | qualquer cluster de lab, qualquer nuvem (`whatsnewsocp-lab=true`) | as 6 policies de baseline dos labs (nenhuma é específica de nuvem hoje) |
 | `placement-all` | qualquer managed cluster OpenShift, sem filtro (inclui o hub) | webterminal-install, policy-acs-operator-install, policy-acs-secured-cluster |
 
 > **Assimetria de propósito:** `placement-azure` NÃO exige `whatsnewsocp-lab` (cobre o hub, que
-> é Azure); `placement-vmware-lab-clusters` exige (só clusters de lab VMware — o hub não é
+> é Azure); `placement-vmware-lab-clusters` exige (só clusters de lab VMware, o hub não é
 > VMware). Se um dia precisar de "só clusters de **lab** que sejam Azure" (sem o hub), crie um
 > placement novo em vez de reusar o `placement-azure`.
 
 Quando uma policy de lab precisar valer só numa nuvem: tira o `subject` de
-`07-placementbinding-all-lab-clusters.yaml` e bota num `PlacementBinding` novo apontando pro
+[`07-placementbinding-all-lab-clusters.yaml`](policies/07-placementbinding-all-lab-clusters.yaml) e bota num `PlacementBinding` novo apontando pro
 `placement-vmware-lab-clusters` (ou um placement novo de "lab clusters Azure", ver nota acima).
 
-Tudo numa pasta só (`policies/`), mesmo padrão flat do `ACM_OCP/Politicas` real — sem separar
+Tudo numa pasta só ([`policies/`](policies/)), mesmo padrão flat do `ACM_OCP/Politicas` real, sem separar
 placement de policy em diretórios diferentes:
 
 ```
@@ -203,27 +203,27 @@ acm-hub/
     ├── 10-placementbinding-azure.yaml              # policy-oauth-configuration, policy-cluster-admin-rbac
     ├── policy-gitops-operator-install.yaml         # bootstrap do hub (ver tabela acima)
     ├── policy-webterminal-install.yaml             # bootstrap "all"
-    ├── policy-oauth-configuration.yaml             # bootstrap "azure" — usa fromSecret, ver aviso acima
+    ├── policy-oauth-configuration.yaml             # bootstrap "azure", usa fromSecret, ver aviso acima
     ├── policy-cluster-admin-rbac.yaml              # bootstrap "azure"
     ├── policy-acs-operator-install.yaml            # bootstrap "all"
     ├── policy-acs-central.yaml                     # bootstrap "local-cluster"
-    ├── policy-acs-secured-cluster.yaml             # bootstrap "all" — usa fromSecret, ver aviso acima
+    ├── policy-acs-secured-cluster.yaml             # bootstrap "all", usa fromSecret, ver aviso acima
     ├── policy-lab01.yaml
     ├── policy-lab02.yaml
     ├── policy-lab03.yaml
     ├── policy-lab05.yaml                           # 2 ConfigurationPolicy: baseline + PDB seed
     ├── policy-lab06.yaml
-    └── policy-lab07.yaml                           # (lab 8 não tem policy — só geração via UI)
+    └── policy-lab07.yaml                           # (lab 8 não tem policy, só geração via UI)
 ```
 
-Sem PolicyGenerator de propósito — time não gosta, e o `ACM_OCP/Politicas` real também não usa
+Sem PolicyGenerator de propósito: time não gosta, e o `ACM_OCP/Politicas` real também não usa
 ("managed manually for simplicity"). Cada policy de lab é um arquivo próprio, YAML pronto pra
 `oc apply`, mesmo padrão de `policy-apps-namespaces.yaml`/`policy-resourcequota-limitrange.yaml`
-do repo real — sem exec plugin, sem `--enable-alpha-plugins`.
+do repo real, sem exec plugin, sem `--enable-alpha-plugins`.
 
 > **Nomes curtos de propósito:** o webhook do ACM rejeita uma Policy se `namespace + name`
 > passar de 62 caracteres. Com o namespace `whatsnewsocp-policies` (21 chars), nomes descritivos
-> tipo `policy-lab01-inplace-pod-vertical-scaling-baseline` estouram o limite — por isso os
+> tipo `policy-lab01-inplace-pod-vertical-scaling-baseline` estouram o limite, por isso os
 > arquivos de lab usam só `policy-labNN` (a descrição já está no comentário no topo do arquivo).
 
 ---
@@ -231,25 +231,25 @@ do repo real — sem exec plugin, sem `--enable-alpha-plugins`.
 ## Importando um cluster novo
 
 1. **Importar** o cluster como `ManagedCluster` no hub (via console do ACM ou `clusteradm`).
-2. **Rotular** o cluster pra entrar nos Placements certos (rodar contra o **hub** — o
+2. **Rotular** o cluster pra entrar nos Placements certos (rodar contra o **hub**, o
    `local-cluster` já vem rotulado automaticamente, não precisa fazer nada pra ele). Os labels
    `cloud`/`vendor` já vêm populados automaticamente no import; só falta o `whatsnewsocp-lab`:
    ```bash
    oc label managedcluster <nome-do-cluster> whatsnewsocp-lab=true
    oc get managedcluster <nome-do-cluster> -o jsonpath='{.metadata.labels.cloud}'; echo
    ```
-   > Se o cluster for VMware/vSphere, confira o valor real do label `cloud` no comando acima —
-   > `05-placement-vmware.yaml` assume `VMware`, ajuste se vier diferente (ex.: `vSphere`).
+   > Se o cluster for VMware/vSphere, confira o valor real do label `cloud` no comando acima,
+   > [`05-placement-vmware.yaml`](policies/05-placement-vmware.yaml) assume `VMware`, ajuste se vier diferente (ex.: `vSphere`).
 3. **Conferir compliance** (pode levar alguns minutos pra propagar):
    ```bash
    oc get policy -n <nome-do-cluster>
    ```
    Pra qualquer policy que instale um Operator com CR (hoje só o ACS), confirme também os pods
-   de verdade no managed cluster — ver aviso "`Compliant` não significa pods saudáveis" acima.
+   de verdade no managed cluster, ver aviso "`Compliant` não significa pods saudáveis" acima.
 4. **Redirect URI do Entra ID**: se o cluster for Azure, adicione o Redirect URI dele no app
-   registration (ver aviso acima) — sem isso o login AAD falha mesmo com a policy `Compliant`.
+   registration (ver aviso acima). Sem isso o login AAD falha mesmo com a policy `Compliant`.
 5. Pelo menos **1h antes** de rodar o Lab 5 com a turma nesse cluster, confirme que a policy do
-   PDB já foi aplicada (para o alerta ter tempo de virar `firing`) — e não esqueça o passo 7.
+   PDB já foi aplicada (para o alerta ter tempo de virar `firing`), e não esqueça o passo 7.
 6. Antes do Passo 5 do Lab 5, aplique o `oc patch ... disabled:true` da seção de aviso acima.
 
 ---
@@ -260,14 +260,14 @@ Sempre que um lab novo entrar no repo (ou um existente mudar), a mudança é só
 
 1. Decidir a linha boilerplate/lição na tabela acima.
 2. Criar `policies/policy-labNN.yaml` com o boilerplate embutido como `object-templates`
-   (copiar o padrão de um dos labs existentes — não tem geração automática, é YAML escrito na
+   (copiar o padrão de um dos labs existentes, não tem geração automática, é YAML escrito na
    mão mesmo). Nome curto (`policy-labNN`, sem sufixo descritivo) por causa do limite de 62
    caracteres, ver nota acima.
-3. Adicionar o arquivo em `policies/kustomization.yaml` e o nome da policy como `subject` em
-   `policies/07-placementbinding-all-lab-clusters.yaml` — ou, se for específica de uma nuvem,
+3. Adicionar o arquivo em [`policies/kustomization.yaml`](policies/kustomization.yaml) e o nome da policy como `subject` em
+   [`policies/07-placementbinding-all-lab-clusters.yaml`](policies/07-placementbinding-all-lab-clusters.yaml), ou, se for específica de uma nuvem,
    criar/editar um binding próprio apontando pro `placement-vmware-lab-clusters`
-   (`05-placement-vmware.yaml`) ou, pra Azure, um placement novo de "lab clusters Azure" (o
-   `placement-azure` em `04-placement-azure.yaml` é genérico, inclui o hub — ver nota acima).
-4. `git commit` + `git push` — o Argo CD (`politicasdoacm-local-cluster`) sincroniza sozinho.
+   ([`05-placement-vmware.yaml`](policies/05-placement-vmware.yaml)) ou, pra Azure, um placement novo de "lab clusters Azure" (o
+   `placement-azure` em [`04-placement-azure.yaml`](policies/04-placement-azure.yaml) é genérico, inclui o hub, ver nota acima).
+4. `git commit` + `git push`: o Argo CD (`politicasdoacm-local-cluster`) sincroniza sozinho.
    Se precisar ver o efeito na hora em vez de esperar o próximo poll, force o refresh (comando
    no topo deste README).

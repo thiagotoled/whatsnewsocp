@@ -1,4 +1,4 @@
-# What's New in OpenShift & ACS — Laboratórios Práticos
+# What's New in OpenShift & ACS: Laboratórios Práticos
 
 Repositório com exercícios práticos sobre as novidades do **Red Hat OpenShift 4.20+** e do **Red Hat Advanced Cluster Security for Kubernetes (RHACS) 4.11**.
 Cada diretório contém um laboratório independente com manifestos prontos para aplicar no cluster.
@@ -7,16 +7,21 @@ Cada diretório contém um laboratório independente com manifestos prontos para
 
 ## Exercícios Disponíveis
 
-| # | Exercício | Descrição |
-|---|-----------|-----------|
-| 1 | [In-place Pod Vertical Scaling](./1-InplacePodverticalscaling/README.md) | Ajuste de CPU e Memória de Pods em execução **sem reinicialização** |
-| 2 | [External Secrets Operator](./2-ExternalSecretsOperator/README.md) | Sincronização bidirecional de segredos entre OpenShift e Azure Key Vault |
-| 3 | [User Namespaces](./3-UserNamespaces/README.md) | Isolamento de UID/GID do container em relação ao host com `hostUsers: false` |
-| 4 | [Managed Boot Images](./4-ManagedBootImages/README.md) | Atualização automática de imagens de boot nos MachineSets — provisionamento mais rápido |
-| 5 | [Encontrando Problemas Antes de Atualizar o Cluster](./5-UpgradeRecommendPrecheck/README.md) | Uso do `oc adm upgrade recommend` (GA no OCP 4.20) para identificar riscos (ex.: PodDisruptionBudget restritivo) antes de iniciar um update do OpenShift |
-| 6 | [Verificação de Assinatura de Imagens com Sigstore](./6-SigstoreImagePolicy/README.md) | Uso do `ImagePolicy` (GA no OCP 4.20) para exigir assinatura sigstore antes do pull — bloqueia com chave errada, libera com a chave real da Red Hat |
-| 7 | [Vulnerabilidades de Workload Direto no Console do OpenShift](./7-WorkloadVulnerabilitiesConsole/README.md) | Plugin `advanced-cluster-security` do RHACS integrado ao console web do OpenShift (Security → Vulnerabilities), sem precisar de acesso separado ao Central |
-| 8 | [Mais Controle sobre o Cluster Registration Secret (CRS)](./8-CRSMoreControl/README.md) | Novos controles de **validade** (data/horas) e **max registrations** na geração do CRS via UI do Central (RHACS 4.11) |
+| # | Exercício | Descrição | OCP | Maturidade | Tempo |
+|---|-----------|-----------|------|------------|-------|
+| 1 | [In-place Pod Vertical Scaling](./1-InplacePodverticalscaling/README.md) | Ajuste de CPU e Memória de Pods em execução **sem reinicialização** | 4.20+ | GA (4.22) | ~15 min |
+| 2 | [External Secrets Operator](./2-ExternalSecretsOperator/README.md) | Sincronização bidirecional de segredos entre OpenShift e Azure Key Vault | 4.20+ | GA | ~25 min |
+| 3 | [User Namespaces](./3-UserNamespaces/README.md) | Isolamento de UID/GID do container em relação ao host com `hostUsers: false` | 4.20+ | GA | ~10 min |
+| 4 | [Managed Boot Images](./4-ManagedBootImages/README.md) | Atualização automática de imagens de boot nos MachineSets, provisionamento mais rápido | 4.21+ | GA | ~20 min |
+| 5 | [Encontrando Problemas Antes de Atualizar o Cluster](./5-UpgradeRecommendPrecheck/README.md) | Uso do `oc adm upgrade recommend` para identificar riscos antes de iniciar um update | 4.20+ | GA | ~30 min |
+| 6 | [Verificação de Assinatura de Imagens com Sigstore](./6-SigstoreImagePolicy/README.md) | Uso do `ImagePolicy` para exigir assinatura sigstore antes do pull | 4.20+ | GA | ~20 min |
+| 7 | [Vulnerabilidades de Workload no Console do OpenShift](./7-WorkloadVulnerabilitiesConsole/README.md) | Plugin `advanced-cluster-security` do RHACS integrado ao console web do OpenShift | 4.20+ | GA | ~15 min |
+| 8 | [Mais Controle sobre o CRS](./8-CRSMoreControl/README.md) | Controles de **validade** e **max registrations** na geração do CRS (RHACS 4.11) | ACS 4.11 | GA | ~10 min |
+
+> **OCP 4.22** (lançado em 23 de junho de 2026, baseado no Kubernetes 1.35 "Timbernetes"):
+> o In-place Pod Vertical Scaling (Lab 1) passou de Tech Preview para **GA**. Features
+> adicionais do 4.22 (Perses Dashboards, Gateway API, Init Container Scanning, entre outras)
+> serão cobertas em labs futuros.
 
 ---
 
@@ -25,7 +30,7 @@ Cada diretório contém um laboratório independente com manifestos prontos para
 O diretório [`acm-hub/`](./acm-hub/README.md) contém as Policies do RHACM (Advanced Cluster
 Management) que rodam de verdade no hub e pré-carregam o "boilerplate" de cada lab (namespace,
 deployment, operador) em todo cluster importado, deixando só a parte que É a lição para
-aplicação manual — ver a tabela completa, os cuidados (PDB do Lab 5, secrets que não estão no
+aplicação manual. Ver a tabela completa, os cuidados (PDB do Lab 5, secrets que não estão no
 git, Redirect URI do Entra ID) e o passo a passo pra importar um cluster novo no README do
 diretório.
 
@@ -44,7 +49,8 @@ cd whatsnewsocp
 oc login --token=<TOKEN> --server=<API_URL>
 ```
 
-3. Acesse o diretório do exercício desejado e siga o `README.md` correspondente.
+3. Permaneça na raiz do repositório e abra o `README.md` do exercício desejado.
+   Os comandos `oc apply` usam caminhos relativos à raiz, por isso não entre nos subdiretórios.
 
 ---
 

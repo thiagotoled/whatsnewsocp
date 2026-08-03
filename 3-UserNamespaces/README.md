@@ -1,6 +1,6 @@
 # Exercício 3: User Namespaces no OpenShift 4.20+
 
-Neste laboratório, você vai entender como o **User Namespaces** isola a identidade de processos dentro de um container do usuário real no nó host. Com `hostUsers: false`, um processo que roda como `root` (UID 0) dentro do container é mapeado para um UID sem privilégio no host — reduzindo drasticamente a superfície de ataque em caso de escape de container.
+Com `hostUsers: false`, um processo que roda como `root` (UID 0) dentro do container é mapeado para um UID sem privilégio no host, reduzindo a superfície de ataque em caso de escape. Este lab compara os dois cenários na prática: um Deployment com **User Namespaces** e outro sem.
 
 ---
 
@@ -17,15 +17,21 @@ Com User Namespaces ativado, mesmo que um atacante escape do container, o proces
 
 ## Passo 1: Criar o Namespace e Aplicar os Deployments
 
+> **Nota:** os comandos `oc apply` abaixo usam caminhos relativos. Execute-os a partir da
+> raiz do repositório (`whatsnewsocp/`), onde você fez `cd` após o `git clone`.
+
 ```bash
-oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/3-UserNamespaces/ocp-manifests/01-namespace.yaml
+oc apply -f 3-UserNamespaces/ocp-manifests/01-namespace.yaml
 ```
 
-Aplique os dois Deployments — um **sem** isolamento e outro **com** User Namespaces para comparação:
+Aplique os dois Deployments: um **sem** isolamento e outro **com** User Namespaces para comparação:
 
 ```bash
-oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/3-UserNamespaces/ocp-manifests/02-deployment-no-userns.yaml
-oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/3-UserNamespaces/ocp-manifests/03-deployment-with-userns.yaml
+oc apply -f 3-UserNamespaces/ocp-manifests/02-deployment-no-userns.yaml
+```
+
+```bash
+oc apply -f 3-UserNamespaces/ocp-manifests/03-deployment-with-userns.yaml
 ```
 
 Aguarde os Pods ficarem prontos:
@@ -46,7 +52,7 @@ oc exec -n userns-lab deploy/userns-demo-host -- cat /proc/self/uid_map
 oc exec -n userns-lab deploy/userns-demo-host -- cat /proc/self/gid_map
 ```
 
-Saída esperada — UID 0 mapeado diretamente para o host:
+Saída esperada: UID 0 mapeado diretamente para o host:
 ```
 uid=0(root) gid=0(root) groups=0(root)
          0          0 4294967295
@@ -56,7 +62,7 @@ uid=0(root) gid=0(root) groups=0(root)
 O processo roda como `root` no host. Se escapar do container, tem privilégios totais no nó.
 
 > **Por que o manifesto concede SCC `anyuid`?** Sem isso, o `restricted-v2` (SCC padrão do
-> OpenShift) força um UID alto não-privilegiado mesmo com `hostUsers: true` — e o `id` mostraria
+> OpenShift) força um UID alto não-privilegiado mesmo com `hostUsers: true`, e o `id` mostraria
 > algo como `uid=1000770000`, não `uid=0(root)`. Pra comparação fazer sentido (rodar como root
 > DE VERDADE de um lado, isolado do outro), o Deployment sem User Namespaces também precisa de
 > `anyuid` + `runAsUser: 0` explícitos. Confirmado ao vivo: sem isso o "antes" do lab nunca
@@ -74,7 +80,7 @@ oc exec -n userns-lab deploy/userns-demo-isolated -- cat /proc/self/uid_map
 oc exec -n userns-lab deploy/userns-demo-isolated -- cat /proc/self/gid_map
 ```
 
-Saída esperada — UID 0 dentro do container mapeado para um UID alto no host:
+Saída esperada: UID 0 dentro do container mapeado para um UID alto no host:
 ```
 uid=0(root) gid=0(root) groups=0(root)
          0 3093037056      65536
@@ -82,10 +88,18 @@ uid=0(root) gid=0(root) groups=0(root)
 ```
 
 Dentro do container o processo se vê como `root`, mas no host ele é um UID sem privilégio
-nenhum. O segundo número do `uid_map` (o offset — `3093037056` no teste ao vivo) **não é fixo**:
+nenhum. O segundo número do `uid_map` (o offset, `3093037056` no teste ao vivo) **não é fixo**:
 o kubelet/CRI-O aloca uma faixa de 65536 UIDs por Pod a partir de um pool grande e reservado
-para User Namespaces, então o offset exato varia a cada Pod recriado — o que importa é que ele
+para User Namespaces, então o offset exato varia a cada Pod recriado. O que importa é que ele
 está bem longe de qualquer UID real do sistema, não o valor específico.
+
+---
+
+## Limpeza
+
+```bash
+oc delete namespace userns-lab
+```
 
 ---
 

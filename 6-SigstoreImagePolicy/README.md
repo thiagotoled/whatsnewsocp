@@ -2,7 +2,7 @@
 
 Neste laboratório, você vai usar o `ImagePolicy` (GA no OpenShift 4.20) pra exigir que imagens
 de um determinado registry/repositório estejam assinadas via **sigstore** antes de serem
-puxadas pelos nós — e vai ver, na prática, o CRI-O **recusar** uma imagem que não bate com a
+puxadas pelos nós, e vai ver, na prática, o CRI-O **recusar** uma imagem que não bate com a
 assinatura esperada, num escopo restrito a **um único namespace**.
 
 ---
@@ -13,33 +13,33 @@ O `ImagePolicy` (`config.openshift.io/v1`, **namespace-scoped**) e o `ClusterIma
 (mesma API, **cluster-scoped**) definem **escopos** de imagem (registry, repo ou imagem exata) e
 uma **raiz de confiança** (`rootOfTrust`) pra verificar assinaturas sigstore antes do pull:
 
-- `PublicKey` — verifica contra uma chave pública sigstore/cosign (o que este lab usa)
-- `PKI` — Bring Your Own PKI, cadeia de CA própria (Tech Preview, atrás do feature gate
+- `PublicKey`: verifica contra uma chave pública sigstore/cosign (o que este lab usa)
+- `PKI`: Bring Your Own PKI, cadeia de CA própria (Tech Preview, atrás do feature gate
   `SigstoreImageVerificationPKI`)
-- `FulcioCAWithRekor` — keyless, via Fulcio + Rekor públicos do projeto Sigstore
+- `FulcioCAWithRekor`: keyless, via Fulcio + Rekor públicos do projeto Sigstore
 
 > **`ImagePolicy` vs `ClusterImagePolicy`**: mesmo schema, diferença só no escopo. O
 > `ImagePolicy` deste lab só afeta pods do namespace `lab-sigstore-policy`. Pra exigir a mesma
 > assinatura de **qualquer** pod do cluster (incluindo operadores e outros namespaces), o
-> objeto seria `kind: ClusterImagePolicy`, sem `metadata.namespace` — o resto do YAML é
+> objeto seria `kind: ClusterImagePolicy`, sem `metadata.namespace`, o resto do YAML é
 > idêntico. Tem uma regra de precedência entre os dois: se o mesmo escopo aparecer nos dois ao
 > mesmo tempo, o `ClusterImagePolicy` sempre vence sobre o `ImagePolicy` do namespace.
 
-**Ponto importante**: a verificação **não** acontece no admission da API do Kubernetes — ela
+**Ponto importante**: a verificação **não** acontece no admission da API do Kubernetes. Ela
 acontece no **CRI-O, no nó, durante o pull da imagem**. Isso significa duas coisas na prática,
 mesmo o `ImagePolicy` sendo namespace-scoped:
 
 1. Um `oc apply` de um Deployment com imagem não-conforme **não falha na hora**. O Pod é criado
-   normalmente e só falha depois, quando o kubelet tenta puxar a imagem — o sintoma é
+   normalmente e só falha depois, quando o kubelet tenta puxar a imagem: o sintoma é
    `ImagePullBackOff` com um evento `SignatureValidationFailed`.
 2. Criar ou mudar um `ImagePolicy` **dispara um rollout de `MachineConfig`** em **todos os nós
-   do cluster** (não só onde o Pod vai rodar) — o MCO precisa reescrever a configuração de
+   do cluster** (não só onde o Pod vai rodar): o MCO precisa reescrever a configuração de
    assinatura do CRI-O em todo lugar, mesmo a policy valendo só pra um namespace. Isso leva
    minutos, não segundos.
 
 Este lab usa a imagem `registry.access.redhat.com/ubi9/ubi-micro` de propósito: ela **já vem
 assinada de verdade pela Red Hat** via sigstore. Isso permite montar os dois lados do lab (chave
-errada bloqueia, chave certa libera) **sem precisar instalar `cosign` nem assinar nada** — só
+errada bloqueia, chave certa libera) **sem precisar instalar `cosign` nem assinar nada**, só
 trocar a chave pública na policy.
 
 ---
@@ -53,13 +53,19 @@ trocar a chave pública na policy.
 
 ---
 
-## Passo 1: Linha de Base — Sem Nenhuma Policy
+## Passo 1: Linha de Base (Sem Nenhuma Policy)
 
 Aplique o namespace e o Deployment. Ele usa a imagem `ubi9/ubi-micro`, que vamos "proteger"
 nos próximos passos:
 
+> **Nota:** os comandos `oc apply` abaixo usam caminhos relativos. Execute-os a partir da
+> raiz do repositório (`whatsnewsocp/`), onde você fez `cd` após o `git clone`.
+
 ```bash
 oc apply -f 6-SigstoreImagePolicy/ocp-manifests/01-namespace.yaml
+```
+
+```bash
 oc apply -f 6-SigstoreImagePolicy/ocp-manifests/02-deployment.yaml
 ```
 
@@ -80,16 +86,16 @@ demo-app-xxxxxxxxxx-xxxxx   1/1     Running   0          20s
 
 ## Passo 2: Aplicar a Policy com uma Chave Errada
 
-O `03-imagepolicy-wrong-key.yaml` exige, só dentro do namespace `lab-sigstore-policy`, que
+O [`03-imagepolicy-wrong-key.yaml`](ocp-manifests/03-imagepolicy-wrong-key.yaml) exige, só dentro do namespace `lab-sigstore-policy`, que
 qualquer imagem de `registry.access.redhat.com/ubi9/ubi-micro` esteja assinada com uma chave EC
-gerada só pra este lab (`openssl ecparam -genkey -name prime256v1`) — que **não** é a chave real
+gerada só pra este lab (`openssl ecparam -genkey -name prime256v1`), que **não** é a chave real
 que assinou a imagem:
 
 ```bash
 oc apply -f 6-SigstoreImagePolicy/ocp-manifests/03-imagepolicy-wrong-key.yaml
 ```
 
-Acompanhe o rollout nos nós (isso demora — no teste, levou alguns minutos):
+Acompanhe o rollout nos nós (isso demora: no teste, levou alguns minutos):
 
 ```bash
 oc get mcp -w
@@ -120,7 +126,7 @@ O novo Pod deve ficar em `ImagePullBackOff`. Veja o evento:
 oc describe pod -n lab-sigstore-policy -l app=demo-app
 ```
 
-Saída esperada (resumida) — note o `SignatureValidationFailed` e as tentativas de verificação
+Saída esperada (resumida). Note o `SignatureValidationFailed` e as tentativas de verificação
 criptográfica falhando:
 
 ```
@@ -131,14 +137,14 @@ cryptographic signature verification failed: ...
 Warning  Failed  kubelet  Error: SignatureValidationFailed
 ```
 
-Isso confirma que a imagem **tem** assinatura sigstore de verdade — só não bate com a chave que
+Isso confirma que a imagem **tem** assinatura sigstore de verdade, só não bate com a chave que
 configuramos.
 
 ---
 
 ## Passo 4: Corrigir com a Chave Real da Red Hat
 
-O `04-imagepolicy-redhat-key.yaml` é o mesmo `ImagePolicy` (mesmo `name`/`namespace`, é um
+O [`04-imagepolicy-redhat-key.yaml`](ocp-manifests/04-imagepolicy-redhat-key.yaml) é o mesmo `ImagePolicy` (mesmo `name`/`namespace`, é um
 update), trocando a chave pela chave de release oficial da Red Hat, publicada em
 [security.access.redhat.com/data/63405576.txt](https://security.access.redhat.com/data/63405576.txt):
 
@@ -176,7 +182,7 @@ Normal  Pulled   kubelet  Successfully pulled image "registry.access.redhat.com/
 ## Passo 5: Limpeza
 
 Remover o `ImagePolicy` também dispara um novo rollout de `MachineConfig` (reverte o CRI-O pra
-não exigir mais assinatura nesse escopo) — espere terminar antes de considerar o cluster
+não exigir mais assinatura nesse escopo). Espere terminar antes de considerar o cluster
 "limpo":
 
 ```bash

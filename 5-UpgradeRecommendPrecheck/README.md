@@ -1,28 +1,28 @@
 # Exercício 5: Encontrando Problemas Antes de Atualizar o Cluster com `oc adm upgrade recommend`
 
-Neste laboratório, você vai usar o comando `oc adm upgrade recommend` (GA no OpenShift 4.20) para identificar, **antes de iniciar** uma atualização do cluster, riscos que a Red Hat já publicou para a sua versão-alvo — e entender por que um `PodDisruptionBudget` (PDB) restritivo, mesmo bloqueando o drain de um nó de verdade, não necessariamente aparece como um risco do `recommend` (o motivo é o ponto central deste lab).
+O `oc adm upgrade recommend` (GA no OpenShift 4.20) identifica, **antes de iniciar** uma atualização, riscos que a Red Hat publicou para a versão-alvo do seu cluster. Este lab explora como o precheck funciona na prática, e por que um `PodDisruptionBudget` (PDB) restritivo, mesmo bloqueando o drain de um nó de verdade, não necessariamente aparece como risco (o motivo é o ponto central deste lab).
 
 ---
 
 ## Conceito Rápido
 
-Até então, o `oc adm upgrade` só mostrava a versão atual, os updates disponíveis e o histórico — sem avaliar **riscos conhecidos** antes de você disparar o update.
+Até então, o `oc adm upgrade` só mostrava a versão atual, os updates disponíveis e o histórico, sem avaliar **riscos conhecidos** antes de você disparar o update.
 
 O `oc adm upgrade recommend` (Tech Preview desde o 4.18, **GA a partir do OpenShift 4.20**) resolve isso com uma funcionalidade de **precheck** embutida. Mas é importante entender **como** ela funciona, porque não é um scanner genérico de alertas do seu cluster:
 
 > **Confirmado ao vivo**: o precheck não varre "qualquer alerta firing" e casa por nome. Ele
 > compara o estado do seu cluster contra **riscos que a Red Hat já publicou** no grafo de update
-> (Cincinnati) para aquela versão-alvo específica — cada risco é uma expressão PromQL + link de
+> (Cincinnati) para aquela versão-alvo específica. Cada risco é uma expressão PromQL + link de
 > bug conhecido, visível em `oc get clusterversion version -o jsonpath='{.status.conditionalUpdates}'`.
 > Fabricamos um `PodDisruptionBudgetAtLimit` de verdade (`firing`, inclusive testado também como
-> `severity: critical`) e ele **nunca apareceu** no `recommend` — porque não havia nenhum risco
+> `severity: critical`) e ele **nunca apareceu** no `recommend`, porque não havia nenhum risco
 > registrado pela Red Hat usando essa condição para as versões candidatas deste cluster no
 > momento do teste. `ClusterOperatorDown`/`PodDisruptionBudgetAtLimit` aparecem como exemplos na
 > documentação porque, quando aquele conteúdo foi escrito, existia um risco real publicado
-> usando essas condições contra a versão testada — não porque são um par fixo sempre verificado.
+> usando essas condições contra a versão testada, não porque são um par fixo sempre verificado.
 
 Na prática, isso significa que **"no known issues relevant to this cluster" é o resultado mais
-comum e esperado** na maior parte do tempo — não um sinal de que o lab não funcionou. O fluxo
+comum e esperado** na maior parte do tempo, não um sinal de que o lab não funcionou. O fluxo
 recomendado é:
 
 1. `oc adm upgrade recommend` → descobre a versão recomendada e roda o precheck
@@ -40,7 +40,7 @@ recomendado é:
 
 > **Clusters ARO**: é comum o canal de update (`spec.channel`) vir vazio, já que a Azure
 > costuma gerenciar upgrades via `az aro update` em vez de `oc adm upgrade`. Sem canal
-> configurado, `oc adm upgrade recommend` nem chega a rodar o precheck — só avisa
+> configurado, `oc adm upgrade recommend` nem chega a rodar o precheck: só avisa
 > `Reason: NoChannel`. Configure um canal compatível com a versão atual antes do Passo 1:
 > ```bash
 > oc adm upgrade channel stable-4.20   # troque 4.20 pela minor do seu cluster
@@ -48,7 +48,7 @@ recomendado é:
 
 ---
 
-## Passo 1: Linha de Base — Comparar os Dois Comandos
+## Passo 1: Linha de Base (Comparar os Dois Comandos)
 
 Veja a saída tradicional, sem avaliação de riscos:
 
@@ -70,9 +70,15 @@ A saída inclui um resumo dos updates recomendados e, na sequência, uma seção
 
 Aplique o namespace e o Deployment que vamos usar para simular o problema:
 
+> **Nota:** os comandos `oc apply` abaixo usam caminhos relativos. Execute-os a partir da
+> raiz do repositório (`whatsnewsocp/`), onde você fez `cd` após o `git clone`.
+
 ```bash
-oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/5-UpgradeRecommendPrecheck/ocp-manifests/01-namespace.yaml
-oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/5-UpgradeRecommendPrecheck/ocp-manifests/02-deployment.yaml
+oc apply -f 5-UpgradeRecommendPrecheck/ocp-manifests/01-namespace.yaml
+```
+
+```bash
+oc apply -f 5-UpgradeRecommendPrecheck/ocp-manifests/02-deployment.yaml
 ```
 
 Confirme que os 3 Pods estão rodando:
@@ -83,15 +89,15 @@ oc get pods -n lab-upgrade-status -o wide
 
 ---
 
-## Passo 3: Introduzir o Bloqueio — PodDisruptionBudget Restritivo
+## Passo 3: Introduzir o Bloqueio (PodDisruptionBudget Restritivo)
 
-Aplique um PDB que exige **100% dos Pods disponíveis** (`minAvailable: 100%`) — ou seja, nenhum Pod pode ser removido, nem para drenar um nó durante o update:
+Aplique um PDB que exige **100% dos Pods disponíveis** (`minAvailable: 100%`), ou seja, nenhum Pod pode ser removido, nem para drenar um nó durante o update:
 
 ```bash
-oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/5-UpgradeRecommendPrecheck/ocp-manifests/03-poddisruptionbudget-blocking.yaml
+oc apply -f 5-UpgradeRecommendPrecheck/ocp-manifests/03-poddisruptionbudget-blocking.yaml
 ```
 
-Verifique o PDB criado — note `ALLOWED DISRUPTIONS: 0`:
+Verifique o PDB criado. Note `ALLOWED DISRUPTIONS: 0`:
 
 ```bash
 oc get pdb -n lab-upgrade-status
@@ -117,7 +123,7 @@ oc adm upgrade recommend
 > mostrando `no known issues relevant to this cluster` **a menos que a Red Hat tenha
 > atualmente um risco publicado usando essa condição para a sua versão-alvo** (ver o quadro no
 > topo deste README). Ou seja: este passo demonstra que o **alerta em si** funciona
-> corretamente — a "conexão" entre o alerta e o `recommend` só acontece quando existe um risco
+> corretamente. A "conexão" entre o alerta e o `recommend` só acontece quando existe um risco
 > registrado casando com ele, o que está fora do seu controle como autor do lab.
 
 Pra ver quais riscos **estão** publicados agora pra suas versões candidatas (pode ser nenhum, ou
@@ -128,10 +134,10 @@ oc get clusterversion version -o jsonpath='{.status.conditionalUpdates}' | jq .
 ```
 
 Cada entrada tem `release.version`, `risks[].name`, `risks[].message` (com link do bug) e
-`risks[].matchingRules[].promql` — a expressão exata que a Red Hat usa pra decidir se o risco se
+`risks[].matchingRules[].promql`: a expressão exata que a Red Hat usa pra decidir se o risco se
 aplica ao seu cluster.
 
-A regra `PodDisruptionBudgetAtLimit` tem `for: 60m` — ou seja, a condição
+A regra `PodDisruptionBudgetAtLimit` tem `for: 60m`, ou seja, a condição
 (`ALLOWED DISRUPTIONS: 0`) precisa persistir por **1 hora** antes do alerta sair de `pending`
 para `firing`. Pra confirmar o estado a qualquer momento, consulte o Thanos Querier
 diretamente:
@@ -159,7 +165,7 @@ Saída esperada, com `alertstate: "pending"` apontando o namespace e o PDB do la
 }
 ```
 
-Deixe o PDB restritivo aplicado e repita a consulta após ~1 hora — o `alertstate` deve mudar de
+Deixe o PDB restritivo aplicado e repita a consulta após ~1 hora: o `alertstate` deve mudar de
 `pending` para `firing`. Isso confirma que a detecção do lado do Prometheus funciona como
 esperado; **não** espere que isso sozinho faça o `oc adm upgrade recommend` listar o risco (ver
 o Passo 4).
@@ -176,15 +182,15 @@ explicitamente:
 oc adm upgrade recommend --version <versão_recomendada> --accept <NomeDoRisco>
 ```
 
-> **Não** execute o `--accept` seguido de `oc adm upgrade --to` em um cluster real sem necessidade — isso vai de fato disparar o update. Neste lab, o objetivo é apenas visualizar a sintaxe.
+> **Não** execute o `--accept` seguido de `oc adm upgrade --to` em um cluster real sem necessidade, isso vai de fato disparar o update. Neste lab, o objetivo é apenas visualizar a sintaxe.
 
 Independente de o `recommend` ter listado o PDB como risco ou não, o caminho correto na prática
-é **corrigir** o PDB antes de atualizar — um `minAvailable: 100%` bloqueia o drain do nó de
+é **corrigir** o PDB antes de atualizar: um `minAvailable: 100%` bloqueia o drain do nó de
 qualquer forma, com ou sem precheck avisando. Substitua-o por uma configuração que permite pelo
 menos 1 Pod indisponível por vez:
 
 ```bash
-oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/5-UpgradeRecommendPrecheck/ocp-manifests/04-poddisruptionbudget-fixed.yaml
+oc apply -f 5-UpgradeRecommendPrecheck/ocp-manifests/04-poddisruptionbudget-fixed.yaml
 ```
 
 Confirme que agora há disrupções permitidas:
@@ -202,14 +208,14 @@ nginx-pdb-demo-strict    N/A             1                 1                    
 
 ## Passo 6: Confirmar que o Alerta Desapareceu
 
-Consulte novamente o Thanos Querier — a métrica `ALERTS` para esse namespace/PDB deve desaparecer assim que o Prometheus reavaliar a expressão (a condição `current_healthy == desired_healthy` deixa de ser verdadeira com `maxUnavailable: 1`):
+Consulte novamente o Thanos Querier: a métrica `ALERTS` para esse namespace/PDB deve desaparecer assim que o Prometheus reavaliar a expressão (a condição `current_healthy == desired_healthy` deixa de ser verdadeira com `maxUnavailable: 1`):
 
 ```bash
 curl -sk -H "Authorization: Bearer $TOKEN" \
   "https://$HOST/api/v1/query?query=ALERTS%7Balertname%3D%22PodDisruptionBudgetAtLimit%22%2Cnamespace%3D%22lab-upgrade-status%22%7D" | jq .
 ```
 
-Resultado esperado: `"result": []` (vazio) — o alerta some assim que o Prometheus reavalia a
+Resultado esperado: `"result": []` (vazio). O alerta some assim que o Prometheus reavalia a
 condição. Rode o `recommend` mais uma vez só por hábito operacional (ver se algum outro risco
 publicado desde o início do lab passou a se aplicar):
 
