@@ -9,15 +9,12 @@ O In-place Pod Vertical Scaling permite ajustar CPU e memória de um Pod em exec
 1. Certifique-se de estar logado no seu cluster OpenShift via CLI (`oc login`).
 2. Aplique os manifestos do repositório para criar o Namespace e o Deployment:
 
-> **Nota:** os comandos `oc apply` abaixo usam caminhos relativos. Execute-os a partir da
-> raiz do repositório (`whatsnewsocp/`), onde você fez `cd` após o `git clone`.
-
 ```bash
-oc apply -f 1-InplacePodverticalscaling/ocp-manifests/01-namespace.yaml
+oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/1-InplacePodverticalscaling/ocp-manifests/01-namespace.yaml
 ```
 
 ```bash
-oc apply -f 1-InplacePodverticalscaling/ocp-manifests/02-deployment.yaml
+oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/1-InplacePodverticalscaling/ocp-manifests/02-deployment.yaml
 ```
 
 
@@ -104,14 +101,6 @@ Confirme novamente que os recursos foram alterados com sucesso e o container per
 ```bash
 oc get pod -n lab-inplace-scaling -l app=nginx-inplace -o jsonpath='{.items[0].spec.containers[0].resources}' ; echo
 oc describe pod -n lab-inplace-scaling -l app=nginx-inplace | grep -A 5 Requests
-```
-
----
-
-## Limpeza
-
-```bash
-oc delete namespace lab-inplace-scaling
 ```
 
 ---

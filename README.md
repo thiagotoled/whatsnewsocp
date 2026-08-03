@@ -49,8 +49,7 @@ cd whatsnewsocp
 oc login --token=<TOKEN> --server=<API_URL>
 ```
 
-3. Permaneça na raiz do repositório e abra o `README.md` do exercício desejado.
-   Os comandos `oc apply` usam caminhos relativos à raiz, por isso não entre nos subdiretórios.
+3. Acesse o diretório do exercício desejado e siga o `README.md` correspondente.
 
 ---
 

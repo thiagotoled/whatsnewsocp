@@ -17,21 +17,18 @@ Com User Namespaces ativado, mesmo que um atacante escape do container, o proces
 
 ## Passo 1: Criar o Namespace e Aplicar os Deployments
 
-> **Nota:** os comandos `oc apply` abaixo usam caminhos relativos. Execute-os a partir da
-> raiz do repositório (`whatsnewsocp/`), onde você fez `cd` após o `git clone`.
-
 ```bash
-oc apply -f 3-UserNamespaces/ocp-manifests/01-namespace.yaml
+oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/3-UserNamespaces/ocp-manifests/01-namespace.yaml
 ```
 
 Aplique os dois Deployments: um **sem** isolamento e outro **com** User Namespaces para comparação:
 
 ```bash
-oc apply -f 3-UserNamespaces/ocp-manifests/02-deployment-no-userns.yaml
+oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/3-UserNamespaces/ocp-manifests/02-deployment-no-userns.yaml
 ```
 
 ```bash
-oc apply -f 3-UserNamespaces/ocp-manifests/03-deployment-with-userns.yaml
+oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/3-UserNamespaces/ocp-manifests/03-deployment-with-userns.yaml
 ```
 
 Aguarde os Pods ficarem prontos:
@@ -92,14 +89,6 @@ nenhum. O segundo número do `uid_map` (o offset, `3093037056` no teste ao vivo)
 o kubelet/CRI-O aloca uma faixa de 65536 UIDs por Pod a partir de um pool grande e reservado
 para User Namespaces, então o offset exato varia a cada Pod recriado. O que importa é que ele
 está bem longe de qualquer UID real do sistema, não o valor específico.
-
----
-
-## Limpeza
-
-```bash
-oc delete namespace userns-lab
-```
 
 ---
 

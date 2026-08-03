@@ -30,16 +30,13 @@ próprio cluster/namespace, mas aponta pro mesmo Key Vault. Isso importa especia
 
 Instale o operador via OperatorHub no console do OpenShift ou via CLI:
 
-> **Nota:** os comandos `oc apply` abaixo usam caminhos relativos. Execute-os a partir da
-> raiz do repositório (`whatsnewsocp/`), onde você fez `cd` após o `git clone`.
-
 ```bash
-oc apply -f 2-ExternalSecretsOperator/ocp-manifests/01-operator-config.yaml
+oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/2-ExternalSecretsOperator/ocp-manifests/01-operator-config.yaml
 ```
 
 Aguarde o operador ficar disponível antes de prosseguir
 ```bash
-oc apply -f 2-ExternalSecretsOperator/ocp-manifests/02-external-secrets-config.yaml
+oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/2-ExternalSecretsOperator/ocp-manifests/02-external-secrets-config.yaml
 ```
 
 Confirme que o controller de verdade do ESO subiu: ele fica num namespace **separado**
@@ -60,13 +57,13 @@ sem `STATUS`/`READY` (nada acontece, sem erro nenhum aparente).
 Crie o namespace de demonstração e o Secret com as credenciais do Service Principal do Azure:
 
 ```bash
-oc apply -f 2-ExternalSecretsOperator/ocp-manifests/01-namespace.yaml
+oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/2-ExternalSecretsOperator/ocp-manifests/01-namespace.yaml
 ```
 
 Edite o arquivo [`03-azure-credentials-secret.yaml`](ocp-manifests/03-azure-credentials-secret.yaml), substituindo os placeholders `<AZURE_CLIENT_ID>` e `<AZURE_CLIENT_SECRET>` pelos valores reais, depois aplique:
 
 ```bash
-oc apply -f 2-ExternalSecretsOperator/ocp-manifests/03-azure-credentials-secret.yaml
+oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/2-ExternalSecretsOperator/ocp-manifests/03-azure-credentials-secret.yaml
 ```
 
 ---
@@ -78,7 +75,7 @@ O `SecretStore` define **como** o ESO se conecta ao Azure Key Vault. Edite o arq
 - `<AZURE_TENANT_ID>`: ID do tenant Azure
 
 ```bash
-oc apply -f 2-ExternalSecretsOperator/ocp-manifests/04-secret-store.yaml
+oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/2-ExternalSecretsOperator/ocp-manifests/04-secret-store.yaml
 ```
 
 Verifique se o `SecretStore` está pronto:
@@ -94,7 +91,7 @@ oc get secretstore azure-store -n eso-demo
 O `ExternalSecret` define **qual** segredo buscar no Key Vault e com qual nome criá-lo no OpenShift. Neste exemplo, o segredo `demo-password` do Key Vault será criado como `demo-app-secret` no namespace `eso-demo`, com atualização automática a cada 1 minuto:
 
 ```bash
-oc apply -f 2-ExternalSecretsOperator/ocp-manifests/05-external-secret.yaml
+oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/2-ExternalSecretsOperator/ocp-manifests/05-external-secret.yaml
 ```
 
 Verifique se o `ExternalSecret` sincronizou com sucesso:
@@ -111,7 +108,7 @@ oc get secret demo-app-secret -n eso-demo
 Crie um Pod que consome o segredo sincronizado como variável de ambiente:
 
 ```bash
-oc apply -f 2-ExternalSecretsOperator/ocp-manifests/06-pod-check.yaml
+oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/2-ExternalSecretsOperator/ocp-manifests/06-pod-check.yaml
 ```
 
 Verifique nos logs do Pod se o valor do segredo foi injetado corretamente:
@@ -138,7 +135,7 @@ oc new-project app
 Edite [`07-push-source-secret.yaml`](ocp-manifests/07-push-source-secret.yaml) com o valor desejado para `password`, depois aplique:
 
 ```bash
-oc apply -f 2-ExternalSecretsOperator/ocp-manifests/07-push-source-secret.yaml
+oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/2-ExternalSecretsOperator/ocp-manifests/07-push-source-secret.yaml
 ```
 
 ---
@@ -148,7 +145,7 @@ oc apply -f 2-ExternalSecretsOperator/ocp-manifests/07-push-source-secret.yaml
 Edite [`08-push-azure-credentials.yaml`](ocp-manifests/08-push-azure-credentials.yaml) com o `ClientID` e `ClientSecret` do Service Principal, depois aplique:
 
 ```bash
-oc apply -f 2-ExternalSecretsOperator/ocp-manifests/08-push-azure-credentials.yaml
+oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/2-ExternalSecretsOperator/ocp-manifests/08-push-azure-credentials.yaml
 ```
 
 ---
@@ -158,7 +155,7 @@ oc apply -f 2-ExternalSecretsOperator/ocp-manifests/08-push-azure-credentials.ya
 Edite [`09-push-secret-store.yaml`](ocp-manifests/09-push-secret-store.yaml) substituindo `<KEYVAULT_NAME>` e `<AZURE_TENANT_ID>`, depois aplique:
 
 ```bash
-oc apply -f 2-ExternalSecretsOperator/ocp-manifests/09-push-secret-store.yaml
+oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/2-ExternalSecretsOperator/ocp-manifests/09-push-secret-store.yaml
 ```
 
 ---
@@ -176,7 +173,7 @@ hífen):
 > Usar underscore falha com `BadParameter: The request URI contains an invalid name`.
 
 ```bash
-oc apply -f 2-ExternalSecretsOperator/ocp-manifests/10-push-secret.yaml
+oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/2-ExternalSecretsOperator/ocp-manifests/10-push-secret.yaml
 ```
 
 Verifique o status do `PushSecret`:
@@ -187,15 +184,6 @@ oc get pushsecret push-local-secret-to-akv -n app
 
 Acesse o Azure Key Vault e confirme que o segredo `minha-secret-na-keyvault-<seu-nome>` foi
 criado com o valor correto (ou via CLI: `az keyvault secret show --vault-name <KEYVAULT_NAME> --name minha-secret-na-keyvault-<seu-nome> --query value -o tsv`).
-
----
-
-## Limpeza
-
-```bash
-oc delete namespace eso-demo
-oc delete project app
-```
 
 ---
 

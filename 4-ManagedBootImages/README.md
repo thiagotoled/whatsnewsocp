@@ -56,11 +56,8 @@ oc get machineset -n openshift-machine-api -o jsonpath='{range .items[*]}{.metad
 
 Aplique o manifesto que habilita o gerenciamento automático para todos os MachineSets MAPI:
 
-> **Nota:** os comandos `oc apply` abaixo usam caminhos relativos. Execute-os a partir da
-> raiz do repositório (`whatsnewsocp/`), onde você fez `cd` após o `git clone`.
-
 ```bash
-oc apply -f 4-ManagedBootImages/ocp-manifests/01-machine-configuration.yaml
+oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/4-ManagedBootImages/ocp-manifests/01-machine-configuration.yaml
 ```
 
 O campo `selection.mode: All` instrui o MCO a gerenciar **todos** os MachineSets do grupo `machine.openshift.io`.
