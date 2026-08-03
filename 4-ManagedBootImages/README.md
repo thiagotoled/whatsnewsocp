@@ -1,6 +1,6 @@
 # Exercício 4: Managed Boot Images no OpenShift 4.21+
 
-Neste laboratório, você vai habilitar o gerenciamento automático de **Boot Images** via `MachineConfiguration`. Quando ativado, o Machine Config Operator (MCO) mantém a imagem de boot nos MachineSets sempre atualizada para a versão correta do RHCOS do cluster — eliminando a necessidade de atualização on-the-fly durante o provisionamento de novos nós.
+Neste laboratório, você vai habilitar o gerenciamento automático de **Boot Images** via `MachineConfiguration`. Quando ativado, o Machine Config Operator (MCO) mantém a imagem de boot nos MachineSets sempre atualizada para a versão correta do RHCOS do cluster, eliminando a necessidade de atualização on-the-fly durante o provisionamento de novos nós.
 
 ---
 
@@ -9,7 +9,7 @@ Neste laboratório, você vai habilitar o gerenciamento automático de **Boot Im
 Quando um novo nó é provisionado, a máquina precisa inicializar com a imagem de disco correta (RHCOS). Sem o gerenciamento de Boot Images:
 
 1. O nó sobe com uma imagem desatualizada
-2. Durante o boot, o MCO precisa aplicar atualizações de OS — processo demorado
+2. Durante o boot, o MCO precisa aplicar atualizações de OS, processo demorado
 3. Resultado: provisionamento mais lento (~12 minutos em testes com OCP 4.21)
 
 Com o Managed Boot Images habilitado:
@@ -29,7 +29,7 @@ Com o Managed Boot Images habilitado:
 > `ValidatingAdmissionPolicy` no próprio cluster (`managed-bootimages-platform-check`):
 > `This feature is only supported on these platforms: GCP, AWS, VSphere`. Como o título já diz
 > 4.21+ e este cluster é 4.20, ainda não foi possível confirmar se Azure entra na lista em
-> 4.21 — **re-testar quando houver um cluster 4.21 disponível** antes de rodar este lab ao vivo
+> 4.21. **Re-testar quando houver um cluster 4.21 disponível** antes de rodar este lab ao vivo
 > num ambiente Azure/ARO.
 
 ---
@@ -42,7 +42,7 @@ Verifique se o recurso `MachineConfiguration` já existe no cluster e se o `mana
 oc get machineconfiguration cluster -o yaml
 ```
 
-Se o campo `managedBootImages` estiver ausente ou vazio, o gerenciamento está desativado — o MCO **não** atualiza as imagens dos MachineSets automaticamente.
+Se o campo `managedBootImages` estiver ausente ou vazio, o gerenciamento está desativado. O MCO **não** atualiza as imagens dos MachineSets automaticamente.
 
 Veja também qual imagem está configurada atualmente nos MachineSets:
 

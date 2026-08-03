@@ -1,9 +1,9 @@
 # Exercício 7: Vulnerabilidades de Workload Direto no Console do OpenShift
 
-Neste laboratório, você vai ver os dados de vulnerabilidade do RHACS (Central + Scanner V4)
-aparecerem **dentro do próprio console web do OpenShift**, sem precisar sair dele nem ter
-credenciais separadas do Central — via o `ConsolePlugin` `advanced-cluster-security`, entregue
-pelo `rhacs-operator` e habilitado no `Console/cluster` (`operator.openshift.io/v1`).
+Os dados de vulnerabilidade do RHACS (Central + Scanner V4) podem aparecer **dentro do próprio
+console web do OpenShift**, sem credenciais separadas do Central. Isso é feito via o
+`ConsolePlugin` `advanced-cluster-security`, entregue pelo `rhacs-operator` e habilitado no
+`Console/cluster` (`operator.openshift.io/v1`). Este lab mostra como explorar essa integração.
 
 ---
 
@@ -12,7 +12,7 @@ pelo `rhacs-operator` e habilitado no `Console/cluster` (`operator.openshift.io/
 O RHACS já expõe vulnerabilidades de imagem há muito tempo na UI própria do Central
 (**Vulnerability Management → Workload CVEs**). O que muda aqui é **onde** você vê esse dado: o `rhacs-operator` publica um `ConsolePlugin`
 que, uma vez habilitado, adiciona um item **Security → Vulnerabilities** direto no menu lateral
-do console do OpenShift — a mesma tela que você já usa pra Workloads, Networking, Storage etc.
+do console do OpenShift, a mesma tela que você já usa pra Workloads, Networking, Storage etc.
 
 Isso só funciona depois de dois pré-requisitos ficarem prontos:
 
@@ -32,7 +32,7 @@ Isso só funciona depois de dois pré-requisitos ficarem prontos:
    de menu nem aparece.
 
 Neste repositório os dois já vêm resolvidos pela automação em [`acm-hub/`](../acm-hub/README.md)
-(`policy-acs-operator-install`, `policy-acs-secured-cluster` — esta última inclui o
+(`policy-acs-operator-install`, `policy-acs-secured-cluster`, esta última inclui o
 `policy-acs-console-plugin`). A lição deste lab é só a exploração da tela.
 
 ---
@@ -40,7 +40,7 @@ Neste repositório os dois já vêm resolvidos pela automação em [`acm-hub/`](
 ## Pré-requisitos
 
 - `policy-acs-secured-cluster` `Compliant` no cluster (ou `SecuredCluster` + plugin habilitados
-  manualmente) — confirme com:
+  manualmente). Confirme com:
   ```bash
   oc get securedcluster -n stackrox
   oc get console.operator.openshift.io cluster -o jsonpath='{.spec.plugins}'
@@ -52,7 +52,7 @@ Neste repositório os dois já vêm resolvidos pela automação em [`acm-hub/`](
 
 ## Passo 1: Confirmar que o Plugin Está Carregado
 
-**Administration → Cluster Settings → Configuration → Console → Console plugins** — confirme
+**Administration → Cluster Settings → Configuration → Console → Console plugins**. Confirme
 `advanced-cluster-security` como **Enabled**. Se acabou de habilitar via policy, o console pode
 levar um ou dois minutos pra recarregar o bundle do plugin (um refresh da aba resolve).
 
@@ -61,20 +61,26 @@ levar um ou dois minutos pra recarregar o bundle do plugin (um refresh da aba re
 ## Passo 2: Gerar um Workload com CVEs Reais
 
 Uma pegadinha ao montar este lab: imagens de distro **EOL** (testamos com `nginx:1.14.0`, base
-Debian 9) sempre voltam **0 CVEs** do Scanner V4 — a Debian Security Tracker parou de publicar
+Debian 9) sempre voltam **0 CVEs** do Scanner V4: a Debian Security Tracker parou de publicar
 dados pra releases fora de suporte, então não tem CVE pra casar com os pacotes, mesmo a imagem
 sendo antiga e cheia de bugs conhecidos. Pra ter dado real e reprodutível, este lab usa uma
-imagem **RHEL9/UBI** (ainda coberta pelo feed da Red Hat) — no caso, a mesma imagem do console
+imagem **RHEL9/UBI** (ainda coberta pelo feed da Red Hat), no caso, a mesma imagem do console
 do `multicluster-engine` já em uso no seu hub ACM, escaneada ao vivo com **178 CVEs / 25
 fixable**:
 
+> **Nota:** os comandos `oc apply` abaixo usam caminhos relativos. Execute-os a partir da
+> raiz do repositório (`whatsnewsocp/`), onde você fez `cd` após o `git clone`.
+
 ```bash
 oc apply -f 7-WorkloadVulnerabilitiesConsole/ocp-manifests/01-namespace.yaml
+```
+
+```bash
 oc apply -f 7-WorkloadVulnerabilitiesConsole/ocp-manifests/02-deployment.yaml
 ```
 
 O `command: ["sleep", "infinity"]` é só pra não tentar rodar o binário do console do MCE de
-verdade — a gente só precisa da imagem no nó pro Scanner analisar.
+verdade. A gente só precisa da imagem no nó pro Scanner analisar.
 
 Confirme que subiu:
 
@@ -96,7 +102,7 @@ PASS=$(oc get secret central-htpasswd -n stackrox -o jsonpath='{.data.password}'
 curl -sk -u admin:"$PASS" "https://$ROUTE/v1/images?query=Namespace%3Alab-console-vulnerabilities"
 ```
 
-Saída esperada (resumida) — `cves` deixa de ser `0`:
+Saída esperada (resumida). `cves` deixa de ser `0`:
 
 ```json
 {"images":[{"name":"registry.redhat.io/multicluster-engine/console-mce-rhel9@sha256:da19...","components":205,"cves":178,"fixableCves":25,...}]}
@@ -111,19 +117,18 @@ No menu lateral, **Security → Vulnerabilities**. Você vai ver a tela **Worklo
 
 1. Troque o filtro de projeto pra `lab-console-vulnerabilities` (ou filtre por `Name` contendo o
    CVE que você quiser).
-2. Repare nas colunas: **Images by severity** (quantas imagens são afetadas, por severidade —
+2. Repare nas colunas: **Images by severity** (quantas imagens são afetadas, por severidade,
    ícones de bandeira/seta), **Top CVSS**, **Top NVD CVSS**, **EPSS probability** (probabilidade
    de exploração ativa, dado do FIRST.org), **First discovered** (nesse cluster) e **Published**
    (data oficial do CVE).
-3. Clique num CVE — por exemplo `CVE-2026-42338` (Important, CVSS 8.1, no pacote
-   `nodejs-nodemon`/`npm`) — pra ver o painel de detalhe: descrição, versão corrigida
+3. Clique em qualquer CVE com severidade Important ou Critical pra ver o painel de detalhe: descrição, versão corrigida
    (`Fixed in`), e quais imagens/deployments especificamente são afetados.
-4. Alterne entre as abas **CVEs**, **Images** e **Deployments** no topo da tabela — a mesma
+4. Alterne entre as abas **CVEs**, **Images** e **Deployments** no topo da tabela, a mesma
    navegação por perspectiva que existe na UI do Central, só que embutida no console do OCP.
 
 O ponto central do exercício: um desenvolvedor com acesso só ao seu projeto no OpenShift agora
 enxerga as CVEs do que ele mesmo faz deploy, **sem precisar de login separado no Central** nem
-de uma role específica do RHACS — é RBAC do próprio OpenShift.
+de uma role específica do RHACS: é RBAC do próprio OpenShift.
 
 ---
 
@@ -133,10 +138,10 @@ de uma role específica do RHACS — é RBAC do próprio OpenShift.
 oc delete namespace lab-console-vulnerabilities
 ```
 
-Isso não desfaz o plugin habilitado nem o `SecuredCluster` — eles ficam pra outros labs de ACS
+Isso não desfaz o plugin habilitado nem o `SecuredCluster`. Eles ficam pra outros labs de ACS
 deste repositório. Se quiser reverter só o plugin, edite `spec.plugins` no `Console/cluster` e
-remova `advanced-cluster-security` (não recomendado enquanto a automação em `acm-hub/` continuar
-gerenciando essa policy — ela reaplicaria em segundos).
+remova `advanced-cluster-security` (não recomendado enquanto a automação em [`acm-hub/`](../acm-hub/README.md) continuar
+gerenciando essa policy: ela reaplicaria em segundos).
 
 ---
 
