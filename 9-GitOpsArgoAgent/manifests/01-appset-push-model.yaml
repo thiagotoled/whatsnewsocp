@@ -1,0 +1,60 @@
+# Modelo tradicional (push): Argo CD no hub conecta direto no managed cluster via cluster
+# secret. Mesma mecânica de qualquer app hub-spoke já feita no ACM (ex.: AppDemo).
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: appdemo-push
+  namespace: openshift-gitops
+spec:
+  generators:
+    - clusterDecisionResource:
+        configMapRef: acm-placement
+        labelSelector:
+          matchLabels:
+            cluster.open-cluster-management.io/placement: placement-argocd-agent-demo
+        requeueAfterSeconds: 180
+  template:
+    metadata:
+      name: 'appdemo-push-{{name}}'
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/thiagotoled/whatsnewsocp.git
+        targetRevision: main
+        path: 9-GitOpsArgoAgent/manifests/app
+      destination:
+        server: '{{server}}'
+        namespace: gitops-agent-demo
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: acm-placement
+  namespace: openshift-gitops
+data:
+  apiVersion: cluster.open-cluster-management.io/v1beta1
+  kind: placementdecisions
+  matchKey: clusterName
+  statusListKey: decisions
+---
+# Placement puro pra targeting de Application -- diferente do Placement usado com Policy,
+# este não precisa de PlacementBinding nenhum: o generator clusterDecisionResource já lê
+# direto a PlacementDecision que o controller do Placement gera e rotula automaticamente
+# com cluster.open-cluster-management.io/placement=<nome-do-placement>.
+apiVersion: cluster.open-cluster-management.io/v1beta1
+kind: Placement
+metadata:
+  name: placement-argocd-agent-demo
+  namespace: openshift-gitops
+spec:
+  predicates:
+    - requiredClusterSelector:
+        labelSelector:
+          matchLabels:
+            whatsnewsocp-lab: "true"

@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: appdemo
+  namespace: gitops-agent-demo
+  labels:
+    app: appdemo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: appdemo
+  template:
+    metadata:
+      labels:
+        app: appdemo
+    spec:
+      containers:
+        - name: appdemo
+          image: registry.access.redhat.com/ubi9/ubi-micro:latest
+          command: ["sleep", "infinity"]

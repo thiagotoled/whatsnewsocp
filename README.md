@@ -1,6 +1,6 @@
 # What's New in OpenShift & ACS: Laboratórios Práticos
 
-Repositório com exercícios práticos sobre as novidades do **Red Hat OpenShift 4.20+** e do **Red Hat Advanced Cluster Security for Kubernetes (RHACS) 4.11**.
+Repositório com exercícios práticos sobre as novidades do **Red Hat OpenShift 4.20+**, do **Red Hat Advanced Cluster Security for Kubernetes (RHACS) 4.11**, e do **Red Hat Advanced Cluster Management (ACM) 2.17**.
 Cada diretório contém um laboratório independente com manifestos prontos para aplicar no cluster.
 
 ---
@@ -15,13 +15,16 @@ Cada diretório contém um laboratório independente com manifestos prontos para
 | 4 | [Managed Boot Images](./4-ManagedBootImages/README.md) | Atualização automática de imagens de boot nos MachineSets, provisionamento mais rápido | 4.21+ | GA | ~20 min |
 | 5 | [Encontrando Problemas Antes de Atualizar o Cluster](./5-UpgradeRecommendPrecheck/README.md) | Uso do `oc adm upgrade recommend` para identificar riscos antes de iniciar um update | 4.20+ | GA | ~30 min |
 | 6 | [Verificação de Assinatura de Imagens com Sigstore](./6-SigstoreImagePolicy/README.md) | Uso do `ImagePolicy` para exigir assinatura sigstore antes do pull | 4.20+ | GA | ~20 min |
-| 7 | [Vulnerabilidades de Workload no Console do OpenShift](./7-WorkloadVulnerabilitiesConsole/README.md) | Plugin `advanced-cluster-security` do RHACS integrado ao console web do OpenShift | 4.20+ | GA | ~15 min |
-| 8 | [Mais Controle sobre o CRS](./8-CRSMoreControl/README.md) | Controles de **validade** e **max registrations** na geração do CRS (RHACS 4.11) | ACS 4.11 | GA | ~10 min |
+| 7 | [Vulnerabilidades no Console e Mais Controle no CRS](./7-VulnerabilitiesAndCRS/README.md) | Plugin `advanced-cluster-security` do RHACS no console do OpenShift + controles de **validade** e **max registrations** na geração do CRS (RHACS 4.11) | 4.20+ / ACS 4.11 | GA | ~25 min |
+| 8 | [GitOps Argo Agent Addon](./8-GitOpsArgoAgent/README.md) **(não validado ao vivo)** | Modelo **pull** de GitOps multicluster do ACM 2.17 — managed cluster conecta no hub, não o contrário | ACM 2.17 | Tech Preview | ~35 min |
+| 9 | [Dashboards com o Red Hat Build of Perses](./9-GrafanaToPerses/README.md) **(não validado ao vivo)** | Cluster Observability Operator 1.5: dashboards como objeto Kubernetes, embutidos no console do OCP — com importação de dashboards do Grafana como bônus | COO 1.5 | GA | ~30 min |
+| 10 | [OLM v1 — `ClusterExtension`](./10-OLMv1ClusterExtension/README.md) **(não validado ao vivo)** | `ServiceAccount`+RBAC explícito em vez de permissões automáticas, upgrade só editando `spec.source.catalog.version` | 4.18+ | GA | ~20 min |
+| 11 | [Helm Chart Direto de URL OCI/HTTPS no Console](./11-HelmConsoleOCI/README.md) **(não validado ao vivo)** | Instala um Helm chart sem cadastrar repositório antes — cola a URL `oci://` ou `https://` na hora | 4.22 | GA | ~15 min |
 
 > **OCP 4.22** (lançado em 23 de junho de 2026, baseado no Kubernetes 1.35 "Timbernetes"):
-> o In-place Pod Vertical Scaling (Lab 1) passou de Tech Preview para **GA**. Features
-> adicionais do 4.22 (Perses Dashboards, Gateway API, Init Container Scanning, entre outras)
-> serão cobertas em labs futuros.
+> o In-place Pod Vertical Scaling (Lab 1) passou de Tech Preview para **GA**. Labs 8-11 cobrem
+> outras novidades do 4.20-4.22 e do ACM 2.17/RHACS 4.11 (GitOps pull model, Perses, OLM v1,
+> Helm Console) — marcados **"não validado ao vivo"** até serem testados num cluster real.
 
 ---
 
@@ -107,6 +110,31 @@ oc login --token=<TOKEN> --server=<API_URL>
 │       └── 02-deployment.yaml
 ├── 8-CRSMoreControl
 │   └── README.md
+├── 9-GitOpsArgoAgent
+│   ├── README.md
+│   └── manifests
+│       ├── 01-appset-push-model.yaml
+│       ├── 02-application-pull-model.yaml
+│       └── app
+│           └── deployment.yaml
+├── 10-GrafanaToPerses
+│   ├── README.md
+│   └── manifests
+│       ├── 01-uiplugin-monitoring.yaml
+│       ├── 02-perses-global-datasource.yaml
+│       ├── 03-namespace.yaml
+│       ├── 04-grafana-dashboard-configmap.yaml
+│       └── worker-vcpu-dashboard-grafana.json
+├── 11-OLMv1ClusterExtension
+│   ├── README.md
+│   └── manifests
+│       ├── 01-namespace.yaml
+│       ├── 02-serviceaccount-rbac.yaml
+│       └── 03-clusterextension.yaml
+├── 12-HelmConsoleOCI
+│   ├── README.md
+│   └── manifests
+│       └── 01-helmchartrepository.yaml
 ├── README.md
 └── acm-hub
     ├── README.md

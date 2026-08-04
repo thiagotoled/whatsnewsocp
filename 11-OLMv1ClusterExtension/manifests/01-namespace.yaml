@@ -1,0 +1,7 @@
+# Nome diferente de "rhacs-operator" de propósito -- esse já é usado pela instalação OLM
+# clássica deste mesmo repositório (acm-hub/policies/policy-acs-operator-install.yaml). Os dois
+# convivem no mesmo cluster, em namespaces separados, sem conflito.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: rhacs-operator-v1-demo

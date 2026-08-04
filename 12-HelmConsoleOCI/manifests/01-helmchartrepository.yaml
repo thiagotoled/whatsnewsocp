@@ -1,0 +1,10 @@
+# Fluxo clássico (desde o 4.8): alguém precisa cadastrar o repositório ANTES de qualquer chart
+# aparecer no catálogo do console -- é o que o Passo 2 do lab dispensa.
+apiVersion: helm.openshift.io/v1beta1
+kind: HelmChartRepository
+metadata:
+  name: redhat-chart-repo
+spec:
+  name: redhat-chart-repo
+  connectionConfig:
+    url: https://redhat-developer.github.io/redhat-helm-charts

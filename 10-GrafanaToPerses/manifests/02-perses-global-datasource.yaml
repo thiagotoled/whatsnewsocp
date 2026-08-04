@@ -1,0 +1,29 @@
+# IMPORTANTE: pra puxar métricas de frota do ACM (acm_managed_cluster_labels,
+# kube_node_status_capacity de TODOS os managed clusters) o datasource não é o Thanos Querier
+# comum do monitoramento da plataforma (thanos-querier.openshift-monitoring.svc) -- é o
+# rbac-query-proxy do próprio ACM Observability, o mesmo endpoint que o Grafana do ACM já usa
+# hoje. Confirmado o nome do serviço (docs oficiais); porta/TLS exatos ainda não validados ao
+# vivo -- ajuste depois de rodar `oc get svc rbac-query-proxy -n open-cluster-management-observability`.
+apiVersion: perses.dev/v1alpha2
+kind: PersesGlobalDatasource
+metadata:
+  name: acm-rbac-query-proxy-datasource
+spec:
+  config:
+    display:
+      name: "ACM Observability (rbac-query-proxy)"
+    default: true
+    plugin:
+      kind: "PrometheusDatasource"
+      spec:
+        proxy:
+          kind: HTTPProxy
+          spec:
+            url: https://rbac-query-proxy.open-cluster-management-observability.svc.cluster.local:8080
+            secret: acm-rbac-query-proxy-datasource-secret
+  client:
+    tls:
+      enable: true
+      caCert:
+        type: file
+        certPath: /ca/service-ca.crt
