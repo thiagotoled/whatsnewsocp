@@ -46,8 +46,7 @@ Se isso for pré-criado, o aluno perde o "antes/depois" e a lição não acontec
 | 4. ManagedBootImages | *(nada)* | o único manifesto do lab é a lição inteira (bloqueado em Azure/ARO no 4.20, ver README do lab) |
 | 5. UpgradeRecommendPrecheck | namespace + deployment **+ PDB restritivo (ver aviso abaixo)** | corrigir o PDB e ver o precheck refletir |
 | 6. SigstoreImagePolicy | namespace + deployment | aplicar/trocar o `ImagePolicy` (chave errada bloqueia, chave real da Red Hat libera) |
-| 7. WorkloadVulnerabilitiesConsole | namespace + deployment (imagem RHEL9 real, com CVEs de verdade) | abrir Security → Vulnerabilities no console do OCP |
-| 8. CRSMoreControl | *(nada: lab é só geração via UI, nada pra pré-criar)* | criar o CRS pela UI com Validity period + Max registrations |
+| 7. VulnerabilitiesAndCRS | namespace + deployment (imagem RHEL9 real, com CVEs de verdade) — só a Parte 1 (console) | Parte 1: abrir Security → Vulnerabilities no console do OCP. Parte 2 (CRS): *(nada pra pré-criar)* — criar o CRS pela UI com Validity period + Max registrations |
 
 Labs "Enhanced Vulnerability Management Reporting", "Policy Scope com Labels de Cluster/Namespace"
 e "Policy para oc debug / pods attach" foram removidos do repositório (eram candidatos a remoção
@@ -213,7 +212,7 @@ acm-hub/
     ├── policy-lab03.yaml
     ├── policy-lab05.yaml                           # 2 ConfigurationPolicy: baseline + PDB seed
     ├── policy-lab06.yaml
-    └── policy-lab07.yaml                           # (lab 8 não tem policy, só geração via UI)
+    └── policy-lab07.yaml                           # Parte 1 (console); Parte 2 (CRS) não tem policy — só geração via UI
 ```
 
 Sem PolicyGenerator de propósito: time não gosta, e o `ACM_OCP/Politicas` real também não usa

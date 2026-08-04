@@ -1,4 +1,4 @@
-# Exercício 11: OLM v1 — Instalando um Operator via `ClusterExtension`
+# Exercício 10: OLM v1 — Instalando um Operator via `ClusterExtension`
 
 > **Ainda não validado ao vivo** — escrito com base na documentação oficial e no código-fonte
 > real do `operator-framework/operator-controller` (conferido diretamente no GitHub, já que a
@@ -61,8 +61,8 @@ Diferente do `Subscription`, você precisa declarar quem tem permissão pra inst
 **antes** de criar o `ClusterExtension`:
 
 ```bash
-oc apply -f 11-OLMv1ClusterExtension/manifests/01-namespace.yaml
-oc apply -f 11-OLMv1ClusterExtension/manifests/02-serviceaccount-rbac.yaml
+oc apply -f 10-OLMv1ClusterExtension/manifests/01-namespace.yaml
+oc apply -f 10-OLMv1ClusterExtension/manifests/02-serviceaccount-rbac.yaml
 ```
 
 > **Isto é `cluster-admin`, só pra fins didáticos.** Em produção, o certo é derivar a permissão
@@ -74,7 +74,7 @@ oc apply -f 11-OLMv1ClusterExtension/manifests/02-serviceaccount-rbac.yaml
 ## Passo 3: Criar o `ClusterExtension`
 
 ```bash
-oc apply -f 11-OLMv1ClusterExtension/manifests/03-clusterextension.yaml
+oc apply -f 10-OLMv1ClusterExtension/manifests/03-clusterextension.yaml
 oc get clusterextension rhacs-operator-v1 -o yaml
 ```
 
@@ -127,9 +127,9 @@ motivo exato no `status.conditions`, **antes** de qualquer coisa quebrar de verd
 ## Passo 6: Limpeza
 
 ```bash
-oc delete -f 11-OLMv1ClusterExtension/manifests/03-clusterextension.yaml
-oc delete -f 11-OLMv1ClusterExtension/manifests/02-serviceaccount-rbac.yaml
-oc delete -f 11-OLMv1ClusterExtension/manifests/01-namespace.yaml
+oc delete -f 10-OLMv1ClusterExtension/manifests/03-clusterextension.yaml
+oc delete -f 10-OLMv1ClusterExtension/manifests/02-serviceaccount-rbac.yaml
+oc delete -f 10-OLMv1ClusterExtension/manifests/01-namespace.yaml
 ```
 
 ---

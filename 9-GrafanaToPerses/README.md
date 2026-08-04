@@ -1,4 +1,4 @@
-# Exercício 10: Dashboards com o Red Hat Build of Perses (Cluster Observability Operator)
+# Exercício 9: Dashboards com o Red Hat Build of Perses (Cluster Observability Operator)
 
 > **Ainda não validado ao vivo** — escrito com base na documentação oficial (Red Hat Developer,
 > docs do Cluster Observability Operator e docs de Observability do ACM), pendente de teste num
@@ -70,8 +70,8 @@ dashboard **suportado**, com integração nativa no console do OCP:
 ## Passo 1: Habilitar o Perses no Console (instrutor, uma vez só)
 
 ```bash
-oc apply -f 10-GrafanaToPerses/manifests/01-uiplugin-monitoring.yaml
-oc apply -f 10-GrafanaToPerses/manifests/03-namespace.yaml
+oc apply -f 9-GrafanaToPerses/manifests/01-uiplugin-monitoring.yaml
+oc apply -f 9-GrafanaToPerses/manifests/03-namespace.yaml
 ```
 
 Confirme no console do hub: **Observe → Dashboards (Perses)** deve aparecer no menu lateral em
@@ -82,7 +82,7 @@ alguns minutos.
 ## Passo 2: Registrar a Fonte de Dados Global do ACM (instrutor, uma vez só)
 
 ```bash
-oc apply -f 10-GrafanaToPerses/manifests/02-perses-global-datasource.yaml
+oc apply -f 9-GrafanaToPerses/manifests/02-perses-global-datasource.yaml
 ```
 
 > **Isso não é o Thanos Querier comum.** Pra puxar `acm_managed_cluster_labels` e métricas de
@@ -112,7 +112,7 @@ Converta o dashboard completo (6 painéis — `manifests/worker-vcpu-dashboard-g
 JSON puro por trás do `ConfigMap` do Passo 3) com o `percli`:
 
 ```bash
-percli migrate -f 10-GrafanaToPerses/manifests/worker-vcpu-dashboard-grafana.json --online -o yaml \
+percli migrate -f 9-GrafanaToPerses/manifests/worker-vcpu-dashboard-grafana.json --online -o yaml \
   > worker-vcpu-perses-<seu-nome>.yaml
 ```
 
@@ -167,8 +167,8 @@ oc delete persesdashboard worker-vcpu-perses-<seu-nome> -n lab-perses-demo
 
 ```bash
 oc delete namespace lab-perses-demo
-oc delete -f 10-GrafanaToPerses/manifests/02-perses-global-datasource.yaml
-oc delete -f 10-GrafanaToPerses/manifests/01-uiplugin-monitoring.yaml
+oc delete -f 9-GrafanaToPerses/manifests/02-perses-global-datasource.yaml
+oc delete -f 9-GrafanaToPerses/manifests/01-uiplugin-monitoring.yaml
 ```
 
 ---

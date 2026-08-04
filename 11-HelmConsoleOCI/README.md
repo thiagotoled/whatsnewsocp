@@ -1,4 +1,4 @@
-# Exercício 12: Instalar Helm Chart Direto de uma URL OCI/HTTPS no Console (4.22)
+# Exercício 11: Instalar Helm Chart Direto de uma URL OCI/HTTPS no Console (4.22)
 
 > **Ainda não validado ao vivo** — escrito com base no conteúdo oficial do "What's New in
 > OpenShift 4.22" (RFE-7114, RFE-7965) e na documentação de Helm charts do console. Pendente de
@@ -43,7 +43,7 @@ O 4.22 adiciona três coisas (RFE-7114 e RFE-7965):
 Cadastre um repositório Helm público conhecido:
 
 ```bash
-oc apply -f 12-HelmConsoleOCI/manifests/01-helmchartrepository.yaml
+oc apply -f 11-HelmConsoleOCI/manifests/01-helmchartrepository.yaml
 ```
 
 No console: **Developer perspective → +Add → Helm Chart** — o catálogo mostra os charts desse
@@ -100,7 +100,7 @@ e senha — o console agora grava isso como `basicAuthConfig` no `Secret` refere
 
 ```bash
 helm uninstall <release-name> -n <seu-namespace>
-oc delete -f 12-HelmConsoleOCI/manifests/01-helmchartrepository.yaml
+oc delete -f 11-HelmConsoleOCI/manifests/01-helmchartrepository.yaml
 ```
 
 ---

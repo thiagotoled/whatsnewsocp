@@ -1,4 +1,4 @@
-# Exercício 9: GitOps Argo Agent Addon (ACM 2.17)
+# Exercício 8: GitOps Argo Agent Addon (ACM 2.17)
 
 > **Ainda não validado ao vivo** — escrito com base na documentação oficial (Red Hat
 > Developer + `open-cluster-management-io/ocm`), pendente de teste num hub ACM 2.17 real.
@@ -71,7 +71,7 @@ mecânica de qualquer app hub-spoke tradicional no ACM — cluster secret + Argo
 direto no managed cluster):
 
 ```bash
-oc apply -f 9-GitOpsArgoAgent/manifests/01-appset-push-model.yaml
+oc apply -f 8-GitOpsArgoAgent/manifests/01-appset-push-model.yaml
 oc get applicationset appdemo-push -n openshift-gitops
 oc get application -n openshift-gitops -l app.kubernetes.io/instance=appdemo-push
 ```
@@ -132,7 +132,7 @@ principal com o nome do cluster como query param (`{{name}}`, resolvido automati
 cluster):
 
 ```bash
-oc apply -f 9-GitOpsArgoAgent/manifests/02-application-pull-model.yaml
+oc apply -f 8-GitOpsArgoAgent/manifests/02-application-pull-model.yaml
 oc get application -n openshift-gitops -l app.kubernetes.io/instance=appdemo-pull
 ```
 
@@ -178,8 +178,8 @@ oc --context <managed-cluster> delete namespace gitops-agent-demo
 valem pra turma inteira):
 
 ```bash
-oc delete -f 9-GitOpsArgoAgent/manifests/01-appset-push-model.yaml
-oc delete -f 9-GitOpsArgoAgent/manifests/02-application-pull-model.yaml
+oc delete -f 8-GitOpsArgoAgent/manifests/01-appset-push-model.yaml
+oc delete -f 8-GitOpsArgoAgent/manifests/02-application-pull-model.yaml
 clusteradm uninstall hub-addon --names argocd-agent
 ```
 

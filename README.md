@@ -103,21 +103,19 @@ oc login --token=<TOKEN> --server=<API_URL>
 │       ├── 02-deployment.yaml
 │       ├── 03-imagepolicy-wrong-key.yaml
 │       └── 04-imagepolicy-redhat-key.yaml
-├── 7-WorkloadVulnerabilitiesConsole
+├── 7-VulnerabilitiesAndCRS
 │   ├── README.md
 │   └── ocp-manifests
 │       ├── 01-namespace.yaml
 │       └── 02-deployment.yaml
-├── 8-CRSMoreControl
-│   └── README.md
-├── 9-GitOpsArgoAgent
+├── 8-GitOpsArgoAgent
 │   ├── README.md
 │   └── manifests
 │       ├── 01-appset-push-model.yaml
 │       ├── 02-application-pull-model.yaml
 │       └── app
 │           └── deployment.yaml
-├── 10-GrafanaToPerses
+├── 9-GrafanaToPerses
 │   ├── README.md
 │   └── manifests
 │       ├── 01-uiplugin-monitoring.yaml
@@ -125,13 +123,13 @@ oc login --token=<TOKEN> --server=<API_URL>
 │       ├── 03-namespace.yaml
 │       ├── 04-grafana-dashboard-configmap.yaml
 │       └── worker-vcpu-dashboard-grafana.json
-├── 11-OLMv1ClusterExtension
+├── 10-OLMv1ClusterExtension
 │   ├── README.md
 │   └── manifests
 │       ├── 01-namespace.yaml
 │       ├── 02-serviceaccount-rbac.yaml
 │       └── 03-clusterextension.yaml
-├── 12-HelmConsoleOCI
+├── 11-HelmConsoleOCI
 │   ├── README.md
 │   └── manifests
 │       └── 01-helmchartrepository.yaml

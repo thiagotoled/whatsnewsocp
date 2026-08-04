@@ -1,7 +1,8 @@
-# Lab 7 - WorkloadVulnerabilitiesConsole: a lição é abrir Security > Vulnerabilities no
-# console do OCP e explorar os dados. Namespace + deployment (imagem RHEL9 real, com CVEs
+# Lab 7 - VulnerabilitiesAndCRS, Parte 1 (Console): a lição é abrir Security > Vulnerabilities
+# no console do OCP e explorar os dados. Namespace + deployment (imagem RHEL9 real, com CVEs
 # de verdade no feed do Scanner V4) são boilerplate normal. O plugin advanced-cluster-security
-# em si é habilitado por policy-acs-secured-cluster (não é específico deste lab).
+# em si é habilitado por policy-acs-secured-cluster (não é específico deste lab). A Parte 2
+# (CRS) não tem policy — é geração pela UI do Central, sem manifesto pra aplicar.
 apiVersion: policy.open-cluster-management.io/v1
 kind: Policy
 metadata:
