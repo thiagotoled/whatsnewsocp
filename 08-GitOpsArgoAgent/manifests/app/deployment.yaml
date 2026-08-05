@@ -5,6 +5,8 @@ metadata:
   namespace: gitops-agent-demo
   labels:
     app: appdemo
+  annotations:
+    test-run: "rbac-fixed"
 spec:
   replicas: 1
   selector:
