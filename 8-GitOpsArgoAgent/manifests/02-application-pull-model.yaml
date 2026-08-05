@@ -1,18 +1,15 @@
 # Modelo pull (Argo CD Agent): mesmo ApplicationSet/Placement do modelo push (reusa o
-# placement-argocd-agent-demo do 01-appset-push-model.yaml), só muda o destination.server --
-# em vez do endpoint da API de cada managed cluster ({{server}}), aponta pro load balancer do
-# principal (roda no hub), com o nome do cluster como query param. Quem efetivamente puxa e
-# aplica é o agent rodando NO managed cluster, não o Argo CD do hub.
+# placement-argocd-agent-demo do 01-appset-push-model.yaml), só muda o destination -- em vez
+# do endpoint da API de cada managed cluster ({{server}}), usa destination.name: '{{name}}'.
+# Confirmado no guia oficial (RHACM 2.17 GitOps, seção 1.11): em modo agent, o principal usa
+# "destination-based mapping" (destinationBasedMapping: true na ArgoCD do hub, ver
+# 03-argocd-agent-mode.yaml) para rotear pelo NOME do managed cluster, sem load balancer nem
+# query param nenhum -- diferente do que uma primeira pesquisa (sem a doc oficial) sugeria.
+# Quem efetivamente puxa e aplica é o agent rodando NO managed cluster, não o Argo CD do hub.
 #
-# Troque <PRINCIPAL_LB_HOST> pelo endereço do LoadBalancer criado pelo addon (oc get svc -n
-# argocd | grep principal) -- é o mesmo pra toda a turma, não precisa de valor por aluno.
 # {{name}} já resolve sozinho pro nome de CADA managed cluster que casar com o Placement, então
 # uma turma inteira aplicando este mesmo ApplicationSet gera uma Application por aluno, sem
 # colisão de nome.
-#
-# Mesmo namespace (openshift-gitops) e mesmo acm-placement/Placement do 01-appset-push-model.yaml
-# de propósito -- não testado ao vivo ainda se o Argo CD Agent exige um namespace específico
-# (`argocd`) pra rotear Applications pro agent certo; confirme isso na prática antes de assumir.
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
@@ -36,7 +33,7 @@ spec:
         targetRevision: main
         path: 8-GitOpsArgoAgent/manifests/app
       destination:
-        server: 'https://<PRINCIPAL_LB_HOST>:443?agentName={{name}}'
+        name: '{{name}}'
         namespace: gitops-agent-demo
       syncPolicy:
         automated:

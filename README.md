@@ -113,6 +113,11 @@ oc login --token=<TOKEN> --server=<API_URL>
 │   └── manifests
 │       ├── 01-appset-push-model.yaml
 │       ├── 02-application-pull-model.yaml
+│       ├── 03-argocd-agent-mode.yaml
+│       ├── 04-appproject-wildcard.yaml
+│       ├── 05-managedclustersetbinding.yaml
+│       ├── 06-gitopscluster-agent.yaml
+│       ├── 07-agent-view-clusterrolebinding.yaml
 │       └── app
 │           └── deployment.yaml
 ├── 9-GrafanaToPerses

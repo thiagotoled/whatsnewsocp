@@ -1,0 +1,10 @@
+# Sem essa binding, o controller de Placement não acha nenhum managed cluster -- confirmado no
+# guia oficial (RHACM 2.17 GitOps, seção 1.14). Ajuste clusterSet se o seu hub usar um nome
+# diferente de "default" (confira com: oc get managedclusterset).
+apiVersion: cluster.open-cluster-management.io/v1beta2
+kind: ManagedClusterSetBinding
+metadata:
+  name: default
+  namespace: openshift-gitops
+spec:
+  clusterSet: default

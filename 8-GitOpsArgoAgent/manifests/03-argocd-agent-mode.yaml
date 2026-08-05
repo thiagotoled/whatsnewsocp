@@ -1,0 +1,26 @@
+# Substitui o ArgoCD (openshift-gitops) por uma configuração compatível com o modo Agent --
+# confirmado no guia oficial (RHACM 2.17 GitOps, seção 1.14 "Configuring subscriptions and
+# resources for Argo CD"). Isso desliga o controller tradicional (controller.enabled: false) e
+# liga o principal do Argo CD Agent com autenticação mTLS. Só no hub, uma vez -- não se aplica
+# em managed clusters.
+apiVersion: argoproj.io/v1beta1
+kind: ArgoCD
+metadata:
+  name: openshift-gitops
+  namespace: openshift-gitops
+spec:
+  controller:
+    enabled: false
+  sourceNamespaces:
+    - '*'
+  argoCDAgent:
+    principal:
+      enabled: true
+      destinationBasedMapping: true
+      auth: "mtls:CN=system:open-cluster-management:cluster:([^:]+):addon:gitops-addon:agent:gitops-addon-agent"
+      namespace:
+        allowedNamespaces:
+          - '*'
+      server:
+        route:
+          enabled: true

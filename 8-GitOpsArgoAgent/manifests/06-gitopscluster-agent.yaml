@@ -1,0 +1,24 @@
+# Este é o objeto que de fato liga o addon -- não é clusteradm install hub-addon (isso não
+# existe no fluxo documentado oficialmente pro ACM 2.17). O controller do GitOpsCluster faz a
+# gestão automática de PKI e implanta o Argo CD Agent em cada managed cluster selecionado pelo
+# Placement referenciado. Confirmado no guia oficial (RHACM 2.17 GitOps, seção 1.11).
+# Reusa o mesmo Placement do ApplicationSet (01-appset-push-model.yaml) -- os mesmos clusters
+# rotulados whatsnewsocp-lab=true recebem o agent.
+apiVersion: apps.open-cluster-management.io/v1beta1
+kind: GitOpsCluster
+metadata:
+  name: gitops-agent-clusters
+  namespace: openshift-gitops
+spec:
+  argoServer:
+    argoNamespace: openshift-gitops
+  placementRef:
+    kind: Placement
+    apiVersion: cluster.open-cluster-management.io/v1beta1
+    name: placement-argocd-agent-demo
+    namespace: openshift-gitops
+  gitopsAddon:
+    enabled: true
+    argoCDAgent:
+      enabled: true
+      mode: managed
