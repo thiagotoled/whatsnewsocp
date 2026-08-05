@@ -124,7 +124,8 @@ oc login --token=<TOKEN> --server=<API_URL>
 │       ├── 05-appproject-wildcard.yaml
 │       ├── 06-gitopscluster-agent.yaml
 │       ├── 07-agent-view-rbac-policy.yaml
-│       ├── 08-appset-pull.yaml
+│       ├── 08-agent-write-rbac-policy.yaml
+│       ├── 09-appset-pull.yaml
 │       └── app
 │           └── deployment.yaml
 ├── 09-GrafanaToPerses

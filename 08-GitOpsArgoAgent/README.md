@@ -163,13 +163,25 @@ oc apply -f 08-GitOpsArgoAgent/manifests/06-gitopscluster-agent.yaml
 > acontece às vezes), reinicie o controller:
 > `oc delete pod -n open-cluster-management -l app=multicluster-integrations`
 
-### 3e. RBAC `view` pro agent
+### 3e. RBAC `view` pro agent (leitura)
 
 ```bash
 oc apply -f 08-GitOpsArgoAgent/manifests/07-agent-view-rbac-policy.yaml
 ```
 
-### 3f. Verificar
+### 3f. RBAC de escrita pro Argo CD local (mesmo requisito do push, seção 1.6.1)
+
+O Argo CD **local** que o agent instala no managed cluster (`application-controller` próprio)
+só tem permissão dentro do namespace onde ele mesmo vive (`openshift-gitops`) — sem isso,
+qualquer app cujo destino seja outro namespace (o caso normal, como este lab:
+`gitops-agent-demo`) falha com `forbidden` ao aplicar. Confirmado ao vivo: sem isso, o sync
+falha 5 vezes seguidas e o `Deployment` nunca é atualizado, mesmo com tudo mais certo.
+
+```bash
+oc apply -f 08-GitOpsArgoAgent/manifests/08-agent-write-rbac-policy.yaml
+```
+
+### 3g. Verificar
 
 ```bash
 oc get gitopscluster gitops-agent-clusters -n openshift-gitops -o jsonpath='{.status.conditions}' | jq .
@@ -185,7 +197,7 @@ no `ManagedClusterAddOn`.
 
 ```bash
 oc delete secret <seu-cluster>-application-manager-cluster-secret -n openshift-gitops --ignore-not-found
-oc apply -f 08-GitOpsArgoAgent/manifests/08-appset-pull.yaml
+oc apply -f 08-GitOpsArgoAgent/manifests/09-appset-pull.yaml
 oc get application appdemo-<seu-cluster> -n openshift-gitops -o jsonpath='{.spec.destination}'
 ```
 
@@ -196,6 +208,12 @@ oc get application appdemo-<seu-cluster> -n openshift-gitops -o jsonpath='{.spec
 > `destination.name` com o erro `there are 2 clusters with the same name`. Apagar o Secret
 > antigo do push resolve — o `GitOpsCluster` não recria mais o de push já que o addon está
 > ligado.
+
+> **Se o primeiro sync falhar** (por exemplo, você pulou o 3f): depois de corrigir a RBAC, o
+> Argo CD **não tenta de novo sozinho** uma vez esgotadas as retentativas automáticas
+> (`retry.limit: 5` por padrão) — isso é comportamento padrão do Argo CD, não documentado nesse
+> guia do ACM. Force uma tentativa nova commitando qualquer mudança no Git (ex.: um comentário),
+> ou sincronize manualmente pela UI do Argo CD.
 
 Repare: `destination` mudou de `server` pra `name` — é a **mesma** `Application`
 (`appdemo-<seu-cluster>`), não uma segunda.
@@ -209,6 +227,21 @@ Repita o mesmo bloqueio de rede do Passo 2. Diferença esperada: agora a `Applic
 conectividade de **saída** pro hub, que não foi afetada pelo bloqueio (que mirava a rota do
 cluster-proxy, usada só pelo push).
 
+> **Teste alternativo, mais fácil de reproduzir e confirmado ao vivo**: em vez de bloquear rede
+> (depende do seu provedor), escale o `principal` a zero — simula o hub inacessível pro agent,
+> sem mexer em NSG/firewall nenhum:
+> ```bash
+> oc scale deployment openshift-gitops-agent-principal -n openshift-gitops --replicas=0
+> ```
+> Commite uma mudança no Git. Confirmado ao vivo: o Argo CD **local** do managed cluster
+> detecta a revisão nova e tenta aplicar **mesmo sem o principal** — porque ele busca do Git
+> direto, não através do hub. A aplicação de fato só depende do hub pra receber `Application`s
+> **novas**/mudanças de `Placement`; o que já está configurado continua se autocurando via Git.
+> Restaure o `principal` depois:
+> ```bash
+> oc scale deployment openshift-gitops-agent-principal -n openshift-gitops --replicas=1
+> ```
+
 Restaure a rede antes de seguir pra limpeza.
 
 ---
@@ -216,7 +249,8 @@ Restaure a rede antes de seguir pra limpeza.
 ## Passo 6: Limpeza
 
 ```bash
-oc delete -f 08-GitOpsArgoAgent/manifests/08-appset-pull.yaml
+oc delete -f 08-GitOpsArgoAgent/manifests/09-appset-pull.yaml
+oc delete -f 08-GitOpsArgoAgent/manifests/08-agent-write-rbac-policy.yaml
 oc delete -f 08-GitOpsArgoAgent/manifests/07-agent-view-rbac-policy.yaml
 oc delete -f 08-GitOpsArgoAgent/manifests/06-gitopscluster-agent.yaml
 oc delete -f 08-GitOpsArgoAgent/manifests/05-appproject-wildcard.yaml
