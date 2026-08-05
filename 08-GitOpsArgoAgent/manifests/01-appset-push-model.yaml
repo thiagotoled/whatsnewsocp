@@ -7,6 +7,11 @@
 # no Argo CD, confirmado ao vivo). É uma "sequência", não uma "comparação lado a lado" -- o
 # Passo 3 mostra o push quebrando com a rede caída, o Passo 5 mostra a MESMA app, já convertida
 # pra pull, sobrevivendo à mesma queda de rede.
+#
+# O ApplicationSet controller NÃO rotula a Application gerada com app.kubernetes.io/instance
+# automaticamente -- por isso o template.metadata.labels abaixo é explícito. Sem ele, o
+# `oc get application -l app.kubernetes.io/instance=appdemo` do README não bate com nada
+# (confirmado ao vivo).
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
@@ -23,6 +28,8 @@ spec:
   template:
     metadata:
       name: 'appdemo-{{name}}'
+      labels:
+        app.kubernetes.io/instance: appdemo
     spec:
       project: default
       source:

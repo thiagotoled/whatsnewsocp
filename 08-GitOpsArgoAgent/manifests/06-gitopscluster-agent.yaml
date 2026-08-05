@@ -4,6 +4,11 @@
 # Placement referenciado. Confirmado no guia oficial (RHACM 2.17 GitOps, seção 1.11).
 # Reusa o mesmo Placement do ApplicationSet (01-appset-push-model.yaml) -- os mesmos clusters
 # rotulados whatsnewsocp-lab=true recebem o agent.
+#
+# argoServer.cluster: local-cluster identifica em qual managed cluster (do ponto de vista do
+# ACM) roda o próprio Argo CD/principal -- normalmente o hub, registrado como local-cluster.
+# Sem esse campo o GitOpsCluster ainda fica Ready, mas confirmado ao vivo que ele é usado pelo
+# ambiente de referência do time -- inclua sempre.
 apiVersion: apps.open-cluster-management.io/v1beta1
 kind: GitOpsCluster
 metadata:
@@ -12,6 +17,7 @@ metadata:
 spec:
   argoServer:
     argoNamespace: openshift-gitops
+    cluster: local-cluster
   placementRef:
     kind: Placement
     apiVersion: cluster.open-cluster-management.io/v1beta1

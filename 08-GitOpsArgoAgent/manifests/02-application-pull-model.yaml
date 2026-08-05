@@ -25,6 +25,8 @@ spec:
   template:
     metadata:
       name: 'appdemo-{{name}}'
+      labels:
+        app.kubernetes.io/instance: appdemo
     spec:
       project: default
       source:

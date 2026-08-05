@@ -113,6 +113,7 @@ oc login --token=<TOKEN> --server=<API_URL>
 ├── 08-GitOpsArgoAgent
 │   ├── README.md
 │   └── manifests
+│       ├── 00-appset-placementdecisions-rbac.yaml
 │       ├── 01-appset-push-model.yaml
 │       ├── 02-application-pull-model.yaml
 │       ├── 03-argocd-agent-mode.yaml
@@ -120,6 +121,7 @@ oc login --token=<TOKEN> --server=<API_URL>
 │       ├── 05-managedclustersetbinding.yaml
 │       ├── 06-gitopscluster-agent.yaml
 │       ├── 07-agent-view-clusterrolebinding.yaml
+│       ├── 08-push-model-rbac.yaml
 │       └── app
 │           └── deployment.yaml
 ├── 09-GrafanaToPerses

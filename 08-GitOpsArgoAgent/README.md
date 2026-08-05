@@ -85,13 +85,28 @@ O **Argo CD Agent** inverte a direção da conexão:
 - `ManagedClusterSet` vinculado ao namespace `openshift-gitops` (Passo 3c).
 - Acesso de administrador ao hub e ao managed cluster de teste.
 
+> **Repo privado?** O `repoURL` deste lab (`01-appset-push-model.yaml`/
+> `02-application-pull-model.yaml`) aponta pro repositório público do curso — não precisa de
+> credencial. Só crie um `Secret` do tipo `repository` (label
+> `argocd.argoproj.io/secret-type: repository`) em `openshift-gitops` se você trocar o
+> `repoURL` por um fork privado seu.
+
 ---
 
 ## Passo 1: Linha de Base — o Modelo Tradicional (push)
 
-Aplique a `ApplicationSet` de exemplo, que usa o generator `clusterDecisionResource` (a mesma
-mecânica de qualquer app hub-spoke tradicional no ACM — cluster secret + Argo CD conectando
-direto no managed cluster):
+Primeiro, dê ao ApplicationSet controller permissão pra ler `PlacementDecisions` — sem isso a
+`ApplicationSet` não gera **nenhuma** `Application`, sem erro óbvio no `oc get applicationset`
+(confirmado ao vivo, foi a causa real de o Passo 1 falhar antes de qualquer coisa do Agent
+entrar em cena):
+
+```bash
+oc apply -f 08-GitOpsArgoAgent/manifests/00-appset-placementdecisions-rbac.yaml
+```
+
+Agora aplique a `ApplicationSet` de exemplo, que usa o generator `clusterDecisionResource` (a
+mesma mecânica de qualquer app hub-spoke tradicional no ACM — cluster secret + Argo CD
+conectando direto no managed cluster):
 
 ```bash
 oc apply -f 08-GitOpsArgoAgent/manifests/01-appset-push-model.yaml
@@ -128,47 +143,18 @@ só a rede do **próprio** managed cluster, sem afetar os colegas.
 > prioridade menor** (avaliada antes, já que Azure NSG usa "número menor = maior
 > prioridade"), escopada só pro IP de saída do hub.
 >
-> **Ainda não validado ao vivo** — os comandos abaixo não foram testados de ponta a ponta
-> ainda; confirme os nomes de recurso (NSG, resource group) contra o seu ambiente antes de
-> rodar com a turma.
-
-```bash
-# 1. Descubra o IP de saída do hub -- rode isso a partir de um pod DENTRO do hub, não do seu
-#    laptop (o IP que importa é o que o managed cluster vê chegando, não o seu).
-oc debug -n default --image=registry.access.redhat.com/ubi9/ubi-minimal -- curl -s https://ifconfig.me
-# Anote o IP retornado -- é o $HUB_EGRESS_IP usado abaixo.
-
-# 2. No SEU managed cluster (não no hub), adicione a regra de bloqueio específica:
-RESOURCE_GROUP=<resource-group-do-seu-managed-cluster>
-NSG_NAME=<nome-do-nsg-do-seu-managed-cluster>       # ex.: z3hs03-v8ndb-nsg
-HUB_EGRESS_IP=<ip-anotado-no-passo-1>
-
-az network nsg rule create \
-  --resource-group "$RESOURCE_GROUP" \
-  --nsg-name "$NSG_NAME" \
-  --name block-hub-api-6443 \
-  --priority 100 \
-  --direction Inbound \
-  --access Deny \
-  --protocol Tcp \
-  --source-address-prefixes "${HUB_EGRESS_IP}/32" \
-  --destination-port-ranges 6443
-```
+> **Sem comando pronto de propósito** — o NSG/resource group varia por ambiente/aluno e isso
+> ainda não foi validado de ponta a ponta; monte a regra (`az network nsg rule create`, Deny,
+> Inbound, porta 6443, source = IP de saída do hub) direto no seu ambiente em vez de copiar um
+> comando genérico daqui.
 
 Force uma mudança (ex.: mude o número de réplicas no manifesto e reaplique só a fonte Git) e
 observe sua `Application` (`appdemo-<seu-cluster>`): ela fica `Unknown`/`OutOfSync` sem
 conseguir reconciliar — o Argo CD do hub não alcança mais o seu managed cluster pra aplicar
 nada.
 
-**Restaure a rede** antes de seguir pro próximo passo — o Passo 4 precisa que o push volte a
-sincronizar normalmente antes de converter:
-
-```bash
-az network nsg rule delete \
-  --resource-group "$RESOURCE_GROUP" \
-  --nsg-name "$NSG_NAME" \
-  --name block-hub-api-6443
-```
+**Restaure a rede** (remova a regra que você criou) antes de seguir pro próximo passo — o
+Passo 4 precisa que o push volte a sincronizar normalmente antes de converter.
 
 ---
 
@@ -292,21 +278,8 @@ Repare: é a **mesma** `Application` (`appdemo-<seu-cluster>`, mesmo nome de ant
 
 ## Passo 5: Provar a Resiliência do Pull
 
-Repita **exatamente** a mesma regra do Passo 2 (mesmo comando `az network nsg rule create`,
-bloqueando a 6443 vinda do `$HUB_EGRESS_IP`) e force a mesma mudança (réplicas, por exemplo):
-
-```bash
-az network nsg rule create \
-  --resource-group "$RESOURCE_GROUP" \
-  --nsg-name "$NSG_NAME" \
-  --name block-hub-api-6443 \
-  --priority 100 \
-  --direction Inbound \
-  --access Deny \
-  --protocol Tcp \
-  --source-address-prefixes "${HUB_EGRESS_IP}/32" \
-  --destination-port-ranges 6443
-```
+Recrie **exatamente** a mesma regra de bloqueio do Passo 2 (Deny, Inbound, porta 6443, mesmo
+IP de saída do hub) e force a mesma mudança (réplicas, por exemplo):
 
 - No Passo 2 (push), a `Application` ficava `Unknown`/`OutOfSync`.
 - Agora (pull), ela **continua sincronizando normalmente** — é o **agent no seu managed
@@ -317,14 +290,7 @@ az network nsg rule create \
 Esse é o ponto central do lab: a mesma aplicação, a mesma queda de rede, comportamento
 diferente — só porque o campo `destination` mudou no Passo 4.
 
-Restaure a rede antes de seguir pra limpeza:
-
-```bash
-az network nsg rule delete \
-  --resource-group "$RESOURCE_GROUP" \
-  --nsg-name "$NSG_NAME" \
-  --name block-hub-api-6443
-```
+Restaure a rede (remova a regra) antes de seguir pra limpeza.
 
 ---
 
@@ -341,6 +307,7 @@ o addon valem pra turma inteira):
 
 ```bash
 oc delete -f 08-GitOpsArgoAgent/manifests/01-appset-push-model.yaml
+oc delete -f 08-GitOpsArgoAgent/manifests/00-appset-placementdecisions-rbac.yaml
 oc delete -f 08-GitOpsArgoAgent/manifests/07-agent-view-clusterrolebinding.yaml
 oc delete -f 08-GitOpsArgoAgent/manifests/08-push-model-rbac.yaml
 oc delete gitopscluster gitops-agent-clusters -n openshift-gitops
