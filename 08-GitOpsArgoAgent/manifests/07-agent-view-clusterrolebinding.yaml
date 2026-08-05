@@ -1,7 +1,32 @@
-# Concede a role "view" pro service account do Argo CD Agent em cada managed cluster --
-# confirmado no guia oficial (RHACM 2.17 GitOps, seção 1.11, Passo 4). Sem isso, o agent não
-# consegue ler o estado dos recursos que ele mesmo aplicou.
+# Reescrito após teste ao vivo: a primeira versão deste arquivo usava a ClusterRole "view"
+# (genérica) e assumia que o SA do agent vivia no namespace openshift-gitops. Os dois estavam
+# errados:
 #
+# 1. O SA real é acm-openshift-gitops-agent-agent, no namespace local-cluster (o namespace que
+#    o ACM cria no hub para o managed cluster "local-cluster" -- em ambiente de 1 cluster só,
+#    hub e managed cluster são o mesmo, então esse SA aparece no hub mesmo).
+# 2. A ClusterRole "view" built-in NÃO cobre applications.argoproj.io/appprojects/
+#    applicationsets -- essas CRDs não têm o label rbac.authorization.k8s.io/aggregate-to-view.
+#    Sem acesso explícito a esses recursos, o processo do agent CRASHA no startup:
+#    "[FATAL]: Could not start agent: applications.argoproj.io is forbidden: ... cannot list
+#    resource \"applications\" ... at the cluster scope" -- confirmado ao vivo
+#    (CrashLoopBackOff).
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: argocd-agent-argoproj-reader
+rules:
+  - apiGroups:
+      - argoproj.io
+    resources:
+      - applications
+      - applicationsets
+      - appprojects
+    verbs:
+      - get
+      - list
+      - watch
+---
 # Precisa ser um objeto de Policy (não um ClusterRoleBinding aplicado direto) pra replicar pros
 # managed clusters selecionados pelo Placement -- é assim que o guia oficial descreve, editando
 # a Policy que o próprio GitOpsCluster já gera automaticamente (<nome-do-gitopscluster>-argocd-
@@ -32,11 +57,25 @@ spec:
                 subjects:
                   - kind: ServiceAccount
                     name: acm-openshift-gitops-agent-agent
-                    namespace: openshift-gitops
+                    namespace: local-cluster
                 roleRef:
                   apiGroup: rbac.authorization.k8s.io
                   kind: ClusterRole
                   name: view
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: rbac.authorization.k8s.io/v1
+                kind: ClusterRoleBinding
+                metadata:
+                  name: acm-openshift-gitops-argocd-agent-argoproj-reader
+                subjects:
+                  - kind: ServiceAccount
+                    name: acm-openshift-gitops-agent-agent
+                    namespace: local-cluster
+                roleRef:
+                  apiGroup: rbac.authorization.k8s.io
+                  kind: ClusterRole
+                  name: argocd-agent-argoproj-reader
 ---
 apiVersion: policy.open-cluster-management.io/v1
 kind: PlacementBinding

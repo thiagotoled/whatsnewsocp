@@ -1,9 +1,11 @@
 # Exercício 8: GitOps Argo Agent Addon (ACM 2.17, Technology Preview)
 
-> **Ainda não validado ao vivo por completo** — reescrito com base no guia oficial *Red Hat
-> Advanced Cluster Management for Kubernetes 2.17 — GitOps* (seções 1.11 e 1.14) e em correções
-> confirmadas ao vivo num hub real (ver notas "confirmado ao vivo" espalhadas pelo README).
-> Pendente: o teste completo dos Passos 2 e 5 (queda de rede) ainda não foi validado.
+> **Passos 1-3 validados ao vivo (push + instalação do addon); Passo 4/5 (pull) tem bloqueio
+> conhecido** — reescrito com base no guia oficial *Red Hat Advanced Cluster Management for
+> Kubernetes 2.17 — GitOps* (seções 1.11 e 1.14) e em correções confirmadas ao vivo num hub
+> real (ver notas "confirmado ao vivo" espalhadas pelo README). Pendente: os Passos 2 e 5
+> (queda de rede) ainda não foram validados, e o Passo 4 esbarra num erro de `openapi` que
+> parece ser bug do Technology Preview (ver aviso antes do Passo 4).
 >
 > **Correção importante em relação à primeira versão deste lab**: não existe `clusteradm
 > install hub-addon --names argocd-agent` no fluxo oficial do ACM. A instalação real é via um
@@ -220,11 +222,18 @@ oc apply -f 08-GitOpsArgoAgent/manifests/05-managedclustersetbinding.yaml
 oc apply -f 08-GitOpsArgoAgent/manifests/06-gitopscluster-agent.yaml
 ```
 
-### 3e. Conceder a role `view` pro agent nos managed clusters
+### 3e. RBAC pro agent nos managed clusters
 
 ```bash
 oc apply -f 08-GitOpsArgoAgent/manifests/07-agent-view-clusterrolebinding.yaml
 ```
+
+> **Sem isso o processo do agent crasha no startup** (`CrashLoopBackOff`), confirmado ao vivo:
+> `[FATAL]: Could not start agent: applications.argoproj.io is forbidden ... cannot list
+> resource "applications" ... at the cluster scope`. A `ClusterRole` `view` sozinha **não**
+> resolve — `applications`/`appprojects`/`applicationsets` não têm o label
+> `aggregate-to-view`, então o manifesto concede as duas coisas: `view` (recursos nativos) +
+> uma `ClusterRole` própria pra `argoproj.io`.
 
 ### 3f. RBAC pro Push Model Funcionar
 
@@ -236,7 +245,21 @@ clusters — a `Application` do Passo 1 fica presa em erro de sync mesmo com o r
 oc apply -f 08-GitOpsArgoAgent/manifests/08-push-model-rbac.yaml
 ```
 
-### 3g. Verificar
+### 3g. RBAC extra do principal (gap confirmado ao vivo)
+
+A `ClusterRole` que o operator gera automaticamente pro principal
+(`openshift-gitops-openshift-gitops-agent-principal`) dá acesso a `applications`/
+`appprojects`/`applicationsets`, mas **não** ao subresource `/status` deles — RBAC no
+Kubernetes trata subresource separado do recurso base. Sem isso, o principal falha ao gravar o
+status de volta na `Application` (`the server rejected our request due to an error in our
+request`), mesmo com tudo mais certo. Parece gap real do Technology Preview, não erro deste
+lab:
+
+```bash
+oc apply -f 08-GitOpsArgoAgent/manifests/09-principal-status-rbac.yaml
+```
+
+### 3h. Verificar
 
 ```bash
 oc get gitopscluster gitops-agent-clusters -n openshift-gitops -o jsonpath='{.status.conditions}' | jq .
@@ -252,6 +275,18 @@ oc --context <managed-cluster> get pods -n openshift-gitops -l app.kubernetes.io
 ```
 
 ---
+
+> **Bloqueio conhecido, ainda sem correção (confirmado ao vivo, GitOps 1.21.1)**: mesmo com
+> tudo acima aplicado e o agent `Running` (não mais `CrashLoopBackOff`) e autenticando via mTLS
+> com sucesso, a `Application` convertida pra pull (Passo 4) pode ficar presa em
+> `ComparisonError`: `failed to load open api schema while syncing cluster cache: error
+> getting openapi resources: the server rejected our request for an unknown reason`. O agent
+> consegue buscar `/openapi/v2` direto (`curl` retorna `200`), então não é RBAC — parece uma
+> limitação do resource-proxy do `argocd-agent` v0.9.0 (Technology Preview) ao retransmitir
+> essa chamada específica (não é um recurso tipado, é uma URL não-resource). Não achamos
+> workaround ainda. Se isso acontecer com você, é esperado — não é erro de configuração deste
+> lab; documente como "limitação conhecida do TP" na apresentação em vez de tentar contornar
+> ao vivo.
 
 ## Passo 4: Converter a Mesma App pra Pull
 
@@ -310,6 +345,7 @@ oc delete -f 08-GitOpsArgoAgent/manifests/01-appset-push-model.yaml
 oc delete -f 08-GitOpsArgoAgent/manifests/00-appset-placementdecisions-rbac.yaml
 oc delete -f 08-GitOpsArgoAgent/manifests/07-agent-view-clusterrolebinding.yaml
 oc delete -f 08-GitOpsArgoAgent/manifests/08-push-model-rbac.yaml
+oc delete -f 08-GitOpsArgoAgent/manifests/09-principal-status-rbac.yaml
 oc delete gitopscluster gitops-agent-clusters -n openshift-gitops
 ```
 

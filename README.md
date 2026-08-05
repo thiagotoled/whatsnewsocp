@@ -122,6 +122,7 @@ oc login --token=<TOKEN> --server=<API_URL>
 │       ├── 06-gitopscluster-agent.yaml
 │       ├── 07-agent-view-clusterrolebinding.yaml
 │       ├── 08-push-model-rbac.yaml
+│       ├── 09-principal-status-rbac.yaml
 │       └── app
 │           └── deployment.yaml
 ├── 09-GrafanaToPerses

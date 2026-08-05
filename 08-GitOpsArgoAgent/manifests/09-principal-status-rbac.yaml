@@ -1,0 +1,39 @@
+# Complemento a um gap confirmado ao vivo na ClusterRole que o próprio operator gera
+# automaticamente (openshift-gitops-openshift-gitops-agent-principal, GitOps 1.21.1): ela dá
+# create/get/list/watch/update/patch/delete em applications/appprojects/applicationsets, mas
+# NENHUM acesso ao subresource /status desses recursos. RBAC no Kubernetes trata subresources
+# separadamente -- ter acesso ao recurso base não implica acesso ao /status.
+#
+# Sem isso, o principal falha silenciosamente ao tentar gravar o status de volta na Application
+# depois que o agent responde: "the server rejected our request due to an error in our request"
+# / "cannot get resource \"applications/status\"" -- confirmado ao vivo. Parece um gap real na
+# ClusterRole gerada pelo operator para o Technology Preview, não um erro de configuração deste
+# lab -- mantenha este arquivo até isso ser corrigido upstream.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: argocd-agent-principal-status-patch
+rules:
+  - apiGroups:
+      - argoproj.io
+    resources:
+      - applications/status
+      - appprojects/status
+      - applicationsets/status
+    verbs:
+      - get
+      - update
+      - patch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: openshift-gitops-agent-principal-status-patch
+subjects:
+  - kind: ServiceAccount
+    name: openshift-gitops-agent-principal
+    namespace: openshift-gitops
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: argocd-agent-principal-status-patch
