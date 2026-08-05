@@ -18,17 +18,17 @@ Com User Namespaces ativado, mesmo que um atacante escape do container, o proces
 ## Passo 1: Criar o Namespace e Aplicar os Deployments
 
 ```bash
-oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/3-UserNamespaces/ocp-manifests/01-namespace.yaml
+oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/03-UserNamespaces/ocp-manifests/01-namespace.yaml
 ```
 
 Aplique os dois Deployments: um **sem** isolamento e outro **com** User Namespaces para comparação:
 
 ```bash
-oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/3-UserNamespaces/ocp-manifests/02-deployment-no-userns.yaml
+oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/03-UserNamespaces/ocp-manifests/02-deployment-no-userns.yaml
 ```
 
 ```bash
-oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/3-UserNamespaces/ocp-manifests/03-deployment-with-userns.yaml
+oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/03-UserNamespaces/ocp-manifests/03-deployment-with-userns.yaml
 ```
 
 Aguarde os Pods ficarem prontos:

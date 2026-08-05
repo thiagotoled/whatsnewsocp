@@ -31,7 +31,7 @@ spec:
       source:
         repoURL: https://github.com/thiagotoled/whatsnewsocp.git
         targetRevision: main
-        path: 8-GitOpsArgoAgent/manifests/app
+        path: 08-GitOpsArgoAgent/manifests/app
       destination:
         name: '{{name}}'
         namespace: gitops-agent-demo

@@ -1,0 +1,9 @@
+# Cluster-scoped. Rode `oc get gatewayclass` antes de aplicar -- em alguns ambientes o
+# openshift-default já vem criado junto com o Ingress Operator; se já existir, pule este
+# manifesto.
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: openshift-default
+spec:
+  controllerName: openshift.io/gateway-controller/v1

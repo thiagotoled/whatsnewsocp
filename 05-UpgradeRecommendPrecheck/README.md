@@ -71,11 +71,11 @@ A saída inclui um resumo dos updates recomendados e, na sequência, uma seção
 Aplique o namespace e o Deployment que vamos usar para simular o problema:
 
 ```bash
-oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/5-UpgradeRecommendPrecheck/ocp-manifests/01-namespace.yaml
+oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/05-UpgradeRecommendPrecheck/ocp-manifests/01-namespace.yaml
 ```
 
 ```bash
-oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/5-UpgradeRecommendPrecheck/ocp-manifests/02-deployment.yaml
+oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/05-UpgradeRecommendPrecheck/ocp-manifests/02-deployment.yaml
 ```
 
 Confirme que os 3 Pods estão rodando:
@@ -91,7 +91,7 @@ oc get pods -n lab-upgrade-status -o wide
 Aplique um PDB que exige **100% dos Pods disponíveis** (`minAvailable: 100%`), ou seja, nenhum Pod pode ser removido, nem para drenar um nó durante o update:
 
 ```bash
-oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/5-UpgradeRecommendPrecheck/ocp-manifests/03-poddisruptionbudget-blocking.yaml
+oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/05-UpgradeRecommendPrecheck/ocp-manifests/03-poddisruptionbudget-blocking.yaml
 ```
 
 Verifique o PDB criado. Note `ALLOWED DISRUPTIONS: 0`:
@@ -187,7 +187,7 @@ qualquer forma, com ou sem precheck avisando. Substitua-o por uma configuração
 menos 1 Pod indisponível por vez:
 
 ```bash
-oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/5-UpgradeRecommendPrecheck/ocp-manifests/04-poddisruptionbudget-fixed.yaml
+oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/05-UpgradeRecommendPrecheck/ocp-manifests/04-poddisruptionbudget-fixed.yaml
 ```
 
 Confirme que agora há disrupções permitidas:

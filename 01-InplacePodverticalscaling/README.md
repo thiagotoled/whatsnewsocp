@@ -10,11 +10,11 @@ O In-place Pod Vertical Scaling permite ajustar CPU e memória de um Pod em exec
 2. Aplique os manifestos do repositório para criar o Namespace e o Deployment:
 
 ```bash
-oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/1-InplacePodverticalscaling/ocp-manifests/01-namespace.yaml
+oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/01-InplacePodverticalscaling/ocp-manifests/01-namespace.yaml
 ```
 
 ```bash
-oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/1-InplacePodverticalscaling/ocp-manifests/02-deployment.yaml
+oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/01-InplacePodverticalscaling/ocp-manifests/02-deployment.yaml
 ```
 
 

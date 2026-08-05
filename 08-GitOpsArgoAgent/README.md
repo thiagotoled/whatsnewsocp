@@ -87,7 +87,7 @@ mecânica de qualquer app hub-spoke tradicional no ACM — cluster secret + Argo
 direto no managed cluster):
 
 ```bash
-oc apply -f 8-GitOpsArgoAgent/manifests/01-appset-push-model.yaml
+oc apply -f 08-GitOpsArgoAgent/manifests/01-appset-push-model.yaml
 oc get applicationset appdemo-push -n openshift-gitops
 oc get application -n openshift-gitops -l app.kubernetes.io/instance=appdemo-push
 ```
@@ -124,7 +124,7 @@ oc patch subscription.operators openshift-gitops-operator -n openshift-gitops-op
 ### 2b. Substituir o `ArgoCD` pela configuração de modo Agent
 
 ```bash
-oc apply -f 8-GitOpsArgoAgent/manifests/03-argocd-agent-mode.yaml
+oc apply -f 08-GitOpsArgoAgent/manifests/03-argocd-agent-mode.yaml
 ```
 
 Isso desliga o controller tradicional (`controller.enabled: false`) e liga o principal com
@@ -134,8 +134,8 @@ Passo 3.
 ### 2c. `AppProject` wildcard e `ManagedClusterSetBinding`
 
 ```bash
-oc apply -f 8-GitOpsArgoAgent/manifests/04-appproject-wildcard.yaml
-oc apply -f 8-GitOpsArgoAgent/manifests/05-managedclustersetbinding.yaml
+oc apply -f 08-GitOpsArgoAgent/manifests/04-appproject-wildcard.yaml
+oc apply -f 08-GitOpsArgoAgent/manifests/05-managedclustersetbinding.yaml
 ```
 
 > Confira se `clusterSet: default` bate com o seu hub (`oc get managedclusterset`) — ajuste o
@@ -144,13 +144,13 @@ oc apply -f 8-GitOpsArgoAgent/manifests/05-managedclustersetbinding.yaml
 ### 2d. Criar o `GitOpsCluster` (isso é o que de fato liga o addon)
 
 ```bash
-oc apply -f 8-GitOpsArgoAgent/manifests/06-gitopscluster-agent.yaml
+oc apply -f 08-GitOpsArgoAgent/manifests/06-gitopscluster-agent.yaml
 ```
 
 ### 2e. Conceder a role `view` pro agent nos managed clusters
 
 ```bash
-oc apply -f 8-GitOpsArgoAgent/manifests/07-agent-view-clusterrolebinding.yaml
+oc apply -f 08-GitOpsArgoAgent/manifests/07-agent-view-clusterrolebinding.yaml
 ```
 
 ### 2f. Verificar
@@ -179,7 +179,7 @@ vez do endpoint da API de cada managed cluster (`destination.server: '{{server}}
 nenhum:
 
 ```bash
-oc apply -f 8-GitOpsArgoAgent/manifests/02-application-pull-model.yaml
+oc apply -f 08-GitOpsArgoAgent/manifests/02-application-pull-model.yaml
 oc get application -n openshift-gitops -l app.kubernetes.io/instance=appdemo-pull
 ```
 
@@ -231,9 +231,9 @@ oc --context <managed-cluster> delete namespace gitops-agent-demo
 o addon valem pra turma inteira):
 
 ```bash
-oc delete -f 8-GitOpsArgoAgent/manifests/01-appset-push-model.yaml
-oc delete -f 8-GitOpsArgoAgent/manifests/02-application-pull-model.yaml
-oc delete -f 8-GitOpsArgoAgent/manifests/07-agent-view-clusterrolebinding.yaml
+oc delete -f 08-GitOpsArgoAgent/manifests/01-appset-push-model.yaml
+oc delete -f 08-GitOpsArgoAgent/manifests/02-application-pull-model.yaml
+oc delete -f 08-GitOpsArgoAgent/manifests/07-agent-view-clusterrolebinding.yaml
 oc delete gitopscluster gitops-agent-clusters -n openshift-gitops
 ```
 

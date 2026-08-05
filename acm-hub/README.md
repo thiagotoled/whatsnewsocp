@@ -2,8 +2,8 @@
 
 Este diretório contém as `Policy`/`Placement`/`PlacementBinding` do RHACM que rodam **de
 verdade** no hub (`local-cluster`, ARO em `rms36u23q91da15275.eastus.aroapp.io`) e em qualquer
-managed cluster importado (hoje: `ms35vuo5`). O restante do repositório ([`1-InplacePodverticalscaling/`](../1-InplacePodverticalscaling/README.md),
-[`5-UpgradeRecommendPrecheck/`](../5-UpgradeRecommendPrecheck/README.md), etc.) continua igual, cada lab é aplicado manualmente com
+managed cluster importado (hoje: `ms35vuo5`). O restante do repositório ([`01-InplacePodverticalscaling/`](../01-InplacePodverticalscaling/README.md),
+[`05-UpgradeRecommendPrecheck/`](../05-UpgradeRecommendPrecheck/README.md), etc.) continua igual, cada lab é aplicado manualmente com
 `oc apply -f` pelo aluno/instrutor, exatamente como antes; a Policy só cuida do boilerplate.
 
 Sincronizado via Argo CD (`openshift-gitops-acm`, Application `politicasdoacm-local-cluster`)
@@ -52,11 +52,11 @@ Labs "Enhanced Vulnerability Management Reporting", "Policy Scope com Labels de 
 e "Policy para oc debug / pods attach" foram removidos do repositório (eram candidatos a remoção
 desde o início, nunca tiveram Policy de boilerplate).
 
-> **Nota lab 2**: [`01-operator-config.yaml`](../2-ExternalSecretsOperator/ocp-manifests/01-operator-config.yaml)/[`02-external-secrets-config.yaml`](../2-ExternalSecretsOperator/ocp-manifests/02-external-secrets-config.yaml) (a instalação do
+> **Nota lab 2**: [`01-operator-config.yaml`](../02-ExternalSecretsOperator/ocp-manifests/01-operator-config.yaml)/[`02-external-secrets-config.yaml`](../02-ExternalSecretsOperator/ocp-manifests/02-external-secrets-config.yaml) (a instalação do
 > operator e o CR `ExternalSecretsConfig`) ainda não têm policy, hoje é aplicado manualmente
 > seguindo o README do lab. O `ExternalSecretsConfig` é fácil de esquecer (o operator sobe mas
 > o controller de verdade só nasce depois dele). Confirmado ao vivo, ver
-> [`2-ExternalSecretsOperator/README.md`](../2-ExternalSecretsOperator/README.md).
+> [`02-ExternalSecretsOperator/README.md`](../02-ExternalSecretsOperator/README.md).
 
 Além do boilerplate por lab, existem policies de **bootstrap do próprio hub** (não são de
 nenhum lab específico), trazidas do repo real `ACM_OCP/Politicas` e adaptadas:
@@ -97,7 +97,7 @@ existir com bastante antecedência (fluxo do "por que" acima). Só que, em `enfo
 manualmente durante um teste e a policy reverteu de volta pra `100%` sem eu perceber, porque
 não tinha desabilitado a policy antes.
 
-Isso quebra o Passo 5 do lab (o aluno aplica [`04-poddisruptionbudget-fixed.yaml`](../5-UpgradeRecommendPrecheck/ocp-manifests/04-poddisruptionbudget-fixed.yaml) para corrigir
+Isso quebra o Passo 5 do lab (o aluno aplica [`04-poddisruptionbudget-fixed.yaml`](../05-UpgradeRecommendPrecheck/ocp-manifests/04-poddisruptionbudget-fixed.yaml) para corrigir
 o PDB), a policy vai desfazer a correção do aluno.
 
 **Antes de liberar a turma para o Passo 5**, desabilite a policy inteira (não tem problema

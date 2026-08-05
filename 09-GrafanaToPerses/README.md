@@ -71,8 +71,8 @@ console do OCP:
 ### Passo 1: Habilitar o Perses no Console
 
 ```bash
-oc apply -f 9-GrafanaToPerses/manifests/01-uiplugin-monitoring.yaml
-oc apply -f 9-GrafanaToPerses/manifests/03-namespace.yaml
+oc apply -f 09-GrafanaToPerses/manifests/01-uiplugin-monitoring.yaml
+oc apply -f 09-GrafanaToPerses/manifests/03-namespace.yaml
 ```
 
 Confirme no console do seu cluster: **Observe → Dashboards (Perses)** deve aparecer no menu
@@ -83,7 +83,7 @@ lateral em alguns minutos.
 ### Passo 2: Registrar a Fonte de Dados Local
 
 ```bash
-oc apply -f 9-GrafanaToPerses/manifests/02-perses-global-datasource.yaml
+oc apply -f 09-GrafanaToPerses/manifests/02-perses-global-datasource.yaml
 ```
 
 Aponta pro Thanos Querier padrão da plataforma (`thanos-querier.openshift-monitoring.svc`) —
@@ -96,7 +96,7 @@ de frota, não do seu cluster sozinho.
 ### Passo 3: Gerar um Workload de Teste
 
 ```bash
-oc apply -f 9-GrafanaToPerses/manifests/04-demo-deployment.yaml
+oc apply -f 09-GrafanaToPerses/manifests/04-demo-deployment.yaml
 ```
 
 Um `Deployment` simples (`ubi9/ubi-micro`, 2 réplicas, com `requests`/`limits` definidos) só
@@ -107,7 +107,7 @@ pra ter CPU e memória de verdade circulando no namespace `lab-perses-demo`.
 ### Passo 4: Criar o Dashboard no Perses
 
 ```bash
-oc apply -f 9-GrafanaToPerses/manifests/05-persesdashboard.yaml
+oc apply -f 09-GrafanaToPerses/manifests/05-persesdashboard.yaml
 ```
 
 Abra **Observe → Dashboards (Perses)**, selecione o namespace `lab-perses-demo`, e abra
@@ -139,8 +139,8 @@ editar na tela edita o CR, e o CR aplicado via Git edita a tela.
 
 ```bash
 oc delete namespace lab-perses-demo
-oc delete -f 9-GrafanaToPerses/manifests/02-perses-global-datasource.yaml
-oc delete -f 9-GrafanaToPerses/manifests/01-uiplugin-monitoring.yaml
+oc delete -f 09-GrafanaToPerses/manifests/02-perses-global-datasource.yaml
+oc delete -f 09-GrafanaToPerses/manifests/01-uiplugin-monitoring.yaml
 ```
 
 ---
