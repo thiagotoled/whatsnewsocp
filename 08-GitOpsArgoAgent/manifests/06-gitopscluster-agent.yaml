@@ -5,10 +5,16 @@
 # Reusa o mesmo Placement do ApplicationSet (01-appset-push-model.yaml) -- os mesmos clusters
 # rotulados whatsnewsocp-lab=true recebem o agent.
 #
-# argoServer.cluster: local-cluster identifica em qual managed cluster (do ponto de vista do
-# ACM) roda o próprio Argo CD/principal -- normalmente o hub, registrado como local-cluster.
-# Sem esse campo o GitOpsCluster ainda fica Ready, mas confirmado ao vivo que ele é usado pelo
-# ambiente de referência do time -- inclua sempre.
+# ATENÇÃO pra não confundir os dois campos abaixo, que fazem coisas diferentes:
+#
+# - argoServer.cluster: local-cluster -- NÃO é o alvo do fan-out. É só onde o Argo CD/principal
+#   em si roda (o hub), que sempre se autorregistra no próprio ACM como "local-cluster" -- vale
+#   isso mesmo com N managed clusters recebendo o agent. Confirmado ao vivo que esse campo é
+#   necessário (sem ele o GitOpsCluster ainda fica Ready, mas o ambiente de referência do time
+#   sempre tem ele setado).
+# - placementRef (abaixo) -- esse sim é quem decide o fan-out: aponta pro Placement
+#   placement-argocd-agent-demo, com matchLabels whatsnewsocp-lab=true, cobrindo os managed
+#   clusters de TODOS os alunos rotulados, não só o hub.
 apiVersion: apps.open-cluster-management.io/v1beta1
 kind: GitOpsCluster
 metadata:
