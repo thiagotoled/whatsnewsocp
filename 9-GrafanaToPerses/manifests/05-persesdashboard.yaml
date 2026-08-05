@@ -1,0 +1,64 @@
+# Schema do PersesDashboard baseado na documentação do projeto Perses -- os nomes de campo
+# (panels/queries/layouts) ainda não foram confirmados contra a versão exata do CRD instalada
+# pelo COO 1.5 no seu cluster. Rode `oc explain persesdashboard.spec` antes de aplicar, e ajuste
+# se necessário.
+apiVersion: perses.dev/v1alpha2
+kind: PersesDashboard
+metadata:
+  name: cpu-mem-demo
+  namespace: lab-perses-demo
+spec:
+  display:
+    name: "Lab Perses Demo - CPU/Mem por Pod"
+  duration: 1h
+  panels:
+    cpuPanel:
+      kind: Panel
+      spec:
+        display:
+          name: "CPU por Pod (cores)"
+        plugin:
+          kind: TimeSeriesChart
+          spec: {}
+        queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  query: >-
+                    sum(rate(container_cpu_usage_seconds_total{namespace="lab-perses-demo",
+                    container!="", container!="POD"}[5m])) by (pod)
+    memPanel:
+      kind: Panel
+      spec:
+        display:
+          name: "Memória por Pod (bytes)"
+        plugin:
+          kind: TimeSeriesChart
+          spec: {}
+        queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  query: >-
+                    sum(container_memory_working_set_bytes{namespace="lab-perses-demo",
+                    container!="", container!="POD"}) by (pod)
+  layouts:
+    - kind: Grid
+      spec:
+        items:
+          - x: 0
+            y: 0
+            width: 12
+            height: 6
+            content:
+              $ref: "#/spec/panels/cpuPanel"
+          - x: 12
+            y: 0
+            width: 12
+            height: 6
+            content:
+              $ref: "#/spec/panels/memPanel"

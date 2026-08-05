@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: perses-demo-workload
+  namespace: lab-perses-demo
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: perses-demo-workload
+  template:
+    metadata:
+      labels:
+        app: perses-demo-workload
+    spec:
+      containers:
+        - name: perses-demo-workload
+          image: registry.access.redhat.com/ubi9/ubi-micro:latest
+          command: ["sleep", "infinity"]
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
