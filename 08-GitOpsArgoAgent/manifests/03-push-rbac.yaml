@@ -1,0 +1,17 @@
+# Documentado como "Important" na doc oficial (RHACM 2.17 GitOps, seção 1.6.1): sem isso, o
+# application-controller do push recebe "forbidden" ao tentar criar recursos nos managed
+# clusters. Este cria o ClusterRoleBinding no HUB (SA do próprio Argo CD hub); a doc também
+# cobre o caso alternativo de não ser cluster-admin (criar namespaces com o label
+# argocd.argoproj.io/managed-by na mão), não coberto aqui.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: argo-admin-appdemo-push
+subjects:
+  - kind: ServiceAccount
+    name: openshift-gitops-argocd-application-controller
+    namespace: openshift-gitops
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin

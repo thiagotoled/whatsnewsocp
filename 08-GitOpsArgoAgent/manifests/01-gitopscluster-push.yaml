@@ -1,0 +1,20 @@
+# Confirmado ao vivo: mesmo pra push (sem addon, sem agent), precisa de um GitOpsCluster --
+# é ele que registra o Secret de cluster do Argo CD (RHACM 2.17 GitOps, seção 1.4.2). Sem
+# isso a Application fica "Unknown" pra sempre, sem cluster secret nenhum criado.
+#
+# Repare que NÃO tem spec.gitopsAddon aqui -- isso é só o registro básico de cluster
+# (push), separado da instalação do addon/agent (Passo 3 deste lab, arquivo 05).
+apiVersion: apps.open-cluster-management.io/v1beta1
+kind: GitOpsCluster
+metadata:
+  name: gitops-agent-clusters
+  namespace: openshift-gitops
+spec:
+  argoServer:
+    cluster: local-cluster
+    argoNamespace: openshift-gitops
+  placementRef:
+    kind: Placement
+    apiVersion: cluster.open-cluster-management.io/v1beta1
+    name: placement-argocd-agent-demo
+    namespace: openshift-gitops

@@ -1,0 +1,28 @@
+# Confirmado ao vivo: siga a doc oficial à risca (RHACM 2.17 GitOps, seção 1.14) e aplique
+# este arquivo INTEIRO com `oc apply -f` (a doc diz literalmente "Replace the existing ArgoCD
+# custom resource"). Repare no controller.enabled: false -- isso DESLIGA o controller
+# tradicional. A partir deste ponto, o push (Passo 1) para de funcionar nesta instância; não
+# é "os dois modelos coexistindo", é uma MIGRAÇÃO. (Uma versão anterior deste lab tentou
+# manter os dois ativos ao mesmo tempo via oc patch parcial -- design mais complexo que não
+# reflete o que a doc realmente descreve.)
+apiVersion: argoproj.io/v1beta1
+kind: ArgoCD
+metadata:
+  name: openshift-gitops
+  namespace: openshift-gitops
+spec:
+  controller:
+    enabled: false
+  sourceNamespaces:
+    - '*'
+  argoCDAgent:
+    principal:
+      enabled: true
+      destinationBasedMapping: true
+      auth: "mtls:CN=system:open-cluster-management:cluster:([^:]+):addon:gitops-addon:agent:gitops-addon-agent"
+      namespace:
+        allowedNamespaces:
+          - '*'
+      server:
+        route:
+          enabled: true

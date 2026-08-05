@@ -1,0 +1,43 @@
+# Modelo tradicional (push): Argo CD no hub conecta no managed cluster através do Secret que
+# o GitOpsCluster registrou (01-gitopscluster-push.yaml) -- por padrão, via cluster-proxy
+# (confirmado ao vivo: o Secret gerado aponta pra
+# https://cluster-proxy-addon-user.multicluster-engine.svc.../<cluster>, não a URL crua da
+# API do managed cluster -- é assim que a doc oficial descreve, seção 1.4.4).
+#
+# O ApplicationSet se chama "appdemo" (não "appdemo-push") de propósito: a Application gerada
+# (appdemo-{{name}}) é a MESMA que vira pull no Passo 4, só o campo destination muda --
+# confirmado ao vivo que isso evita SharedResourceWarning por duas Applications concorrendo
+# pelo mesmo Deployment.
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: appdemo
+  namespace: openshift-gitops
+spec:
+  generators:
+    - clusterDecisionResource:
+        configMapRef: acm-placement
+        labelSelector:
+          matchLabels:
+            cluster.open-cluster-management.io/placement: placement-argocd-agent-demo
+        requeueAfterSeconds: 30
+  template:
+    metadata:
+      name: 'appdemo-{{name}}'
+      labels:
+        app.kubernetes.io/instance: appdemo
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/thiagotoled/whatsnewsocp.git
+        targetRevision: main
+        path: 08-GitOpsArgoAgent/manifests/app
+      destination:
+        server: '{{server}}'
+        namespace: gitops-agent-demo
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true

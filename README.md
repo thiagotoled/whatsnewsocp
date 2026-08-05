@@ -16,7 +16,7 @@ Cada diretório contém um laboratório independente com manifestos prontos para
 | 5 | [Encontrando Problemas Antes de Atualizar o Cluster](./05-UpgradeRecommendPrecheck/README.md) | Uso do `oc adm upgrade recommend` para identificar riscos antes de iniciar um update | 4.20+ | GA | ~30 min |
 | 6 | [Verificação de Assinatura de Imagens com Sigstore](./06-SigstoreImagePolicy/README.md) | Uso do `ImagePolicy` para exigir assinatura sigstore antes do pull | 4.20+ | GA | ~20 min |
 | 7 | [Vulnerabilidades no Console e Mais Controle no CRS](./07-VulnerabilitiesAndCRS/README.md) | Plugin `advanced-cluster-security` do RHACS no console do OpenShift + controles de **validade** e **max registrations** na geração do CRS (RHACS 4.11) | 4.20+ / ACS 4.11 | GA | ~25 min |
-| 8 | [GitOps Argo Agent Addon](./08-GitOpsArgoAgent/README.md) **(não validado ao vivo)** | Modelo **pull** de GitOps multicluster do ACM 2.17 — managed cluster conecta no hub, não o contrário | ACM 2.17 | Tech Preview | ~35 min |
+| 8 | [GitOps Argo Agent Addon](./08-GitOpsArgoAgent/README.md) **(exige managed cluster real)** | Modelo **pull** de GitOps multicluster do ACM 2.17 — managed cluster conecta no hub, não o contrário | ACM 2.17 | Tech Preview | ~35 min |
 | 9 | [Dashboards com o Red Hat Build of Perses](./09-GrafanaToPerses/README.md) | Dois caminhos: Parte 1 — COO genérico (`UIPlugin`/`PersesDashboard`, GA), isolado no cluster de cada aluno. Parte 2 — Multicluster Observability Add-on nativo do ACM (Technology Preview), dashboards de frota prontos, pré-configurado no hub | COO 1.5 / ACM 2.17 | GA + Tech Preview | ~30 min |
 | 10 | [Helm Chart Direto de URL OCI/HTTPS no Console](./10-HelmConsoleOCI/README.md) **(backend validado, UI do console não)** | Instala um Helm chart sem cadastrar repositório antes — cola a URL `oci://` ou `https://` na hora | 4.22 | GA | ~15 min |
 | 11 | [Gateway API — Dois Gateways Independentes](./11-GatewayAPI/README.md) | Cada `Gateway` gera seu próprio `Deployment`+`LoadBalancer` — isolado no cluster de cada aluno, sem depender de ACM/hub | 4.19+ | GA | ~25 min |
@@ -116,16 +116,15 @@ oc login --token=<TOKEN> --server=<API_URL>
 ├── 08-GitOpsArgoAgent
 │   ├── README.md
 │   └── manifests
-│       ├── 00-appset-placementdecisions-rbac.yaml
-│       ├── 01-appset-push-model.yaml
-│       ├── 02-application-pull-model.yaml
-│       ├── 03-argocd-agent-mode.yaml
-│       ├── 04-appproject-wildcard.yaml
-│       ├── 05-managedclustersetbinding.yaml
+│       ├── 00-placement.yaml
+│       ├── 01-gitopscluster-push.yaml
+│       ├── 02-appset-push.yaml
+│       ├── 03-push-rbac.yaml
+│       ├── 04-argocd-agent-mode.yaml
+│       ├── 05-appproject-wildcard.yaml
 │       ├── 06-gitopscluster-agent.yaml
-│       ├── 07-agent-view-clusterrolebinding.yaml
-│       ├── 08-push-model-rbac.yaml
-│       ├── 09-principal-status-rbac.yaml
+│       ├── 07-agent-view-rbac-policy.yaml
+│       ├── 08-appset-pull.yaml
 │       └── app
 │           └── deployment.yaml
 ├── 09-GrafanaToPerses

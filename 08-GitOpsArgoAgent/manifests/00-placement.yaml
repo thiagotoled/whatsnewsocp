@@ -1,0 +1,36 @@
+# Troque "rgz1hs02" pelo nome real do SEU managed cluster (oc get managedcluster). Este lab
+# precisa de um managed cluster de verdade, separado do hub -- testar com hub=spoke
+# (local-cluster) expõe bugs de auto-referência que não refletem o caso real (confirmado ao
+# vivo: erro "openapi... rejected" e conflito de AppProject só aparecem nesse cenário
+# self-managed, somem completamente com um spoke real).
+apiVersion: cluster.open-cluster-management.io/v1beta1
+kind: Placement
+metadata:
+  name: placement-argocd-agent-demo
+  namespace: openshift-gitops
+spec:
+  predicates:
+    - requiredClusterSelector:
+        labelSelector:
+          matchExpressions:
+            - key: name
+              operator: In
+              values: ["rgz1hs02"]
+  tolerations:
+    - key: cluster.open-cluster-management.io/unreachable
+      operator: Exists
+    - key: cluster.open-cluster-management.io/unavailable
+      operator: Exists
+---
+# ConfigMap "duck-type" que o generator clusterDecisionResource do ApplicationSet lê --
+# padrão exato da doc oficial (RHACM 2.17 GitOps, seção 1.6.3).
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: acm-placement
+  namespace: openshift-gitops
+data:
+  apiVersion: cluster.open-cluster-management.io/v1beta1
+  kind: placementdecisions
+  matchKey: clusterName
+  statusListKey: decisions

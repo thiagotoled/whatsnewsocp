@@ -1,0 +1,45 @@
+# Mesmo ApplicationSet "appdemo" do 02-appset-push.yaml, mesmo name/namespace -- reaplicar
+# atualiza em vez de criar uma segunda Application. Só o destination muda: em vez do endpoint
+# do managed cluster (destination.server), usa destination.name -- o principal resolve pelo
+# nome do managed cluster (destinationBasedMapping, ligado no 04-argocd-agent-mode.yaml).
+#
+# Confirmado ao vivo: antes de reaplicar, apague o Secret de cluster antigo do push
+# (<nome-do-cluster>-application-manager-cluster-secret, em openshift-gitops) -- depois que o
+# GitOpsCluster liga o agent, ele cria um SEGUNDO Secret pro mesmo cluster (agora apontando
+# pro resource-proxy do agent), e os dois com "nome" igual quebram a resolução do
+# destination.name ("there are 2 clusters with the same name"). Isso não está na doc oficial;
+# é uma consequência de reusar o mesmo GitOpsCluster pra registrar push e depois ligar o
+# agent, que a doc não cobre explicitamente.
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: appdemo
+  namespace: openshift-gitops
+spec:
+  generators:
+    - clusterDecisionResource:
+        configMapRef: acm-placement
+        labelSelector:
+          matchLabels:
+            cluster.open-cluster-management.io/placement: placement-argocd-agent-demo
+        requeueAfterSeconds: 30
+  template:
+    metadata:
+      name: 'appdemo-{{name}}'
+      labels:
+        app.kubernetes.io/instance: appdemo
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/thiagotoled/whatsnewsocp.git
+        targetRevision: main
+        path: 08-GitOpsArgoAgent/manifests/app
+      destination:
+        name: '{{name}}'
+        namespace: gitops-agent-demo
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true

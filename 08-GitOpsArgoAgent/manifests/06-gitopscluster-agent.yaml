@@ -1,20 +1,11 @@
-# Este é o objeto que de fato liga o addon -- não é clusteradm install hub-addon (isso não
-# existe no fluxo documentado oficialmente pro ACM 2.17). O controller do GitOpsCluster faz a
-# gestão automática de PKI e implanta o Argo CD Agent em cada managed cluster selecionado pelo
-# Placement referenciado. Confirmado no guia oficial (RHACM 2.17 GitOps, seção 1.11).
-# Reusa o mesmo Placement do ApplicationSet (01-appset-push-model.yaml) -- os mesmos clusters
-# rotulados whatsnewsocp-lab=true recebem o agent.
+# Mesmo objeto do 01-gitopscluster-push.yaml (mesmo name/namespace) -- reaplicar com o bloco
+# gitopsAddon adicionado atualiza em vez de criar. A partir daqui o controller do GitOpsCluster
+# instala o addon (operator + ArgoCD Agent) no managed cluster selecionado pelo Placement.
 #
-# ATENÇÃO pra não confundir os dois campos abaixo, que fazem coisas diferentes:
-#
-# - argoServer.cluster: local-cluster -- NÃO é o alvo do fan-out. É só onde o Argo CD/principal
-#   em si roda (o hub), que sempre se autorregistra no próprio ACM como "local-cluster" -- vale
-#   isso mesmo com N managed clusters recebendo o agent. Confirmado ao vivo que esse campo é
-#   necessário (sem ele o GitOpsCluster ainda fica Ready, mas o ambiente de referência do time
-#   sempre tem ele setado).
-# - placementRef (abaixo) -- esse sim é quem decide o fan-out: aponta pro Placement
-#   placement-argocd-agent-demo, com matchLabels whatsnewsocp-lab=true, cobrindo os managed
-#   clusters de TODOS os alunos rotulados, não só o hub.
+# Confirmado ao vivo: depois de reaplicar, o controller (pod multicluster-integrations, no
+# namespace open-cluster-management) às vezes fica com o status desatualizado ("addon
+# disabled") até o próximo ciclo de reconciliação -- se isso acontecer, reinicie o pod:
+# `oc delete pod -n open-cluster-management -l app=multicluster-integrations`
 apiVersion: apps.open-cluster-management.io/v1beta1
 kind: GitOpsCluster
 metadata:
@@ -23,7 +14,6 @@ metadata:
 spec:
   argoServer:
     argoNamespace: openshift-gitops
-    cluster: local-cluster
   placementRef:
     kind: Placement
     apiVersion: cluster.open-cluster-management.io/v1beta1
