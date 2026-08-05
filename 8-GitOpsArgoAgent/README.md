@@ -19,6 +19,10 @@ Neste laboratório, você vai comparar o modelo **tradicional** de GitOps multic
 **Argo CD Agent** (GA como addon nativo do ACM na versão 2.17) — um modelo **pull**, onde é o
 managed cluster que abre conexão para o hub, não o contrário.
 
+> **Versões (OpenShift GitOps 1.21)**: Argo CD 3.4, Argo CD Agent **0.9**, Argo Rollouts 1.9 —
+> confira `oc get csv -n openshift-gitops-operator | grep gitops` no seu hub pra bater com a
+> versão instalada antes de rodar o lab.
+
 ---
 
 ## Conceito Rápido
@@ -37,6 +41,14 @@ O **Argo CD Agent** inverte a direção da conexão:
 | Requisito de rede | Hub precisa alcançar todo spoke | Só o spoke precisa alcançar o hub (outbound) |
 | Onde roda o `application-controller` | No hub, um por cluster gerenciado | Distribuído: um `argocd-agent-agent` leve por managed cluster |
 | Resiliência a queda de rede | Sync para, hub não consegue mais falar com o spoke | Continua funcionando enquanto o spoke tiver saída pra internet |
+
+> **Isso tem nome**: o OpenShift GitOps 1.21 chama exatamente essa combinação — push e pull
+> coexistindo na **mesma instância** de Argo CD do hub, sem precisar de dois Argo CD separados —
+> de **Hybrid Architecture** (Technology Preview). É literalmente o que os Passos 1 e 3 deste
+> lab fazem: a mesma `ApplicationSet`/`Placement`, o mesmo `openshift-gitops` no hub, só troca
+> o `destination.server` de cada `Application`. A ideia oficial é essa arquitetura híbrida servir
+> de ponte pra migrar de Classic (push) pro Argo CD Agent (pull) gradualmente, cluster por
+> cluster, em vez de trocar tudo de uma vez.
 
 **Componentes:**
 
@@ -141,6 +153,12 @@ application appdemo-push-<seu-cluster> -n openshift-gitops -o yaml` vs `oc get a
 appdemo-pull-<seu-cluster> -n openshift-gitops -o yaml`) — é a única diferença estrutural
 relevante entre os dois.
 
+> **Bônus — ver isso visualmente**: o OpenShift GitOps 1.21 traz um **Console Plugin/UI**
+> (Technology Preview) com uma view nova de topologia de `Application`/`ApplicationSet`. Se
+> estiver habilitado no seu hub, vale abrir e comparar visualmente as duas `Application`s
+> (`appdemo-push-<seu-cluster>` e `appdemo-pull-<seu-cluster>`) lado a lado, em vez de só ler
+> YAML pelo `oc get`.
+
 ---
 
 ## Passo 4: A Prova de Verdade — Derrubar a Rede Hub → Seu Managed Cluster
@@ -191,3 +209,7 @@ clusteradm uninstall hub-addon --names argocd-agent
 - [Using the Argo CD Agent with OpenShift GitOps — Red Hat Developer](https://developers.redhat.com/blog/2025/10/06/using-argo-cd-agent-openshift-gitops)
 - [`open-cluster-management-io/ocm` — solutions/argocd-agent](https://github.com/open-cluster-management-io/ocm/tree/main/solutions/argocd-agent)
 - [`argoproj-labs/argocd-agent`](https://github.com/argoproj-labs/argocd-agent)
+- *OpenShift GitOps 1.21 Release Highlights* (material de "What's New" da Red Hat) — confirma
+  as versões dos componentes (Argo CD 3.4, Argo CD Agent 0.9, Argo Rollouts 1.9) e nomeia
+  oficialmente a **Hybrid Architecture** (Technology Preview) e o **Console Plugin/UI**
+  (Technology Preview) usados neste lab.
