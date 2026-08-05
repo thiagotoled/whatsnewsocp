@@ -1,11 +1,19 @@
 # Exercício 9: Dashboards com o Red Hat Build of Perses — Dois Caminhos
 
-> **Ainda não validado ao vivo** — escrito com base na documentação oficial (Red Hat Developer,
-> docs do Cluster Observability Operator, e o guia oficial *Red Hat Advanced Cluster Management
-> for Kubernetes 2.17 — Observability*), pendente de teste num cluster com COO 1.5 (Parte 1) e
-> num hub ACM 2.17 real (Parte 2). Pontos específicos a confirmar: o schema exato do
-> `PersesDashboard` (Parte 1) e o endpoint do `thanos-querier` local (porta/TLS); e, na Parte 2,
-> se o patch do MCO realmente expõe o dashboard `ACM Clusters Overview` como descrito no guia.
+> **Validado ao vivo em OCP 4.22.8 / COO 1.5.1 / ACM 2.17**: as duas partes foram aplicadas de
+> ponta a ponta num cluster real. A pesquisa original tinha **três erros de schema** na Parte 1,
+> todos corrigidos e confirmados via `oc explain`:
+> 1. `UIPlugin` usava `apiVersion: monitoring.rhobs/v1alpha2` — o CRD real é
+>    `observability.openshift.io/v1alpha1`.
+> 2. `spec.type` era `monitoring` (minúsculo) — o enum real é capitalizado (`Monitoring`).
+> 3. `PersesDashboard` tinha `display`/`duration`/`panels`/`layouts` direto em `spec` — na
+>    verdade tudo isso vive aninhado em `spec.config` (`spec.config.display`, etc).
+>
+> O `PersesGlobalDatasource` (porta 9091, `caCert` em `/ca/service-ca.crt`) já estava certo —
+> confirmado comparando com o datasource que o próprio COO cria automaticamente
+> (`accelerators-thanos-querier-datasource`), que usa exatamente o mesmo padrão. A Parte 2
+> também confirmada: MCOA habilitado, 22 `PersesDashboard`s prontos no hub, incluindo o
+> `ACM Clusters Overview` citado no guia oficial.
 
 Existem **dois jeitos diferentes** de ter Perses funcionando no console do OCP em cima do ACM, e
 eles não são a mesma coisa:
@@ -114,10 +122,11 @@ Abra **Observe → Dashboards (Perses)**, selecione o namespace `lab-perses-demo
 **Lab Perses Demo - CPU/Mem por Pod** — dois painéis, CPU e memória por pod, puxando do
 Deployment do Passo 3.
 
-> **Confira o schema antes de aplicar**: os nomes de campo do `PersesDashboard`
-> (`panels`/`queries`/`layouts`) neste manifesto seguem a documentação do projeto Perses, mas
-> não foram confirmados contra a versão exata do CRD instalada pelo COO. Rode
-> `oc explain persesdashboard.spec` no seu cluster e ajuste se necessário.
+> **Schema confirmado ao vivo**: `panels`/`queries`/`layouts` ficam aninhados em `spec.config`,
+> não direto em `spec` — o CRD instalado pelo COO 1.5.1 exige isso
+> (`oc explain persesdashboard.spec --recursive` mostra `config` como único campo
+> obrigatório de topo). A primeira versão deste manifesto tinha os campos soltos direto em
+> `spec` e falhava na validação do CRD.
 
 ---
 
@@ -205,6 +214,13 @@ No console do OCP: **Observe → Dashboards (Perses)** → selecione o projeto
 `open-cluster-management-observability` → abra **ACM Clusters Overview**. Compare com o
 dashboard que você mesmo construiu na Parte 1: aqui não teve `oc apply` de `PersesDashboard`
 nenhum — o dashboard já vem do próprio ACM.
+
+> **Confirmado ao vivo, e vem com muito mais do que só o `ACM Clusters Overview`**: com o MCOA
+> habilitado, o namespace `open-cluster-management-observability` já tem **22** `PersesDashboard`
+> prontos — `acm-clusters-overview`, `acm-alert-analysis`, `acm-alerts-by-cluster`,
+> `acm-cluster-rsrc-use`, `acm-optimization-overview`, e um conjunto inteiro de dashboards
+> `k8s-compute-resources-*`/`k8s-networking-*`/`k8s-slo-*` no estilo kube-prometheus clássico,
+> só que nativos em Perses. Vale mostrar mais de um na demonstração, não só o primeiro.
 
 ### Parte 1 vs. Parte 2, Resumo
 

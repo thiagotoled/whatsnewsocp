@@ -1,8 +1,11 @@
 # Datasource local -- Thanos Querier padrão do monitoramento da plataforma, do SEU cluster.
 # Diferente do Lab 9 Parte 2 (frota via ACM), aqui não tem rbac-query-proxy nenhum envolvido --
 # é só o Thanos Querier que toda instalação do OCP já tem em openshift-monitoring.
-# Porta/TLS exatos ainda não validados ao vivo -- ajuste depois de rodar
-# `oc get svc thanos-querier -n openshift-monitoring`.
+# Porta 9091 e caCert em /ca/service-ca.crt confirmados ao vivo -- batem exatamente com o
+# datasource que o próprio COO cria automaticamente (accelerators-thanos-querier-datasource,
+# namespace openshift-cluster-observability-operator). O campo `secret` referencia um Secret
+# que não precisa existir de verdade -- o datasource oficial do COO faz a mesma coisa
+# (accelerators-thanos-querier-datasource-secret também não existe) e funciona normalmente.
 apiVersion: perses.dev/v1alpha2
 kind: PersesGlobalDatasource
 metadata:
