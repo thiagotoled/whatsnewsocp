@@ -1,0 +1,16 @@
+# Confirmado ao vivo E na doc oficial (RHACM 2.17 GitOps, seção 1.6, aviso "Important"): sem
+# isso, o application-controller do push model recebe "forbidden" ao tentar criar recursos nos
+# managed clusters -- a Application fica presa em erro de sync mesmo com tudo mais certo.
+# Faltava nos manifests originais deste lab.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: argo-admin-appdemo-push
+subjects:
+  - kind: ServiceAccount
+    name: openshift-gitops-argocd-application-controller
+    namespace: openshift-gitops
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin

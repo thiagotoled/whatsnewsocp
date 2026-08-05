@@ -1,16 +1,17 @@
-# Substitui o ArgoCD (openshift-gitops) por uma configuração compatível com o modo Agent --
-# confirmado no guia oficial (RHACM 2.17 GitOps, seção 1.14 "Configuring subscriptions and
-# resources for Argo CD"). Isso desliga o controller tradicional (controller.enabled: false) e
-# liga o principal do Argo CD Agent com autenticação mTLS. Só no hub, uma vez -- não se aplica
-# em managed clusters.
+# NÃO aplique este arquivo com `oc apply -f` direto -- ele é só a referência do fragmento a
+# ser mesclado no ArgoCD (openshift-gitops) que o operator já criou, via `oc patch --type=merge`
+# (ver Passo 2b do README). Um `oc apply -f` de recurso inteiro re-escreveria o spec inteiro e
+# apagaria campos que o operator já define (incluindo o controller tradicional), quebrando o
+# Passo 1 (push) -- confirmado ao vivo: o controller tradicional PRECISA continuar habilitado
+# pro modelo push do lab continuar funcionando (é o ponto da "Hybrid Architecture": os dois
+# modelos coexistindo na mesma instância). Por isso este fragmento não tem `controller.enabled`
+# em lugar nenhum -- não mexemos nesse campo, só adicionamos o bloco argoCDAgent.
 apiVersion: argoproj.io/v1beta1
 kind: ArgoCD
 metadata:
   name: openshift-gitops
   namespace: openshift-gitops
 spec:
-  controller:
-    enabled: false
   sourceNamespaces:
     - '*'
   argoCDAgent:

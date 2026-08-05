@@ -1,19 +1,18 @@
-# Modelo pull (Argo CD Agent): mesmo ApplicationSet/Placement do modelo push (reusa o
-# placement-argocd-agent-demo do 01-appset-push-model.yaml), só muda o destination -- em vez
-# do endpoint da API de cada managed cluster ({{server}}), usa destination.name: '{{name}}'.
+# Isso NÃO cria uma segunda Application -- é o MESMO ApplicationSet "appdemo" do
+# 01-appset-push-model.yaml, reaplicado com o campo destination trocado. `oc apply` sobre um
+# objeto com o mesmo apiVersion/kind/namespace/name atualiza em vez de criar; a Application
+# derivada (appdemo-{{name}}) também é atualizada em vez de duplicada -- por isso o nome do
+# ApplicationSet e o template.metadata.name aqui são idênticos ao manifesto do Passo 1.
+#
 # Confirmado no guia oficial (RHACM 2.17 GitOps, seção 1.11): em modo agent, o principal usa
 # "destination-based mapping" (destinationBasedMapping: true na ArgoCD do hub, ver
 # 03-argocd-agent-mode.yaml) para rotear pelo NOME do managed cluster, sem load balancer nem
 # query param nenhum -- diferente do que uma primeira pesquisa (sem a doc oficial) sugeria.
 # Quem efetivamente puxa e aplica é o agent rodando NO managed cluster, não o Argo CD do hub.
-#
-# {{name}} já resolve sozinho pro nome de CADA managed cluster que casar com o Placement, então
-# uma turma inteira aplicando este mesmo ApplicationSet gera uma Application por aluno, sem
-# colisão de nome.
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
-  name: appdemo-pull
+  name: appdemo
   namespace: openshift-gitops
 spec:
   generators:
@@ -25,7 +24,7 @@ spec:
         requeueAfterSeconds: 180
   template:
     metadata:
-      name: 'appdemo-pull-{{name}}'
+      name: 'appdemo-{{name}}'
     spec:
       project: default
       source:

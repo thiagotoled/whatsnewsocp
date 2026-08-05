@@ -1,12 +1,11 @@
 # Exercício 8: GitOps Argo Agent Addon (ACM 2.17, Technology Preview)
 
-> **Ainda não validado ao vivo** — reescrito com base no guia oficial *Red Hat Advanced Cluster
-> Management for Kubernetes 2.17 — GitOps* (seções 1.11 e 1.14), que substituiu por completo a
-> minha primeira versão baseada em blog posts. Pendente de teste num hub ACM 2.17 real —
-> principalmente os nomes exatos de pod/namespace e o comportamento de
-> `destinationBasedMapping` no seu ambiente.
+> **Ainda não validado ao vivo por completo** — reescrito com base no guia oficial *Red Hat
+> Advanced Cluster Management for Kubernetes 2.17 — GitOps* (seções 1.11 e 1.14) e em correções
+> confirmadas ao vivo num hub real (ver notas "confirmado ao vivo" espalhadas pelo README).
+> Pendente: o teste completo dos Passos 2 e 5 (queda de rede) ainda não foi validado.
 >
-> **Correção importante em relação à versão anterior deste lab**: não existe `clusteradm
+> **Correção importante em relação à primeira versão deste lab**: não existe `clusteradm
 > install hub-addon --names argocd-agent` no fluxo oficial do ACM. A instalação real é via um
 > recurso `GitOpsCluster` com `spec.gitopsAddon.argoCDAgent.enabled: true` — bem mais
 > configuração de pré-requisito do que um único comando de CLI.
@@ -16,12 +15,13 @@
 > **mesmo `oc apply`** funciona pra turma inteira: cada managed cluster de cada aluno (rotulado
 > `whatsnewsocp-lab=true`) gera sua própria `Application` automaticamente, sem ninguém
 > sobrescrever o objeto de outro colega. Toda a configuração de pré-requisito e a instalação do
-> addon (Passo 2) são feitas **uma vez só, pelo instrutor**.
+> addon (Passo 3) são feitas **uma vez só, pelo instrutor**.
 
-Neste laboratório, você vai comparar o modelo **tradicional** de GitOps multicluster do ACM
-(Argo CD `ApplicationSet` + `Placement`, alcançando cada managed cluster diretamente) com o
-**Argo CD Agent** (addon do ACM 2.17, **Technology Preview**) — um modelo **pull**, onde é o
-managed cluster que abre conexão para o hub, não o contrário.
+Neste laboratório, você vai pegar **a mesma aplicação** e observar ela primeiro no modelo
+**tradicional** (Argo CD `ApplicationSet` + `Placement`, alcançando cada managed cluster
+diretamente) e depois **convertida** pro **Argo CD Agent** (addon do ACM 2.17, **Technology
+Preview**) — um modelo **pull**, onde é o managed cluster que abre conexão para o hub, não o
+contrário.
 
 > **Versões (OpenShift GitOps 1.21)**: Argo CD 3.4, Argo CD Agent **0.9**, Argo Rollouts 1.9 —
 > confira `oc get csv -n openshift-gitops-operator | grep gitops` no seu hub pra bater com a
@@ -49,11 +49,18 @@ O **Argo CD Agent** inverte a direção da conexão:
 
 > **Isso tem nome**: o OpenShift GitOps 1.21 chama exatamente essa combinação — push e pull
 > coexistindo na **mesma instância** de Argo CD do hub, sem precisar de dois Argo CD separados —
-> de **Hybrid Architecture** (Technology Preview). É literalmente o que os Passos 1 e 3 deste
-> lab fazem: a mesma `ApplicationSet`/`Placement`, o mesmo `openshift-gitops` no hub, só troca
-> o campo `destination` de cada `Application`. A ideia oficial é essa arquitetura híbrida servir
-> de ponte pra migrar de Classic (push) pro Argo CD Agent (pull) gradualmente, cluster por
-> cluster, em vez de trocar tudo de uma vez.
+> de **Hybrid Architecture** (Technology Preview). A ideia oficial é essa arquitetura híbrida
+> servir de ponte pra migrar de Classic (push) pro Argo CD Agent (pull) gradualmente, cluster
+> por cluster, em vez de trocar tudo de uma vez.
+
+> **Uma app, dois modelos — não duas apps**: as duas primeiras versões deste lab tentavam ter
+> `appdemo-push-<cluster>` e `appdemo-pull-<cluster>` como `Application`s separadas, vivas ao
+> mesmo tempo, comparando lado a lado. Confirmado ao vivo: isso gera um `SharedResourceWarning`
+> no Argo CD, porque as duas apontam pro mesmo `Deployment`/namespace no managed cluster — duas
+> `Application`s brigando pela posse do mesmo recurso. A versão corrigida usa **um único**
+> `ApplicationSet` (`appdemo`), aplicado primeiro como push, depois **convertido** pra pull (o
+> Passo 4 reaplica o mesmo objeto com o campo `destination` trocado) — por isso os testes de
+> rede (Passos 2 e 5) são sequenciais, não simultâneos.
 
 **Componentes** (todos no namespace `openshift-gitops`, não `argocd`):
 
@@ -74,8 +81,8 @@ O **Argo CD Agent** inverte a direção da conexão:
 - Pelo menos um managed cluster importado (além do hub), rotulado `whatsnewsocp-lab: "true"`.
 - OpenShift GitOps instalado no hub (o `policy-gitops-operator-install` deste repositório já
   cuida disso), com a `Subscription` do operator configurada com as variáveis de ambiente do
-  Passo 2a.
-- `ManagedClusterSet` vinculado ao namespace `openshift-gitops` (Passo 2c).
+  Passo 3a.
+- `ManagedClusterSet` vinculado ao namespace `openshift-gitops` (Passo 3c).
 - Acesso de administrador ao hub e ao managed cluster de teste.
 
 ---
@@ -88,29 +95,50 @@ direto no managed cluster):
 
 ```bash
 oc apply -f 08-GitOpsArgoAgent/manifests/01-appset-push-model.yaml
-oc get applicationset appdemo-push -n openshift-gitops
-oc get application -n openshift-gitops -l app.kubernetes.io/instance=appdemo-push
+oc get applicationset appdemo -n openshift-gitops
+oc get application -n openshift-gitops -l app.kubernetes.io/instance=appdemo
 ```
 
-O segundo comando lista uma `Application` (`appdemo-push-<nome-do-cluster>`) por managed
-cluster rotulado `whatsnewsocp-lab=true` na turma inteira — ache a sua pelo nome do seu
-cluster. Confirme no managed cluster que o Deployment subiu:
+O segundo comando lista uma `Application` (`appdemo-<nome-do-cluster>`) por managed cluster
+rotulado `whatsnewsocp-lab=true` na turma inteira — ache a sua pelo nome do seu cluster.
+Confirme no managed cluster que o Deployment subiu:
 
 ```bash
 oc get deployment appdemo -n gitops-agent-demo --context <managed-cluster>
 ```
 
 Esse é o comportamento de hoje: o Argo CD do hub está falando **diretamente** com a API do
-managed cluster.
+managed cluster (`spec.destination.server`).
 
 ---
 
-## Passo 2: Instalar o Argo CD Agent Addon (instrutor, uma vez só)
+## Passo 2: Provar a Fragilidade do Push
+
+Antes de instalar o Agent, prove o problema que ele resolve. É individual — cada aluno bloqueia
+só a rede do **próprio** managed cluster, sem afetar os colegas. No Azure, bloqueie tráfego
+**inbound** no NSG do seu managed cluster vindo do hub (mantendo a saída liberada):
+
+```bash
+# Ajuste ao seu ambiente -- o objetivo é: hub NÃO consegue mais iniciar conexão pro SEU
+# managed cluster, mas ele ainda consegue falar com o hub (outbound liberado).
+```
+
+Force uma mudança (ex.: mude o número de réplicas no manifesto e reaplique só a fonte Git) e
+observe sua `Application` (`appdemo-<seu-cluster>`): ela fica `Unknown`/`OutOfSync` sem
+conseguir reconciliar — o Argo CD do hub não alcança mais o seu managed cluster pra aplicar
+nada.
+
+**Restaure a rede** (libere o inbound de novo) antes de seguir pro próximo passo — o Passo 4
+precisa que o push volte a sincronizar normalmente antes de converter.
+
+---
+
+## Passo 3: Instalar o Argo CD Agent Addon (instrutor, uma vez só)
 
 Diferente de um addon "liga e pronto", o modo Agent do OpenShift GitOps exige configurar o
-operator e o `ArgoCD` do hub antes de criar o `GitOpsCluster`. São 6 sub-passos, todos no hub.
+operator e o `ArgoCD` do hub antes de criar o `GitOpsCluster`. São 7 sub-passos, todos no hub.
 
-### 2a. Configurar a Subscription do operator
+### 3a. Configurar a Subscription do operator
 
 ```bash
 oc patch subscription.operators openshift-gitops-operator -n openshift-gitops-operator \
@@ -121,17 +149,37 @@ oc patch subscription.operators openshift-gitops-operator -n openshift-gitops-op
   ]}}}'
 ```
 
-### 2b. Substituir o `ArgoCD` pela configuração de modo Agent
+### 3b. Adicionar a configuração de modo Agent no `ArgoCD` existente
+
+**Importante — use `oc patch`, não `oc apply -f`.** Um `oc apply -f` de um `ArgoCD` inteiro
+reescreve o `spec` todo e derruba o `controller.enabled` (que precisa continuar ligado — é
+ele que faz o Passo 1/push funcionar). O `03-argocd-agent-mode.yaml` deste lab é só a
+*referência* do fragmento; aplique via patch:
 
 ```bash
-oc apply -f 08-GitOpsArgoAgent/manifests/03-argocd-agent-mode.yaml
+oc patch argocd openshift-gitops -n openshift-gitops --type=merge -p '{
+  "spec": {
+    "sourceNamespaces": ["*"],
+    "argoCDAgent": {
+      "principal": {
+        "enabled": true,
+        "destinationBasedMapping": true,
+        "auth": "mtls:CN=system:open-cluster-management:cluster:([^:]+):addon:gitops-addon:agent:gitops-addon-agent",
+        "namespace": {"allowedNamespaces": ["*"]},
+        "server": {"route": {"enabled": true}}
+      }
+    }
+  }
+}'
 ```
 
-Isso desliga o controller tradicional (`controller.enabled: false`) e liga o principal com
-`destinationBasedMapping: true` — é isso que faz `destination.name: '{{name}}'` funcionar no
-Passo 3.
+Isso liga o principal com `destinationBasedMapping: true` (é o que faz
+`destination.name: '{{name}}'` funcionar no Passo 4) **sem tocar** no controller tradicional
+do push — confirmado ao vivo: com `controller.enabled: false` (como uma primeira versão deste
+lab tinha, seguindo um exemplo da doc oficial escrito pra modo Agent puro, não híbrido), o
+Passo 1 quebra.
 
-### 2c. `AppProject` wildcard e `ManagedClusterSetBinding`
+### 3c. `AppProject` wildcard e `ManagedClusterSetBinding`
 
 ```bash
 oc apply -f 08-GitOpsArgoAgent/manifests/04-appproject-wildcard.yaml
@@ -141,19 +189,29 @@ oc apply -f 08-GitOpsArgoAgent/manifests/05-managedclustersetbinding.yaml
 > Confira se `clusterSet: default` bate com o seu hub (`oc get managedclusterset`) — ajuste o
 > manifesto se o nome for outro.
 
-### 2d. Criar o `GitOpsCluster` (isso é o que de fato liga o addon)
+### 3d. Criar o `GitOpsCluster` (isso é o que de fato liga o addon)
 
 ```bash
 oc apply -f 08-GitOpsArgoAgent/manifests/06-gitopscluster-agent.yaml
 ```
 
-### 2e. Conceder a role `view` pro agent nos managed clusters
+### 3e. Conceder a role `view` pro agent nos managed clusters
 
 ```bash
 oc apply -f 08-GitOpsArgoAgent/manifests/07-agent-view-clusterrolebinding.yaml
 ```
 
-### 2f. Verificar
+### 3f. RBAC pro Push Model Funcionar
+
+Sem isso, o `application-controller` recebe `forbidden` ao tentar criar recursos nos managed
+clusters — a `Application` do Passo 1 fica presa em erro de sync mesmo com o resto certo
+(confirmado ao vivo; também documentado na doc oficial, seção 1.6, aviso "Important"):
+
+```bash
+oc apply -f 08-GitOpsArgoAgent/manifests/08-push-model-rbac.yaml
+```
+
+### 3g. Verificar
 
 ```bash
 oc get gitopscluster gitops-agent-clusters -n openshift-gitops -o jsonpath='{.status.conditions}' | jq .
@@ -170,56 +228,47 @@ oc --context <managed-cluster> get pods -n openshift-gitops -l app.kubernetes.io
 
 ---
 
-## Passo 3: O Mesmo App, Agora via Pull
+## Passo 4: Converter a Mesma App pra Pull
 
-Aplique — é o mesmo `ApplicationSet`/`Placement` do Passo 1, só muda o campo `destination`: em
-vez do endpoint da API de cada managed cluster (`destination.server: '{{server}}'`), usa
+Reaplique o **mesmo** `ApplicationSet` (`appdemo`) — só o campo `destination` muda: em vez do
+endpoint da API de cada managed cluster (`destination.server: '{{server}}'`), usa
 `destination.name: '{{name}}'` — o principal resolve pelo nome do managed cluster
-(`destinationBasedMapping`, configurado no Passo 2b), sem load balancer nem query param
+(`destinationBasedMapping`, configurado no Passo 3b), sem load balancer nem query param
 nenhum:
 
 ```bash
 oc apply -f 08-GitOpsArgoAgent/manifests/02-application-pull-model.yaml
-oc get application -n openshift-gitops -l app.kubernetes.io/instance=appdemo-pull
+oc get application appdemo-<seu-cluster> -n openshift-gitops -o yaml
 ```
 
-Compare o `spec.destination` da sua `Application` gerada em cada modelo (`oc get application
-appdemo-push-<seu-cluster> -n openshift-gitops -o yaml` vs `oc get application
-appdemo-pull-<seu-cluster> -n openshift-gitops -o yaml`) — é a única diferença estrutural
-relevante entre os dois.
+Repare: é a **mesma** `Application` (`appdemo-<seu-cluster>`, mesmo nome de antes) — só o
+`spec.destination` mudou de `server` pra `name`. Não foi criada uma segunda `Application`.
 
 > **Bônus — ver isso visualmente**: o OpenShift GitOps 1.21 traz um **Console Plugin/UI**
 > (Technology Preview) com uma view nova de topologia de `Application`/`ApplicationSet`. Se
-> estiver habilitado no seu hub, vale abrir e comparar visualmente as duas `Application`s
-> (`appdemo-push-<seu-cluster>` e `appdemo-pull-<seu-cluster>`) lado a lado, em vez de só ler
-> YAML pelo `oc get`.
+> estiver habilitado no seu hub, vale abrir e ver a mesma `Application` antes/depois da
+> conversão, em vez de só ler YAML pelo `oc get`.
 
 ---
 
-## Passo 4: A Prova de Verdade — Derrubar a Rede Hub → Seu Managed Cluster
+## Passo 5: Provar a Resiliência do Pull
 
-Esse é o ponto central do lab, e é individual — cada aluno bloqueia só a rede do **próprio**
-managed cluster, sem afetar os colegas. No Azure, bloqueie tráfego **inbound** no NSG do seu
-managed cluster vindo do hub (mantendo a saída liberada):
+Repita **exatamente** o mesmo teste do Passo 2 — bloqueie o mesmo tráfego inbound (hub → seu
+managed cluster) e force a mesma mudança (réplicas, por exemplo):
 
-```bash
-# Ajuste ao seu ambiente -- o objetivo é: hub NÃO consegue mais iniciar conexão pro SEU
-# managed cluster, mas ele ainda consegue falar com o hub (outbound liberado).
-```
+- No Passo 2 (push), a `Application` ficava `Unknown`/`OutOfSync`.
+- Agora (pull), ela **continua sincronizando normalmente** — é o **agent no seu managed
+  cluster** que puxa a mudança do principal, então só precisa de conectividade **de saída**,
+  que nunca foi interrompida.
 
-Force uma mudança nos dois apps (ex.: mude o número de réplicas no manifesto e reaplique só a
-fonte Git) e observe **as suas duas `Application`s** (`appdemo-push-<seu-cluster>` e
-`appdemo-pull-<seu-cluster>`):
+Esse é o ponto central do lab: a mesma aplicação, a mesma queda de rede, comportamento
+diferente — só porque o campo `destination` mudou no Passo 4.
 
-- **`appdemo-push-<seu-cluster>`**: fica `Unknown`/`OutOfSync` sem conseguir reconciliar — o
-  Argo CD do hub não alcança mais o seu managed cluster pra aplicar nada.
-- **`appdemo-pull-<seu-cluster>`**: continua sincronizando normalmente — é o **agent no seu
-  managed cluster** que puxa a mudança do principal, então só precisa de conectividade **de
-  saída**, que nunca foi interrompida.
+Restaure a rede antes de seguir pra limpeza.
 
 ---
 
-## Passo 5: Limpeza
+## Passo 6: Limpeza
 
 **Individual** (cada aluno, no próprio managed cluster):
 
@@ -227,13 +276,13 @@ fonte Git) e observe **as suas duas `Application`s** (`appdemo-push-<seu-cluster
 oc --context <managed-cluster> delete namespace gitops-agent-demo
 ```
 
-**Compartilhado** (instrutor, só depois que **todo mundo** terminar — os `ApplicationSet`s e
+**Compartilhado** (instrutor, só depois que **todo mundo** terminar — o `ApplicationSet` e
 o addon valem pra turma inteira):
 
 ```bash
 oc delete -f 08-GitOpsArgoAgent/manifests/01-appset-push-model.yaml
-oc delete -f 08-GitOpsArgoAgent/manifests/02-application-pull-model.yaml
 oc delete -f 08-GitOpsArgoAgent/manifests/07-agent-view-clusterrolebinding.yaml
+oc delete -f 08-GitOpsArgoAgent/manifests/08-push-model-rbac.yaml
 oc delete gitopscluster gitops-agent-clusters -n openshift-gitops
 ```
 
@@ -242,6 +291,7 @@ oc delete gitopscluster gitops-agent-clusters -n openshift-gitops
 ## Referências
 
 - *Red Hat Advanced Cluster Management for Kubernetes 2.17 — GitOps* (guia oficial), seções
+  1.6 "Deploying Argo CD with Push and Pull model" (aviso RBAC do `application-controller`),
   1.11 "Enabling Red Hat OpenShift GitOps add-on with Argo CD Agent (Technology Preview)" e
   1.14 "Configuring subscriptions and resources for Argo CD" — fonte primária deste lab,
   substitui os blog posts usados na primeira versão.
