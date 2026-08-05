@@ -73,7 +73,7 @@ oc get gatewayclass
 Se `openshift-default` já aparecer na lista, pule a criação. Senão:
 
 ```bash
-oc apply -f 12-GatewayAPI/manifests/01-gatewayclass.yaml
+oc apply -f 11-GatewayAPI/manifests/01-gatewayclass.yaml
 oc get gatewayclass openshift-default -o jsonpath='{.status.conditions}' | jq .
 ```
 
@@ -84,9 +84,9 @@ Espere a condição `Accepted: "True"`.
 ## Passo 2: Subir as Duas Apps de Exemplo
 
 ```bash
-oc apply -f 12-GatewayAPI/manifests/02-namespace.yaml
-oc apply -f 12-GatewayAPI/manifests/03-app-a.yaml
-oc apply -f 12-GatewayAPI/manifests/04-app-b.yaml
+oc apply -f 11-GatewayAPI/manifests/02-namespace.yaml
+oc apply -f 11-GatewayAPI/manifests/03-app-a.yaml
+oc apply -f 11-GatewayAPI/manifests/04-app-b.yaml
 oc get pods -n lab-gateway-demo
 ```
 
@@ -98,8 +98,8 @@ conteúdo das respostas.
 ## Passo 3: Criar os Dois `Gateway`s
 
 ```bash
-oc apply -f 12-GatewayAPI/manifests/05-gateway-a.yaml
-oc apply -f 12-GatewayAPI/manifests/06-gateway-b.yaml
+oc apply -f 11-GatewayAPI/manifests/05-gateway-a.yaml
+oc apply -f 11-GatewayAPI/manifests/06-gateway-b.yaml
 ```
 
 Confirme que **cada um** gerou seu próprio `Deployment` e `Service LoadBalancer`, separados:
@@ -116,8 +116,8 @@ Anote os dois `EXTERNAL-IP`/hostname — vão ser diferentes um do outro.
 ## Passo 4: Criar os `HTTPRoute`s e Testar
 
 ```bash
-oc apply -f 12-GatewayAPI/manifests/07-httproute-a.yaml
-oc apply -f 12-GatewayAPI/manifests/08-httproute-b.yaml
+oc apply -f 11-GatewayAPI/manifests/07-httproute-a.yaml
+oc apply -f 11-GatewayAPI/manifests/08-httproute-b.yaml
 ```
 
 Como os hostnames (`app-a.gwapi.example.com`, `app-b.gwapi.example.com`) não têm DNS real
@@ -160,12 +160,12 @@ equivalente) do modelo clássico — os dois modelos coexistem no mesmo cluster,
 ## Passo 6: Limpeza
 
 ```bash
-oc delete -f 12-GatewayAPI/manifests/08-httproute-b.yaml
-oc delete -f 12-GatewayAPI/manifests/07-httproute-a.yaml
-oc delete -f 12-GatewayAPI/manifests/06-gateway-b.yaml
-oc delete -f 12-GatewayAPI/manifests/05-gateway-a.yaml
-oc delete -f 12-GatewayAPI/manifests/04-app-b.yaml
-oc delete -f 12-GatewayAPI/manifests/03-app-a.yaml
+oc delete -f 11-GatewayAPI/manifests/08-httproute-b.yaml
+oc delete -f 11-GatewayAPI/manifests/07-httproute-a.yaml
+oc delete -f 11-GatewayAPI/manifests/06-gateway-b.yaml
+oc delete -f 11-GatewayAPI/manifests/05-gateway-a.yaml
+oc delete -f 11-GatewayAPI/manifests/04-app-b.yaml
+oc delete -f 11-GatewayAPI/manifests/03-app-a.yaml
 oc delete namespace lab-gateway-demo
 ```
 

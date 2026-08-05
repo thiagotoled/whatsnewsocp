@@ -18,15 +18,18 @@ Cada diretório contém um laboratório independente com manifestos prontos para
 | 7 | [Vulnerabilidades no Console e Mais Controle no CRS](./07-VulnerabilitiesAndCRS/README.md) | Plugin `advanced-cluster-security` do RHACS no console do OpenShift + controles de **validade** e **max registrations** na geração do CRS (RHACS 4.11) | 4.20+ / ACS 4.11 | GA | ~25 min |
 | 8 | [GitOps Argo Agent Addon](./08-GitOpsArgoAgent/README.md) **(não validado ao vivo)** | Modelo **pull** de GitOps multicluster do ACM 2.17 — managed cluster conecta no hub, não o contrário | ACM 2.17 | Tech Preview | ~35 min |
 | 9 | [Dashboards com o Red Hat Build of Perses](./09-GrafanaToPerses/README.md) **(não validado ao vivo)** | Dois caminhos: Parte 1 — COO genérico (`UIPlugin`/`PersesDashboard`, GA), isolado no cluster de cada aluno. Parte 2 — Multicluster Observability Add-on nativo do ACM (Technology Preview), dashboards de frota prontos, pré-configurado no hub | COO 1.5 / ACM 2.17 | GA + Tech Preview | ~30 min |
-| 10 | [OLM v1 — `ClusterExtension`](./10-OLMv1ClusterExtension/README.md) **(não validado ao vivo)** | `ServiceAccount`+RBAC explícito em vez de permissões automáticas, upgrade só editando `spec.source.catalog.version` | 4.18+ | GA | ~20 min |
-| 11 | [Helm Chart Direto de URL OCI/HTTPS no Console](./11-HelmConsoleOCI/README.md) **(não validado ao vivo)** | Instala um Helm chart sem cadastrar repositório antes — cola a URL `oci://` ou `https://` na hora | 4.22 | GA | ~15 min |
-| 12 | [Gateway API — Dois Gateways Independentes](./12-GatewayAPI/README.md) **(não validado ao vivo)** | Cada `Gateway` gera seu próprio `Deployment`+`LoadBalancer` — isolado no cluster de cada aluno, sem depender de ACM/hub | 4.19+ (Service Mesh 3.0+) | GA | ~25 min |
+| 10 | [Helm Chart Direto de URL OCI/HTTPS no Console](./10-HelmConsoleOCI/README.md) **(não validado ao vivo)** | Instala um Helm chart sem cadastrar repositório antes — cola a URL `oci://` ou `https://` na hora | 4.22 | GA | ~15 min |
+| 11 | [Gateway API — Dois Gateways Independentes](./11-GatewayAPI/README.md) | Cada `Gateway` gera seu próprio `Deployment`+`LoadBalancer` — isolado no cluster de cada aluno, sem depender de ACM/hub | 4.19+ | GA | ~25 min |
 
 > **OCP 4.22** (lançado em 23 de junho de 2026, baseado no Kubernetes 1.35 "Timbernetes"):
-> o In-place Pod Vertical Scaling (Lab 1) passou de Tech Preview para **GA**. Labs 8-12 cobrem
-> outras novidades do 4.19-4.22 e do ACM 2.17/RHACS 4.11 (GitOps pull model, Perses, OLM v1,
-> Helm Console, Gateway API) — marcados **"não validado ao vivo"** até serem testados num
-> cluster real.
+> o In-place Pod Vertical Scaling (Lab 1) passou de Tech Preview para **GA**. Labs 8-11 cobrem
+> outras novidades do 4.19-4.22 e do ACM 2.17/RHACS 4.11 (GitOps pull model, Perses, Helm
+> Console, Gateway API) — marcados **"não validado ao vivo"** até serem testados num cluster
+> real.
+>
+> **Lab de OLM v1 removido**: exigia a capability opcional `OperatorLifecycleManagerV1`, que
+> não vem habilitada por padrão e, uma vez ligada, não pode ser desligada de novo — não dava pra
+> validar sem alterar permanentemente o cluster de testes deste repositório.
 
 ---
 
@@ -133,17 +136,11 @@ oc login --token=<TOKEN> --server=<API_URL>
 │       ├── 03-namespace.yaml
 │       ├── 04-demo-deployment.yaml
 │       └── 05-persesdashboard.yaml
-├── 10-OLMv1ClusterExtension
-│   ├── README.md
-│   └── manifests
-│       ├── 01-namespace.yaml
-│       ├── 02-serviceaccount-rbac.yaml
-│       └── 03-clusterextension.yaml
-├── 11-HelmConsoleOCI
+├── 10-HelmConsoleOCI
 │   ├── README.md
 │   └── manifests
 │       └── 01-helmchartrepository.yaml
-├── 12-GatewayAPI
+├── 11-GatewayAPI
 │   ├── README.md
 │   └── manifests
 │       ├── 01-gatewayclass.yaml
