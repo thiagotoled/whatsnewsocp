@@ -115,12 +115,44 @@ managed cluster (`spec.destination.server`).
 ## Passo 2: Provar a Fragilidade do Push
 
 Antes de instalar o Agent, prove o problema que ele resolve. É individual — cada aluno bloqueia
-só a rede do **próprio** managed cluster, sem afetar os colegas. No Azure, bloqueie tráfego
-**inbound** no NSG do seu managed cluster vindo do hub (mantendo a saída liberada):
+só a rede do **próprio** managed cluster, sem afetar os colegas.
+
+> **Não é "bloquear tudo"** — é bloquear especificamente a porta **6443** (API server), que é
+> por onde o push conecta. O agent (Passo 5) conecta outbound pro principal via **Route do hub
+> (443/HTTPS)**, uma porta completamente diferente — então bloquear só a 6443 já isola o
+> mecanismo certo, sem derrubar a rede inteira nem arriscar cortar seu próprio `oc login`
+> (que também usa 6443, mas de qualquer origem, não só do hub).
+>
+> **Não edite a regra `apiserver_in` do NSG** — no ARO, ela é gerenciada pela plataforma e
+> pode ser revertida pela reconciliação. Em vez disso, **adicione uma regra nova com
+> prioridade menor** (avaliada antes, já que Azure NSG usa "número menor = maior
+> prioridade"), escopada só pro IP de saída do hub.
+>
+> **Ainda não validado ao vivo** — os comandos abaixo não foram testados de ponta a ponta
+> ainda; confirme os nomes de recurso (NSG, resource group) contra o seu ambiente antes de
+> rodar com a turma.
 
 ```bash
-# Ajuste ao seu ambiente -- o objetivo é: hub NÃO consegue mais iniciar conexão pro SEU
-# managed cluster, mas ele ainda consegue falar com o hub (outbound liberado).
+# 1. Descubra o IP de saída do hub -- rode isso a partir de um pod DENTRO do hub, não do seu
+#    laptop (o IP que importa é o que o managed cluster vê chegando, não o seu).
+oc debug -n default --image=registry.access.redhat.com/ubi9/ubi-minimal -- curl -s https://ifconfig.me
+# Anote o IP retornado -- é o $HUB_EGRESS_IP usado abaixo.
+
+# 2. No SEU managed cluster (não no hub), adicione a regra de bloqueio específica:
+RESOURCE_GROUP=<resource-group-do-seu-managed-cluster>
+NSG_NAME=<nome-do-nsg-do-seu-managed-cluster>       # ex.: z3hs03-v8ndb-nsg
+HUB_EGRESS_IP=<ip-anotado-no-passo-1>
+
+az network nsg rule create \
+  --resource-group "$RESOURCE_GROUP" \
+  --nsg-name "$NSG_NAME" \
+  --name block-hub-api-6443 \
+  --priority 100 \
+  --direction Inbound \
+  --access Deny \
+  --protocol Tcp \
+  --source-address-prefixes "${HUB_EGRESS_IP}/32" \
+  --destination-port-ranges 6443
 ```
 
 Force uma mudança (ex.: mude o número de réplicas no manifesto e reaplique só a fonte Git) e
@@ -128,8 +160,15 @@ observe sua `Application` (`appdemo-<seu-cluster>`): ela fica `Unknown`/`OutOfSy
 conseguir reconciliar — o Argo CD do hub não alcança mais o seu managed cluster pra aplicar
 nada.
 
-**Restaure a rede** (libere o inbound de novo) antes de seguir pro próximo passo — o Passo 4
-precisa que o push volte a sincronizar normalmente antes de converter.
+**Restaure a rede** antes de seguir pro próximo passo — o Passo 4 precisa que o push volte a
+sincronizar normalmente antes de converter:
+
+```bash
+az network nsg rule delete \
+  --resource-group "$RESOURCE_GROUP" \
+  --nsg-name "$NSG_NAME" \
+  --name block-hub-api-6443
+```
 
 ---
 
@@ -253,18 +292,39 @@ Repare: é a **mesma** `Application` (`appdemo-<seu-cluster>`, mesmo nome de ant
 
 ## Passo 5: Provar a Resiliência do Pull
 
-Repita **exatamente** o mesmo teste do Passo 2 — bloqueie o mesmo tráfego inbound (hub → seu
-managed cluster) e force a mesma mudança (réplicas, por exemplo):
+Repita **exatamente** a mesma regra do Passo 2 (mesmo comando `az network nsg rule create`,
+bloqueando a 6443 vinda do `$HUB_EGRESS_IP`) e force a mesma mudança (réplicas, por exemplo):
+
+```bash
+az network nsg rule create \
+  --resource-group "$RESOURCE_GROUP" \
+  --nsg-name "$NSG_NAME" \
+  --name block-hub-api-6443 \
+  --priority 100 \
+  --direction Inbound \
+  --access Deny \
+  --protocol Tcp \
+  --source-address-prefixes "${HUB_EGRESS_IP}/32" \
+  --destination-port-ranges 6443
+```
 
 - No Passo 2 (push), a `Application` ficava `Unknown`/`OutOfSync`.
 - Agora (pull), ela **continua sincronizando normalmente** — é o **agent no seu managed
   cluster** que puxa a mudança do principal, então só precisa de conectividade **de saída**,
-  que nunca foi interrompida.
+  que nunca foi interrompida (a 6443 bloqueada nem entra em jogo — o agent fala com o hub via
+  Route/443, não pela API do managed cluster).
 
 Esse é o ponto central do lab: a mesma aplicação, a mesma queda de rede, comportamento
 diferente — só porque o campo `destination` mudou no Passo 4.
 
-Restaure a rede antes de seguir pra limpeza.
+Restaure a rede antes de seguir pra limpeza:
+
+```bash
+az network nsg rule delete \
+  --resource-group "$RESOURCE_GROUP" \
+  --nsg-name "$NSG_NAME" \
+  --name block-hub-api-6443
+```
 
 ---
 
