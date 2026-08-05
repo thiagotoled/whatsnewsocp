@@ -1,9 +1,15 @@
 # Exercício 11: Instalar Helm Chart Direto de uma URL OCI/HTTPS no Console (4.22)
 
-> **Ainda não validado ao vivo** — escrito com base no conteúdo oficial do "What's New in
-> OpenShift 4.22" (RFE-7114, RFE-7965) e na documentação de Helm charts do console. Pendente de
-> teste num cluster 4.22 real — este é um lab majoritariamente de UI, sem muito `oc apply`
-> envolvido.
+> **Parcialmente validado ao vivo em OCP 4.22.8**: confirmei os pedaços que dão pra testar via
+> CLI — o CRD `helmchartrepositories.helm.openshift.io` existe, o `HelmChartRepository` do
+> Passo 1 aplica limpo, a URL `https://redhat-developer.github.io/redhat-helm-charts/index.yaml`
+> responde `200`, e a referência OCI usada no Passo 2
+> (`oci://registry-1.docker.io/bitnamicharts/nginx`) resolve de verdade (`helm show chart`
+> puxou o chart normalmente). **O que eu não consegui confirmar**: os Passos 2-4 são só UI do
+> console (Developer perspective → +Add → Helm Chart) — não tenho como abrir navegador aqui pra
+> clicar e confirmar que a opção "instalar por URL" (RFE-7114/7965) realmente aparece nesse
+> build específico do console. Abra o console manualmente antes da aula pra confirmar essa
+> parte.
 
 Neste laboratório, você vai instalar um Helm chart no console do OpenShift **sem cadastrar um
 repositório antes** — direto de uma URL `oci://` ou `https://` — a novidade do 4.22
