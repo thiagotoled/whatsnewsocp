@@ -1,11 +1,13 @@
 # Exercício 12: Gateway API — Dois Gateways, Dois LoadBalancers Independentes
 
-> **Ainda não validado ao vivo** — escrito com base na documentação oficial do OKD/OCP
-> (Gateway API with OpenShift Container Platform networking) e num artigo técnico com YAML
-> testado ([krenger.ch](https://www.krenger.ch/blog/using-the-gateway-api-on-openshift/)), não
-> num guia oficial completo do Red Hat Docs (o site bloqueou fetch automatizado). Pontos a
-> confirmar ao vivo: se o `GatewayClass openshift-default` já vem criado por padrão ou precisa
-> ser criado manualmente, e a versão exata do Gateway API empacotada no seu cluster.
+> **Validado ao vivo em OCP 4.22.8**: os 8 manifestos deste lab (`GatewayClass`, namespace, 2
+> apps, 2 `Gateway`s, 2 `HTTPRoute`s) foram aplicados de ponta a ponta num cluster real. Achado
+> importante que corrige a primeira versão deste README: **não precisa de OpenShift Service
+> Mesh Operator instalado** — nesse cluster, sem nenhum CSV de Service Mesh/Istio/Sail presente,
+> o `GatewayClass openshift-default` foi `Accepted` sozinho e um `istiod` (v1.28.5) subiu
+> automaticamente em `openshift-ingress`, gerenciado pelo próprio Ingress Operator (`status`
+> mostra `reason: ManagedByCIO` — Cluster Ingress Operator). Os dois `Gateway`s programaram com
+> IP próprio (`PROGRAMMED: True`) em menos de 2 minutos.
 
 Neste laboratório, você vai subir **dois `Gateway` completamente independentes** no mesmo
 cluster — cada um com seu próprio `Deployment` e `Service` do tipo `LoadBalancer` — e comparar
@@ -20,9 +22,11 @@ isso com o modelo clássico do Route/Router do OpenShift.
 
 O Gateway API é a evolução **Kubernetes-nativa** do Ingress — parte do projeto upstream
 `gateway-api`, não específico do OpenShift (diferente do `Route`, que é uma API só da Red Hat).
-No OpenShift, a API/CRDs vêm via Ingress Operator (GA desde o 4.19), mas quem de fato
-reconcilia os objetos `Gateway` é o **OpenShift Service Mesh Operator 3.0+** (baseado em
-Istio) — sem ele instalado, criar um `Gateway` não gera nada.
+No OpenShift, a API/CRDs vêm via Ingress Operator (GA desde o 4.19), e quem reconcilia os
+objetos `Gateway` é um `istiod` (baseado em Istio) — **confirmado ao vivo que o próprio Ingress
+Operator já provisiona esse `istiod` sozinho quando o primeiro `GatewayClass` é criado**, sem
+precisar instalar o OpenShift Service Mesh Operator à parte (isso corrige o que uma pesquisa
+sem doc oficial completa sugeria antes).
 
 - **`GatewayClass`**: cluster-scoped, define **qual controller** implementa os `Gateway`s que o
   referenciam (`controllerName: openshift.io/gateway-controller/v1`). É o "sabor" de gateway —
@@ -36,6 +40,12 @@ Istio) — sem ele instalado, criar um `Gateway` não gera nada.
   um `Gateway` via `parentRefs`. É aqui que o modelo de responsabilidade muda: o time de
   infraestrutura é dono do `Gateway`, o time de aplicação é dono do `HTTPRoute` no próprio
   namespace — sem precisar de permissão pra mexer em `openshift-ingress`.
+
+> **Por que criar dois `Gateway`s em vez de um só**: não é só sobre isolamento de tráfego — é
+> sobre prática. Criar um `Gateway` é, na prática, o equivalente em Gateway API de provisionar
+> um novo `IngressController`: gera um `Deployment` e um `Service LoadBalancer` do zero, do
+> jeito clássico já ensinado em outros exercícios deste curso. Fazer isso duas vezes (uma por
+> app) dá ao aluno a repetição desse fluxo de provisionamento, não só o resultado final.
 
 > **Isso não é a única forma de ter múltiplos pontos de entrada no OpenShift**: o `Route`/
 > `IngressController` clássico já suporta sharding (vários routers). O diferencial real do
@@ -129,6 +139,10 @@ curl -H "Host: app-b.gwapi.example.com" "http://${LB_B}/"
 
 Confirme que os dois respondem, cada um pelo seu próprio `LoadBalancer` — prova de que são
 duas instâncias de verdade, não uma só compartilhada.
+
+> **Confirmado ao vivo**: `app-a` responde `200` só via `LB_A`, `app-b` só via `LB_B`. Teste
+> cruzado (`Host: app-a.gwapi.example.com` contra `LB_B`) retorna `404` — prova de isolamento
+> real entre os dois `Gateway`s, não é só um LB compartilhado com hostnames diferentes.
 
 ---
 
