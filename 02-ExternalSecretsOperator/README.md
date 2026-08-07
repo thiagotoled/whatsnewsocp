@@ -128,20 +128,26 @@ APP_PASSWORD=<valor-do-seu-segredo-no-keyvault>
 oc new-project app
 ```
 
-Edite [`07-push-source-secret.yaml`](ocp-manifests/07-push-source-secret.yaml) com o valor desejado para `password`, depois aplique:
+Baixe [`07-push-source-secret.yaml`](ocp-manifests/07-push-source-secret.yaml), edite localmente
+com o valor desejado para `password`, e só então aplique:
 
 ```bash
-oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/02-ExternalSecretsOperator/ocp-manifests/07-push-source-secret.yaml
+wget https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/02-ExternalSecretsOperator/ocp-manifests/07-push-source-secret.yaml
+vim 07-push-source-secret.yaml
+oc apply -f 07-push-source-secret.yaml
 ```
 
 ---
 
 ### Passo 2: Criar as Credenciais do Service Principal
 
-Edite [`08-push-azure-credentials.yaml`](ocp-manifests/08-push-azure-credentials.yaml) com o `ClientID` e `ClientSecret` do Service Principal, depois aplique:
+Baixe [`08-push-azure-credentials.yaml`](ocp-manifests/08-push-azure-credentials.yaml), edite
+localmente com o `ClientID` e `ClientSecret` do Service Principal, e só então aplique:
 
 ```bash
-oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/02-ExternalSecretsOperator/ocp-manifests/08-push-azure-credentials.yaml
+wget https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/02-ExternalSecretsOperator/ocp-manifests/08-push-azure-credentials.yaml
+vim 08-push-azure-credentials.yaml
+oc apply -f 08-push-azure-credentials.yaml
 ```
 
 ---
