@@ -133,25 +133,18 @@ Escale um MachineSet para provisionar um novo nó e meça o tempo:
 MACHINESET=$(oc get machineset -n openshift-machine-api -o name | head -1)
 REPLICAS=$(oc get $MACHINESET -n openshift-machine-api -o jsonpath='{.spec.replicas}')
 
-# Marca o início e escala pra +1 réplica
-START=$(date +%s)
+# Escala pra +1 réplica
 oc scale $MACHINESET -n openshift-machine-api --replicas=$((REPLICAS + 1))
 
 # Acompanhe o provisionamento
 oc get machine -n openshift-machine-api -w
 ```
 
-Aguarde o novo `Machine` atingir o status `Running` e o nó ficar pronto:
+Acompanhe a `Machine` passar por `Provisioning` → `Provisioned` → `Running`. Assim que chegar em
+`Running`, confirme o nó pronto:
 
 ```bash
 oc get nodes -w
-```
-
-Assim que o nó ficar `Ready`, calcule a duração real:
-
-```bash
-END=$(date +%s)
-echo "Provisionamento levou $((END - START)) segundos"
 ```
 
 > **Resultado esperado:** o novo nó deve ficar pronto em ~8 minutos, contra ~12 minutos sem o Managed Boot Images habilitado.
