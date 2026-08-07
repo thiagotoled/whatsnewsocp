@@ -1,20 +1,5 @@
 # Exercício 9: Dashboards com o Red Hat Build of Perses — Dois Caminhos
 
-> **Validado ao vivo em OCP 4.22.8 / COO 1.5.1 / ACM 2.17**: as duas partes foram aplicadas de
-> ponta a ponta num cluster real. A pesquisa original tinha **três erros de schema** na Parte 1,
-> todos corrigidos e confirmados via `oc explain`:
-> 1. `UIPlugin` usava `apiVersion: monitoring.rhobs/v1alpha2` — o CRD real é
->    `observability.openshift.io/v1alpha1`.
-> 2. `spec.type` era `monitoring` (minúsculo) — o enum real é capitalizado (`Monitoring`).
-> 3. `PersesDashboard` tinha `display`/`duration`/`panels`/`layouts` direto em `spec` — na
->    verdade tudo isso vive aninhado em `spec.config` (`spec.config.display`, etc).
->
-> O `PersesGlobalDatasource` (porta 9091, `caCert` em `/ca/service-ca.crt`) já estava certo —
-> confirmado comparando com o datasource que o próprio COO cria automaticamente
-> (`accelerators-thanos-querier-datasource`), que usa exatamente o mesmo padrão. A Parte 2
-> também confirmada: MCOA habilitado, 22 `PersesDashboard`s prontos no hub, incluindo o
-> `ACM Clusters Overview` citado no guia oficial.
-
 Existem **dois jeitos diferentes** de ter Perses funcionando no console do OCP em cima do ACM, e
 eles não são a mesma coisa:
 
@@ -29,20 +14,6 @@ eles não são a mesma coisa:
   Preview** e liga por um mecanismo bem diferente — troca o pipeline inteiro de coleta de
   métricas do managed cluster, não é só "ligar uma UI". Fica pré-configurada no hub pelo
   instrutor antes da aula — a lição da Parte 2 é explorar o que já está lá, não ligar você mesmo.
-
-> **Por que fazer isso, se ninguém pediu**: não existe (ainda) um anúncio formal de "o ACM vai
-> descontinuar o Grafana". Mas tem evidência concreta de pra onde o vento sopra: no ACM 2.17, a
-> feature de **right-sizing recommendations** (via MCOA) já nasceu usando **Perses** como motor
-> de visualização, não Grafana. Investimento em feature nova está indo pro Perses — treinar com
-> ele agora é se antecipar a um trabalho que muito provavelmente vai precisar ser feito de
-> qualquer jeito, só ainda sem prazo definido pela Red Hat.
-
-> **Ambiente de 15 alunos, cada um no próprio cluster (Parte 1)**: diferente da versão anterior
-> deste lab (que usava um dashboard real de frota, só disponível no hub), a Parte 1 agora roda
-> **isolada, no managed cluster de cada aluno** — sem hub compartilhado, sem risco de um aluno
-> sobrescrever o recurso do outro, sem nome de aluno no `metadata.name`. O exemplo é
-> deliberadamente simples (CPU/memória de um workload de teste) porque o ponto da Parte 1 é
-> praticar o fluxo do Perses, não reproduzir um dashboard de produção.
 
 ---
 
@@ -221,12 +192,3 @@ nenhum — o dashboard já vem do próprio ACM.
 - [How we designed customizable dashboards in OpenShift — Red Hat Developer](https://developers.redhat.com/articles/2026/07/27/how-we-designed-customizable-dashboards-openshift)
 - [Cluster Observability Operator release notes](https://docs.redhat.com/en/documentation/red_hat_openshift_cluster_observability_operator/1-latest/html/red_hat_openshift_cluster_observability_operator_release_notes/cluster-observability-operator-release-notes)
 - [ACM Observability — Using Grafana dashboards](https://docs.redhat.com/en/documentation/red_hat_advanced_cluster_management_for_kubernetes/2.9/html/observability/using-grafana-dashboards)
-- *Red Hat Advanced Cluster Management for Kubernetes 2.17 — Observability* (guia oficial),
-  seção 1.11 "Multicluster observability add-on" — cobre `Enabling the multicluster
-  observability add-on` (1.11.5), `Enabling Perses dashboards with the multicluster
-  observability add-on (Technology Preview)` (1.11.6) e `Viewing Perses dashboards in the
-  console` (1.11.7), base da Parte 2 deste lab.
-- *Red Hat Advanced Cluster Management 2.17 — "Seeing is believing"* (material de "What's New"
-  da Red Hat) — apresenta Placements UI e Perses lado a lado como as duas novidades de
-  visualização do release, confirma o preview em tempo real de cluster matching na tela de
-  criação de `Placement`.
