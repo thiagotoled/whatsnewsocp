@@ -38,12 +38,13 @@ recomendado é:
 - Acesso de administrador ao cluster
 - CLI `oc` atualizado (4.20+) autenticado
 
-> **Clusters ARO**: é comum o canal de update (`spec.channel`) vir vazio, já que a Azure
-> costuma gerenciar upgrades via `az aro update` em vez de `oc adm upgrade`. Sem canal
-> configurado, `oc adm upgrade recommend` nem chega a rodar o precheck: só avisa
-> `Reason: NoChannel`. Configure um canal compatível com a versão atual antes do Passo 1:
+> **Confirmado ao vivo**: use o canal `candidate` da sua minor, não `stable` — em clusters ARO o
+> canal costuma vir vazio (Azure gerencia upgrade via `az aro update`), e mesmo com `stable`
+> configurado, se o cluster já estiver no topo dele o `recommend` só mostra
+> `No updates available` sem rodar o precheck. O `candidate` sempre tem uma versão-alvo
+> (z-stream) disponível pra demonstrar o precheck de verdade:
 > ```bash
-> oc adm upgrade channel stable-4.20   # troque 4.20 pela minor do seu cluster
+> oc adm upgrade channel candidate-4.22   # troque 4.22 pela minor do seu cluster
 > ```
 
 ---
@@ -63,16 +64,6 @@ oc adm upgrade recommend
 ```
 
 A saída inclui um resumo dos updates recomendados e, na sequência, uma seção com os alertas encontrados (ou a confirmação de que nenhum problema foi identificado).
-
-> **Confirmado ao vivo: se o cluster já estiver no topo do canal `stable`** (sem update
-> disponível), o `recommend` só mostra `No updates available` — o precheck nem roda, porque não
-> existe versão-alvo pra avaliar. Pra ter uma versão-alvo de verdade e ver o precheck de fato
-> (mesmo lab, mesmo comando), troque temporariamente pro canal `candidate` da sua minor:
-> ```bash
-> oc adm upgrade channel candidate-4.22   # troque 4.22 pela minor do seu cluster
-> oc adm upgrade recommend
-> ```
-> Volte pro canal `stable` depois do lab: `oc adm upgrade channel stable-4.22`.
 
 ---
 
