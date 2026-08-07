@@ -105,16 +105,19 @@ Espere `UPDATED=True` e `UPDATING=False` em todos os pools antes de continuar.
 ## Passo 3: Ver o Bloqueio Acontecer
 
 Force um novo pull recriando o Pod (o CRI-O só reavalia a assinatura no momento do pull, não
-em Pods já rodando):
+em Pods já rodando). `oc get pods -w` fica esperando pra sempre um estado `Running` que não vai
+chegar (o objetivo aqui é justamente o Pod falhar) — confirme o estado com um `get` simples em
+vez de deixar o watch travado:
+
+```bash
+oc get pods -n lab-sigstore-policy -l app=demo-app
+```
+
+Se já estiver `Running` (Pod antigo, de antes da policy), force a recriação:
 
 ```bash
 oc delete pod -n lab-sigstore-policy -l app=demo-app
-```
-
-Acompanhe:
-
-```bash
-oc get pods -n lab-sigstore-policy -w
+oc get pods -n lab-sigstore-policy -l app=demo-app
 ```
 
 O novo Pod deve ficar em `ImagePullBackOff`. Veja o evento:
@@ -149,11 +152,13 @@ update), trocando a chave pela chave de release oficial da Red Hat, publicada em
 oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/05-SigstoreImagePolicy/ocp-manifests/04-imagepolicy-redhat-key.yaml
 ```
 
-De novo, espere o rollout do `MachineConfig` terminar (`oc get mcp -w`), e force um novo pull:
+De novo, espere o rollout do `MachineConfig` terminar (`oc get mcp -w`). O Pod atual ainda está
+em `ImagePullBackOff` do Passo 3 — force a recriação (de novo, evite `-w` aqui: o Pod que já
+está em erro não vai virar `Running` sozinho, só o novo depois do delete):
 
 ```bash
 oc delete pod -n lab-sigstore-policy -l app=demo-app
-oc get pods -n lab-sigstore-policy -w
+oc get pods -n lab-sigstore-policy -l app=demo-app
 ```
 
 Dessa vez o Pod deve subir normal:
