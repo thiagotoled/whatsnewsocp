@@ -3,9 +3,12 @@
 # ACM, roda ali -- confirmado ao vivo com `oc get applications.argoproj.io -A`). O Passo 3
 # deste lab desliga o controller tradicional da instância que ele usa (`controller.enabled:
 # false`), então rodar isso na `openshift-gitops` de produção quebraria a sincronização das
-# Policies do hub inteiro, não só a demo. `spec: {}` é suficiente -- o operator aplica os
-# defaults de uma instância nova (mesmo comportamento da instância `openshift-gitops` que o
-# OLM cria sozinho, só que essa aqui a gente cria explicitamente, em namespace isolado).
+# Policies do hub inteiro, não só a demo.
+#
+# SSO via dex/OpenShift OAuth + RBAC (mesmo padrão da instância openshift-gitops-acm real
+# deste hub): sem isso, login na UI do Argo CD não funciona com sua conta OpenShift/AAD. O
+# grupo 6a758b5d-bbfb-498c-ae13-0cea9803de29 é o mesmo grupo Entra ID já usado em
+# policy-cluster-admin-rbac (acm-hub/).
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -16,7 +19,24 @@ kind: ArgoCD
 metadata:
   name: lab-argocd
   namespace: lab-argocd
-spec: {}
+spec:
+  applicationSet:
+    enabled: true
+  server:
+    route:
+      enabled: true
+  sso:
+    provider: dex
+    dex:
+      openShiftOAuth: true
+  rbac:
+    defaultPolicy: ""
+    policy: |
+      g, system:cluster-admins, role:admin
+      g, cluster-admins, role:admin
+      g, admin, role:admin
+      g, 6a758b5d-bbfb-498c-ae13-0cea9803de29, role:admin
+    scopes: '[groups]'
 ---
 # Precisa existir ANTES do Placement (01-placement.yaml) conseguir achar qualquer managed
 # cluster -- confirmado ao vivo: sem isso, `oc get placementdecision` do Passo 0 nunca resolve

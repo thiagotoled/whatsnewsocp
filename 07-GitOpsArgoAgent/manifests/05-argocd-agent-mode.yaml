@@ -7,12 +7,33 @@
 # coexistindo", é uma MIGRAÇÃO. (Uma versão anterior deste lab tentou manter os dois ativos ao
 # mesmo tempo via oc patch parcial -- design mais complexo que não reflete o que a doc
 # realmente descreve.)
+#
+# Repete applicationSet/sso/rbac do 00-namespace.yaml de propósito -- como isso substitui o
+# spec inteiro, omitir esses campos aqui apagaria SSO/RBAC/login da UI que já estava
+# funcionando desde o Passo 0.
 apiVersion: argoproj.io/v1beta1
 kind: ArgoCD
 metadata:
   name: lab-argocd
   namespace: lab-argocd
 spec:
+  applicationSet:
+    enabled: true
+  server:
+    route:
+      enabled: true
+  sso:
+    provider: dex
+    dex:
+      openShiftOAuth: true
+  rbac:
+    defaultPolicy: ""
+    policy: |
+      g, system:cluster-admins, role:admin
+      g, cluster-admins, role:admin
+      g, admin, role:admin
+      g, 6a758b5d-bbfb-498c-ae13-0cea9803de29, role:admin
+    scopes: '[groups]'
   controller:
     enabled: false
   sourceNamespaces:
