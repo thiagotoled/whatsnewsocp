@@ -64,6 +64,16 @@ oc adm upgrade recommend
 
 A saída inclui um resumo dos updates recomendados e, na sequência, uma seção com os alertas encontrados (ou a confirmação de que nenhum problema foi identificado).
 
+> **Confirmado ao vivo: se o cluster já estiver no topo do canal `stable`** (sem update
+> disponível), o `recommend` só mostra `No updates available` — o precheck nem roda, porque não
+> existe versão-alvo pra avaliar. Pra ter uma versão-alvo de verdade e ver o precheck de fato
+> (mesmo lab, mesmo comando), troque temporariamente pro canal `candidate` da sua minor:
+> ```bash
+> oc adm upgrade channel candidate-4.22   # troque 4.22 pela minor do seu cluster
+> oc adm upgrade recommend
+> ```
+> Volte pro canal `stable` depois do lab: `oc adm upgrade channel stable-4.22`.
+
 ---
 
 ## Passo 2: Criar a Carga de Trabalho de Teste
