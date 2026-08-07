@@ -6,7 +6,7 @@ para o **Argo CD Agent** (addon do ACM 2.17, **Technology Preview**) — um mode
 é o managed cluster que abre conexão para o hub, não o contrário.
 
 > **Instância de Argo CD dedicada, não a `openshift-gitops` de produção**: este lab desliga o
-> controller tradicional da instância que usa (Passo 3b). A `openshift-gitops` real deste hub
+> controller tradicional da instância que usa (Passo 2b). A `openshift-gitops` real deste hub
 > já roda a `Application politicasdoacm-local-cluster`, que sincroniza as Policies do ACM
 > (confirmado ao vivo com `oc get applications.argoproj.io -A`) — desligar o controller dela
 > quebraria a automação do hub inteiro, não só a demo. Por isso todo este lab roda numa
@@ -90,25 +90,12 @@ Esse é o comportamento de hoje: o Argo CD do hub fala com o managed cluster via
 
 ---
 
-## Passo 2: Provar a Fragilidade do Push
-
-Bloqueie a rota de rede que o push usa (o cluster-proxy do ACM, não a 6443 da API — o
-mecanismo mudou em relação a uma versão anterior deste lab, que assumia conexão direta à API).
-O jeito exato de isolar essa rota depende do seu provedor/topologia — não há um comando
-genérico confiável aqui; use o troubleshooting do seu ambiente (ex.: NSG no Azure) pra
-confirmar qual porta/serviço o cluster-proxy realmente usa antes de bloquear algo.
-
-Force uma mudança (ex.: réplicas) e observe a `Application` ficar `Unknown`/`OutOfSync`.
-Restaure a rede antes do próximo passo.
-
----
-
-## Passo 3: Migrar pro Argo CD Agent (instrutor, uma vez só)
+## Passo 2: Migrar pro Argo CD Agent (instrutor, uma vez só)
 
 Diferente de um addon "liga e pronto", a doc oficial (seção 1.14) pede pra configurar o
 operator e o `ArgoCD` do hub **antes** de ligar o addon via `GitOpsCluster`.
 
-### 3a. Subscription do operator
+### 2a. Subscription do operator
 
 ```bash
 oc patch subscription.operators openshift-gitops-operator -n openshift-gitops-operator \
@@ -119,7 +106,7 @@ oc patch subscription.operators openshift-gitops-operator -n openshift-gitops-op
   ]}}}'
 ```
 
-### 3b. `ArgoCD` em modo Agent
+### 2b. `ArgoCD` em modo Agent
 
 **A doc oficial manda substituir o recurso inteiro** (não é um patch parcial):
 
@@ -132,7 +119,7 @@ oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/head
 > o Passo 1 não sincroniza mais nada nesta instância (só nesta — a `openshift-gitops` de
 > produção do hub nunca é tocada).
 
-### 3c. `AppProject` wildcard
+### 2c. `AppProject` wildcard
 
 (o `ManagedClusterSetBinding` já foi aplicado no Passo 0 — precisa existir antes do
 `Placement`, não faria sentido aqui.)
@@ -141,7 +128,7 @@ oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/head
 oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/06-appproject-wildcard.yaml
 ```
 
-### 3d. Ligar o addon no `GitOpsCluster`
+### 2d. Ligar o addon no `GitOpsCluster`
 
 Mesmo objeto do Passo 1, agora com o bloco `gitopsAddon`:
 
@@ -153,13 +140,13 @@ oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/head
 > acontece às vezes), reinicie o controller:
 > `oc delete pod -n open-cluster-management -l app=multicluster-integrations`
 
-### 3e. RBAC `view` pro agent (leitura)
+### 2e. RBAC `view` pro agent (leitura)
 
 ```bash
 oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/08-agent-view-rbac-policy.yaml
 ```
 
-### 3f. RBAC de escrita pro Argo CD local (mesmo requisito do push, seção 1.6.1)
+### 2f. RBAC de escrita pro Argo CD local (mesmo requisito do push, seção 1.6.1)
 
 O Argo CD **local** que o agent instala no managed cluster (`application-controller` próprio)
 só tem permissão dentro do namespace onde ele mesmo vive (`lab-argocd`) — sem isso,
@@ -171,7 +158,7 @@ falha 5 vezes seguidas e o `Deployment` nunca é atualizado, mesmo com tudo mais
 oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/09-agent-write-rbac-policy.yaml
 ```
 
-### 3g. Verificar
+### 2g. Verificar
 
 ```bash
 oc get gitopscluster gitops-agent-clusters -n lab-argocd -o jsonpath='{.status.conditions}' | jq .
@@ -183,7 +170,7 @@ no `ManagedClusterAddOn`.
 
 ---
 
-## Passo 4: Converter a Mesma App pra Pull
+## Passo 3: Converter a Mesma App pra Pull
 
 ```bash
 oc delete secret <seu-cluster>-application-manager-cluster-secret -n lab-argocd --ignore-not-found
@@ -210,33 +197,29 @@ Repare: `destination` mudou de `server` pra `name` — é a **mesma** `Applicati
 
 ---
 
-## Passo 5: Provar a Resiliência do Pull
+## Passo 4: Provar a Resiliência do Pull
 
-Repita o mesmo bloqueio de rede do Passo 2. Diferença esperada: agora a `Application` continua
-`Synced` — é o agent, rodando **no managed cluster**, que puxa a mudança; só precisa de
-conectividade de **saída** pro hub, que não foi afetada pelo bloqueio (que mirava a rota do
-cluster-proxy, usada só pelo push).
+Escale o `principal` a zero — simula o hub inacessível pro agent, sem mexer em NSG/firewall
+nenhum:
 
-> **Teste alternativo, mais fácil de reproduzir e confirmado ao vivo**: em vez de bloquear rede
-> (depende do seu provedor), escale o `principal` a zero — simula o hub inacessível pro agent,
-> sem mexer em NSG/firewall nenhum:
-> ```bash
-> oc scale deployment lab-argocd-agent-principal -n lab-argocd --replicas=0
-> ```
-> Commite uma mudança no Git. Confirmado ao vivo: o Argo CD **local** do managed cluster
-> detecta a revisão nova e tenta aplicar **mesmo sem o principal** — porque ele busca do Git
-> direto, não através do hub. A aplicação de fato só depende do hub pra receber `Application`s
-> **novas**/mudanças de `Placement`; o que já está configurado continua se autocurando via Git.
-> Restaure o `principal` depois:
-> ```bash
-> oc scale deployment lab-argocd-agent-principal -n lab-argocd --replicas=1
-> ```
+```bash
+oc scale deployment lab-argocd-agent-principal -n lab-argocd --replicas=0
+```
 
-Restaure a rede antes de seguir pra limpeza.
+Commite uma mudança no Git. Confirmado ao vivo: o Argo CD **local** do managed cluster detecta
+a revisão nova e tenta aplicar **mesmo sem o principal** — porque ele busca do Git direto, não
+através do hub. A aplicação de fato só depende do hub pra receber `Application`s
+**novas**/mudanças de `Placement`; o que já está configurado continua se autocurando via Git.
+
+Restaure o `principal` antes de seguir pra limpeza:
+
+```bash
+oc scale deployment lab-argocd-agent-principal -n lab-argocd --replicas=1
+```
 
 ---
 
-## Passo 6: Limpeza
+## Passo 5: Limpeza
 
 ```bash
 oc delete -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/10-appset-pull.yaml
