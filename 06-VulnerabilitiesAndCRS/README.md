@@ -48,13 +48,6 @@ Neste repositório os dois já vêm resolvidos pela automação em [`acm-hub/`](
 
 ### Pré-requisitos
 
-- `policy-acs-secured-cluster` `Compliant` no cluster (ou `SecuredCluster` + plugin habilitados
-  manualmente) — confirme com:
-  ```bash
-  oc get securedcluster -n stackrox
-  oc get console.operator.openshift.io cluster -o jsonpath='{.spec.plugins}'
-  ```
-  `advanced-cluster-security` precisa aparecer na lista.
 - Acesso ao console web do OpenShift.
 
 ### Passo 1: Confirmar que o Plugin Está Carregado
