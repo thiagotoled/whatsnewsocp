@@ -13,15 +13,6 @@ O exercício está dividido em duas partes:
 - Acesso a um Azure Key Vault com um Service Principal configurado
 - CLI `oc` autenticado no cluster
 
-**Antes do curso** (instrutor, uma vez só): rode [`setup-azure-keyvault.sh`](./setup-azure-keyvault.sh)
-pra provisionar o Resource Group + Key Vault + role no Service Principal. Ele reaproveita um App
-Registration já existente em vez de criar um novo (`az ad sp create-for-rbac` está quebrado em
-ambientes com Python 3.14 + az-cli 2.81: erro `badly formed help string`; e criar App
-Registration nova pode falhar com `Insufficient privileges` se o tenant não permitir
-self-service). O Key Vault fica **compartilhado entre todos os alunos**: cada aluno usa seu
-próprio cluster/namespace, mas aponta pro mesmo Key Vault. Isso importa especialmente na Parte 2
-(veja a nota lá).
-
 ---
 
 ## Parte 1: ExternalSecret, Puxando Segredos do Azure Key Vault
