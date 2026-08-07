@@ -1,27 +1,9 @@
 # Exercício 8: GitOps Argo Agent Addon (ACM 2.17, Technology Preview)
 
-> **Validado ao vivo, de ponta a ponta, num managed cluster real** — reescrito do zero seguindo
-> a doc oficial *Red Hat Advanced Cluster Management for Kubernetes 2.17 — GitOps* à risca
-> (seções 1.4, 1.6, 1.11, 1.14). Push e pull confirmados `Synced`/`Healthy` num hub ACM real
-> com um managed cluster ARO separado (não o hub testando nele mesmo).
->
-> **Importante, e diferente de uma versão anterior deste lab**: testar com `local-cluster`
-> (hub = seu próprio managed cluster) expõe bugs de auto-referência que **não existem** com um
-> managed cluster de verdade — confirmado ao vivo: um erro de `openapi... rejected` e um
-> conflito de `AppProject` que travavam o pull completamente em `local-cluster` **somem por
-> completo** com um managed cluster separado. **Este lab exige pelo menos um managed cluster
-> real importado no ACM**, rotulado/selecionado no Passo 0.
-
 Neste laboratório, você vai pegar **a mesma aplicação** e observar ela primeiro no modelo
 **tradicional** (push — Argo CD no hub conecta direto no managed cluster) e depois **migrada**
 para o **Argo CD Agent** (addon do ACM 2.17, **Technology Preview**) — um modelo **pull**, onde
 é o managed cluster que abre conexão para o hub, não o contrário.
-
-> **Migração, não coexistência**: ligar o Argo CD Agent (Passo 3) desliga o controller
-> tradicional (`controller.enabled: false`, exigido pela doc oficial) — a partir daí, push
-> para de funcionar nesta instância de Argo CD. Isso é diferente do que uma versão anterior
-> deste lab tentava (manter os dois ativos ao mesmo tempo com patches parciais) — a doc oficial
-> descreve migração, não "Hybrid Architecture" permanente.
 
 ---
 
