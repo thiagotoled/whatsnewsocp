@@ -72,27 +72,12 @@ oc describe pod -n lab-inplace-scaling -l app=nginx-inplace | grep -A 5 Requests
 
 ##  Passo 4: Realizar o Scale-Down (Diminuir Recursos)
 
-O processo inverso também é suportado, com uma ressalva importante: **CPU e o *request* de
-memória podem ser reduzidos in-place livremente, mas o *limit* de memória não**. O
-Kubernetes bloqueia diminuição de memory limit com `resizePolicy: NotRequired` de propósito
-(memória é um recurso incompressível; reduzir o limit sem reiniciar o container arriscaria um
-OOM imediato). Se você tentar mesmo assim, o patch é rejeitado:
-
-```
-The Pod "nginx-inplace-xxxxxxxxxx-xxxxx" is invalid: spec.containers[0].resources.limits[memory]:
-Forbidden: memory limits cannot be decreased unless resizePolicy is RestartContainer
-```
-
-Então o scale-down deste lab reduz CPU (request e limit) e o request de memória, mantendo o
-limit de memória como está, ainda 100% sem restart:
+O processo inverso também é suportado — CPU e memória, request e limit, tudo pra baixo,
+ainda 100% sem restart:
 
 ```bash
-oc patch pod "$POD" -p '{"spec": {"containers": [{"name": "nginx", "resources": { "requests" :{ "cpu" : "100m", "memory": "128Mi"}, "limits" :{ "cpu" : "200m", "memory" : "512Mi" } } }] }}' --subresource=resize -n lab-inplace-scaling
+oc patch pod "$POD" -p '{"spec": {"containers": [{"name": "nginx", "resources": { "requests" :{ "cpu" : "100m", "memory": "128Mi"}, "limits" :{ "cpu" : "200m", "memory" : "412Mi" } } }] }}' --subresource=resize -n lab-inplace-scaling
 ```
-
-Quer ver o bloqueio na prática? Repita o comando trocando `"memory" : "512Mi"` por
-`"memory" : "128Mi"` no `limits`. Vai receber o erro `Forbidden` acima, com o Pod intacto (o
-patch rejeitado nem chega a ser aplicado).
 
 ###  Verificação Final:
 
