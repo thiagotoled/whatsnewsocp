@@ -166,13 +166,6 @@ No console do OCP: **Observe → Dashboards (Perses)** → selecione o projeto
 dashboard que você mesmo construiu na Parte 1: aqui não teve `oc apply` de `PersesDashboard`
 nenhum — o dashboard já vem do próprio ACM.
 
-> **Confirmado ao vivo, e vem com muito mais do que só o `ACM Clusters Overview`**: com o MCOA
-> habilitado, o namespace `open-cluster-management-observability` já tem **22** `PersesDashboard`
-> prontos — `acm-clusters-overview`, `acm-alert-analysis`, `acm-alerts-by-cluster`,
-> `acm-cluster-rsrc-use`, `acm-optimization-overview`, e um conjunto inteiro de dashboards
-> `k8s-compute-resources-*`/`k8s-networking-*`/`k8s-slo-*` no estilo kube-prometheus clássico,
-> só que nativos em Perses. Vale mostrar mais de um na demonstração, não só o primeiro.
-
 ### Parte 1 vs. Parte 2, Resumo
 
 | | Parte 1 (COO genérico) | Parte 2 (MCOA do ACM) |
