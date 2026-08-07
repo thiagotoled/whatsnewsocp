@@ -66,6 +66,10 @@ imagem **RHEL9/UBI** (ainda coberta pelo feed da Red Hat) — no caso, a mesma i
 do `multicluster-engine` já em uso no seu hub ACM, escaneada ao vivo com **178 CVEs / 25
 fixable**:
 
+> **Criado por política**: se seu cluster foi importado no hub com ACM, o namespace
+> `lab-console-vulnerabilities` e o `Deployment vuln-scan-demo` já vêm pré-criados pelo
+> `policy-lab06` — pule os dois `oc apply` abaixo e vá direto pro `oc get pods` de verificação.
+
 ```bash
 oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/06-VulnerabilitiesAndCRS/ocp-manifests/01-namespace.yaml
 oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/06-VulnerabilitiesAndCRS/ocp-manifests/02-deployment.yaml

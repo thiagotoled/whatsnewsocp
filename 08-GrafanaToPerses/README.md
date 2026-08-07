@@ -41,13 +41,17 @@ console do OCP:
 
 ### Pré-requisitos
 
-- **Cluster Observability Operator 1.5+** instalado no **seu** managed cluster (via OperatorHub
-  — não é algo que vem do hub/ACM).
+- **Cluster Observability Operator 1.5+** instalado no **seu** managed cluster. **Criado por
+  política**: se seu cluster foi importado no hub com ACM, o `policy-lab08` já instala o COO e
+  cria o namespace `lab-perses-demo` — confira antes de instalar via OperatorHub na mão.
 - Permissão pra criar `UIPlugin` (cluster-scoped) e recursos no namespace `lab-perses-demo`.
 
 ---
 
 ### Passo 1: Habilitar o Perses no Console
+
+Sem ACM, crie também o namespace (`03-namespace.yaml`); o `UIPlugin` é sempre manual — é a
+lição deste lab:
 
 ```bash
 oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/08-GrafanaToPerses/manifests/01-uiplugin-monitoring.yaml

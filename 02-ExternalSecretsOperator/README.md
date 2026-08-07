@@ -19,13 +19,17 @@ O exercício está dividido em duas partes:
 
 ### Passo 1: Instalar o External Secrets Operator
 
-Instale o operador via OperatorHub no console do OpenShift ou via CLI:
+> **Criado por política**: se seu cluster foi importado no hub com ACM, o operador já vem
+> instalado pelo `policy-lab02` — pule o `oc apply` abaixo e vá direto pro `ExternalSecretsConfig`.
+
+Sem ACM, instale o operador via OperatorHub no console do OpenShift ou via CLI:
 
 ```bash
 oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/02-ExternalSecretsOperator/ocp-manifests/01-operator-config.yaml
 ```
 
-Aguarde o operador ficar disponível antes de prosseguir
+O CR `ExternalSecretsConfig` abaixo **não** é criado pela policy — aplique sempre, com ou sem
+ACM. Aguarde o operador ficar disponível antes de prosseguir
 ```bash
 oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/02-ExternalSecretsOperator/ocp-manifests/02-external-secrets-config.yaml
 ```

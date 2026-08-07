@@ -17,6 +17,9 @@ Com User Namespaces ativado, mesmo que um atacante escape do container, o proces
 
 ## Passo 1: Criar o Namespace e Aplicar os Deployments
 
+> **Criado por política**: se seu cluster foi importado no hub com ACM, o namespace
+> `userns-lab` já vem pré-criado pelo `policy-lab03` — pule o `oc apply` abaixo.
+
 ```bash
 oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/03-UserNamespaces/ocp-manifests/01-namespace.yaml
 ```

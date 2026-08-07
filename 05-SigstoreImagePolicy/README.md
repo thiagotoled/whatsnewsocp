@@ -55,8 +55,12 @@ trocar a chave pública na policy.
 
 ## Passo 1: Linha de Base (Sem Nenhuma Policy)
 
-Aplique o namespace e o Deployment. Ele usa a imagem `ubi9/ubi-micro`, que vamos "proteger"
-nos próximos passos:
+> **Criado por política**: se seu cluster foi importado no hub com ACM, o namespace
+> `lab-sigstore-policy` e o `Deployment demo-app` já vêm pré-criados pelo `policy-lab05` — pule
+> os dois `oc apply` abaixo e vá direto pro `oc get pods` de verificação.
+
+Sem ACM, aplique o namespace e o Deployment. Ele usa a imagem `ubi9/ubi-micro`, que vamos
+"proteger" nos próximos passos:
 
 ```bash
 oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/05-SigstoreImagePolicy/ocp-manifests/01-namespace.yaml

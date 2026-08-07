@@ -36,7 +36,7 @@ Se isso for pré-criado, o aluno perde o "antes/depois" e a lição não acontec
 | Lab | Boilerplate (→ Policy) | Lição (fica manual) |
 |---|---|---|
 | 1. InplacePodverticalscaling | namespace + deployment | `oc patch --subresource=resize` |
-| 2. ExternalSecretsOperator | namespaces (`eso-demo`, `app`) + instalação do operador + Secrets do SPN Azure (`azure-kv-sp`, `azure-spn`, ver aviso de secrets abaixo) (falta `ExternalSecretsConfig`, ver nota abaixo) | SecretStore/ExternalSecret (pull e push) |
+| 2. ExternalSecretsOperator | namespaces (`eso-demo`, `app`) + instalação do operador + Secrets do SPN Azure (`azure-kv-sp`, `azure-spn`, ver aviso de secrets abaixo) (falta o CR `ExternalSecretsConfig`, ver nota abaixo) | SecretStore/ExternalSecret (pull e push) |
 | 3. UserNamespaces | namespace | os dois Deployments (comparação é a lição) |
 | 4. ManagedBootImages | *(nada)* | o único manifesto do lab é a lição inteira (bloqueado em Azure/ARO no 4.20, ver README do lab) |
 | 5. SigstoreImagePolicy | namespace + deployment | aplicar/trocar o `ImagePolicy` (chave errada bloqueia, chave real da Red Hat libera) |
@@ -47,10 +47,12 @@ Labs "Enhanced Vulnerability Management Reporting", "Policy Scope com Labels de 
 e "Policy para oc debug / pods attach" foram removidos do repositório (eram candidatos a remoção
 desde o início, nunca tiveram Policy de boilerplate).
 
-> **Nota lab 2**: [`01-operator-config.yaml`](../02-ExternalSecretsOperator/ocp-manifests/01-operator-config.yaml)/[`02-external-secrets-config.yaml`](../02-ExternalSecretsOperator/ocp-manifests/02-external-secrets-config.yaml) (a instalação do
-> operator e o CR `ExternalSecretsConfig`) ainda não têm policy, hoje é aplicado manualmente
-> seguindo o README do lab. O `ExternalSecretsConfig` é fácil de esquecer (o operator sobe mas
-> o controller de verdade só nasce depois dele). Confirmado ao vivo, ver
+> **Nota lab 2**: a instalação do operador (`01-operator-config.yaml`) já é boilerplate via
+> `policy-lab02`. Só o CR
+> [`02-external-secrets-config.yaml`](../02-ExternalSecretsOperator/ocp-manifests/02-external-secrets-config.yaml)
+> (`ExternalSecretsConfig`) ainda não tem policy — continua manual, seguindo o README do lab.
+> É fácil de esquecer (o operator sobe mas o controller de verdade só nasce depois dele).
+> Confirmado ao vivo, ver
 > [`02-ExternalSecretsOperator/README.md`](../02-ExternalSecretsOperator/README.md).
 
 Além do boilerplate por lab, existem policies de **bootstrap do próprio hub** (não são de
