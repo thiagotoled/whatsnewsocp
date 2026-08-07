@@ -165,7 +165,7 @@ clusters via `policy-acs-secured-cluster`, criado sem os controles novos:
 
 | Name | Created by | Expires in | Registrations |
 |---|---|---|---|
-| acs_registration_clusters | jdasilve@redhat.com | *\<tempo restante\>* | Unlimited |
+| acs_registration_clusters | admin | *\<tempo restante\>* | Unlimited |
 
 Esse é exatamente o padrão "antigo" que o 4.11 permite evitar: validade longa, sem limite de
 quantos clusters podem se registrar com ele.
