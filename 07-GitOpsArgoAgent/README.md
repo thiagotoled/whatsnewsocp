@@ -76,7 +76,7 @@ Edite `07-GitOpsArgoAgent/manifests/00-placement.yaml` e troque `rgz1hs02` pelo 
 seu managed cluster (`oc get managedcluster`):
 
 ```bash
-oc apply -f 07-GitOpsArgoAgent/manifests/00-placement.yaml
+oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/00-placement.yaml
 oc get placementdecision -n openshift-gitops -l cluster.open-cluster-management.io/placement=placement-argocd-agent-demo -o jsonpath='{.items[0].status.decisions}'
 ```
 
@@ -90,9 +90,9 @@ Registre o Secret de cluster (necessário mesmo pra push — doc oficial, seçã
 a `ApplicationSet`:
 
 ```bash
-oc apply -f 07-GitOpsArgoAgent/manifests/01-gitopscluster-push.yaml
-oc apply -f 07-GitOpsArgoAgent/manifests/03-push-rbac.yaml
-oc apply -f 07-GitOpsArgoAgent/manifests/02-appset-push.yaml
+oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/01-gitopscluster-push.yaml
+oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/03-push-rbac.yaml
+oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/02-appset-push.yaml
 oc get application appdemo-<seu-cluster> -n openshift-gitops
 ```
 
@@ -138,7 +138,7 @@ oc patch subscription.operators openshift-gitops-operator -n openshift-gitops-op
 **A doc oficial manda substituir o recurso inteiro** (não é um patch parcial):
 
 ```bash
-oc apply -f 07-GitOpsArgoAgent/manifests/04-argocd-agent-mode.yaml
+oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/04-argocd-agent-mode.yaml
 ```
 
 > **Isso desliga o push** (`controller.enabled: false`) — confirmado ao vivo, o
@@ -148,7 +148,7 @@ oc apply -f 07-GitOpsArgoAgent/manifests/04-argocd-agent-mode.yaml
 ### 3c. `AppProject` wildcard e `ManagedClusterSetBinding`
 
 ```bash
-oc apply -f 07-GitOpsArgoAgent/manifests/05-appproject-wildcard.yaml
+oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/05-appproject-wildcard.yaml
 ```
 
 ### 3d. Ligar o addon no `GitOpsCluster`
@@ -156,7 +156,7 @@ oc apply -f 07-GitOpsArgoAgent/manifests/05-appproject-wildcard.yaml
 Mesmo objeto do Passo 1, agora com o bloco `gitopsAddon`:
 
 ```bash
-oc apply -f 07-GitOpsArgoAgent/manifests/06-gitopscluster-agent.yaml
+oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/06-gitopscluster-agent.yaml
 ```
 
 > **Se o status ficar preso em "addon disabled" por mais de um minuto** (confirmado ao vivo,
@@ -166,7 +166,7 @@ oc apply -f 07-GitOpsArgoAgent/manifests/06-gitopscluster-agent.yaml
 ### 3e. RBAC `view` pro agent (leitura)
 
 ```bash
-oc apply -f 07-GitOpsArgoAgent/manifests/07-agent-view-rbac-policy.yaml
+oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/07-agent-view-rbac-policy.yaml
 ```
 
 ### 3f. RBAC de escrita pro Argo CD local (mesmo requisito do push, seção 1.6.1)
@@ -178,7 +178,7 @@ qualquer app cujo destino seja outro namespace (o caso normal, como este lab:
 falha 5 vezes seguidas e o `Deployment` nunca é atualizado, mesmo com tudo mais certo.
 
 ```bash
-oc apply -f 07-GitOpsArgoAgent/manifests/08-agent-write-rbac-policy.yaml
+oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/08-agent-write-rbac-policy.yaml
 ```
 
 ### 3g. Verificar
@@ -197,7 +197,7 @@ no `ManagedClusterAddOn`.
 
 ```bash
 oc delete secret <seu-cluster>-application-manager-cluster-secret -n openshift-gitops --ignore-not-found
-oc apply -f 07-GitOpsArgoAgent/manifests/09-appset-pull.yaml
+oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/09-appset-pull.yaml
 oc get application appdemo-<seu-cluster> -n openshift-gitops -o jsonpath='{.spec.destination}'
 ```
 
@@ -249,13 +249,13 @@ Restaure a rede antes de seguir pra limpeza.
 ## Passo 6: Limpeza
 
 ```bash
-oc delete -f 07-GitOpsArgoAgent/manifests/09-appset-pull.yaml
-oc delete -f 07-GitOpsArgoAgent/manifests/08-agent-write-rbac-policy.yaml
-oc delete -f 07-GitOpsArgoAgent/manifests/07-agent-view-rbac-policy.yaml
-oc delete -f 07-GitOpsArgoAgent/manifests/06-gitopscluster-agent.yaml
-oc delete -f 07-GitOpsArgoAgent/manifests/05-appproject-wildcard.yaml
-oc delete -f 07-GitOpsArgoAgent/manifests/03-push-rbac.yaml
-oc delete -f 07-GitOpsArgoAgent/manifests/00-placement.yaml
+oc delete -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/09-appset-pull.yaml
+oc delete -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/08-agent-write-rbac-policy.yaml
+oc delete -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/07-agent-view-rbac-policy.yaml
+oc delete -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/06-gitopscluster-agent.yaml
+oc delete -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/05-appproject-wildcard.yaml
+oc delete -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/03-push-rbac.yaml
+oc delete -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/00-placement.yaml
 ```
 
 ---
