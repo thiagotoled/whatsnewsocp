@@ -9,11 +9,13 @@ tipo `LoadBalancer` — e comparar isso com o modelo clássico do Route/Router d
 
 O Gateway API é a evolução **Kubernetes-nativa** do Ingress — parte do projeto upstream
 `gateway-api`, não específico do OpenShift (diferente do `Route`, que é uma API só da Red Hat).
-No OpenShift, a API/CRDs vêm via Ingress Operator (GA desde o 4.19), e quem reconcilia os
-objetos `Gateway` é um `istiod` (baseado em Istio) — **confirmado ao vivo que o próprio Ingress
-Operator já provisiona esse `istiod` sozinho quando o primeiro `GatewayClass` é criado**, sem
-precisar instalar o OpenShift Service Mesh Operator à parte (isso corrige o que uma pesquisa
-sem doc oficial completa sugeria antes).
+A spec não exige Istio em lugar nenhum — em Kubernetes puro você instala os CRDs na mão e
+escolhe qualquer implementação (Istio, Envoy Gateway, Contour, Cilium, etc.) pra reconciliar os
+objetos. No OpenShift, a API/CRDs vêm via Ingress Operator (GA desde o 4.19), e a implementação
+escolhida pela Red Hat usa um `istiod` (baseado em Istio) por baixo dos panos — mas **confirmado
+ao vivo que o próprio Ingress Operator já provisiona esse `istiod` sozinho** quando o primeiro
+`GatewayClass` é criado, então você nunca precisa instalar ou gerenciar o OpenShift Service Mesh
+Operator diretamente pra usar Gateway API aqui.
 
 - **`GatewayClass`**: cluster-scoped, define **qual controller** implementa os `Gateway`s que o
   referenciam (`controllerName: openshift.io/gateway-controller/v1`). É o "sabor" de gateway —
@@ -32,7 +34,6 @@ sem doc oficial completa sugeria antes).
 
 ## Pré-requisitos
 
-- **OpenShift Service Mesh Operator 3.0+** instalado no cluster.
 - Acesso de administrador de cluster (pra criar `GatewayClass`, cluster-scoped, e recursos em
   `openshift-ingress`).
 
