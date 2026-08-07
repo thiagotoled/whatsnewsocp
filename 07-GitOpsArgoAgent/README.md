@@ -54,7 +54,9 @@ O **Argo CD Agent** inverte a direção da conexão:
 
 ## Passo 0 (já aplicado pelo instrutor): Instância Dedicada de Argo CD + `Placement`
 
-Só o instrutor tem acesso ao hub cluster — os dois já estão aplicados:
+Só o instrutor tem acesso ao hub cluster — já está tudo aplicado, nesta ordem (o
+`ManagedClusterSetBinding` do primeiro arquivo **precisa** vir antes do `Placement`, senão ele
+nunca resolve nenhum managed cluster — confirmado ao vivo):
 
 ```bash
 oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/00-namespace.yaml
@@ -130,7 +132,10 @@ oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/head
 > o Passo 1 não sincroniza mais nada nesta instância (só nesta — a `openshift-gitops` de
 > produção do hub nunca é tocada).
 
-### 3c. `AppProject` wildcard e `ManagedClusterSetBinding`
+### 3c. `AppProject` wildcard
+
+(o `ManagedClusterSetBinding` já foi aplicado no Passo 0 — precisa existir antes do
+`Placement`, não faria sentido aqui.)
 
 ```bash
 oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/06-appproject-wildcard.yaml

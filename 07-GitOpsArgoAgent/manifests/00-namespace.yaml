@@ -17,3 +17,15 @@ metadata:
   name: lab-argocd
   namespace: lab-argocd
 spec: {}
+---
+# Precisa existir ANTES do Placement (01-placement.yaml) conseguir achar qualquer managed
+# cluster -- confirmado ao vivo: sem isso, `oc get placementdecision` do Passo 0 nunca resolve
+# nada, mesmo com o label whatsnewsocp-lab=true certo no cluster. Vinha tarde demais neste lab
+# (junto com o AppProject no Passo 3c) até isso ser encontrado ao vivo; movido pra cá.
+apiVersion: cluster.open-cluster-management.io/v1beta2
+kind: ManagedClusterSetBinding
+metadata:
+  name: default
+  namespace: lab-argocd
+spec:
+  clusterSet: default

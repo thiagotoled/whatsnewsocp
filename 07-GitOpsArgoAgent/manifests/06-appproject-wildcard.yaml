@@ -19,13 +19,3 @@ spec:
       kind: '*'
   sourceRepos:
     - '*'
----
-# Sem isso o Placement não acha nenhum managed cluster -- confirmado na doc oficial, seção
-# 1.14, passo final.
-apiVersion: cluster.open-cluster-management.io/v1beta2
-kind: ManagedClusterSetBinding
-metadata:
-  name: default
-  namespace: lab-argocd
-spec:
-  clusterSet: default
