@@ -1,8 +1,8 @@
 # Estratégia de ACM (Advanced Cluster Management) para os Labs
 
 Este diretório contém as `Policy`/`Placement`/`PlacementBinding` do RHACM que rodam **de
-verdade** no hub (`local-cluster`, ARO em `rms36u23q91da15275.eastus.aroapp.io`) e em qualquer
-managed cluster importado (hoje: `ms35vuo5`). O restante do repositório ([`01-InplacePodverticalscaling/`](../01-InplacePodverticalscaling/README.md),
+verdade** no hub (`local-cluster`, ARO em `aloe875y.eastus.aroapp.io`) e em qualquer
+managed cluster importado (hoje: `wm2bf`). O restante do repositório ([`01-InplacePodverticalscaling/`](../01-InplacePodverticalscaling/README.md),
 [`05-SigstoreImagePolicy/`](../05-SigstoreImagePolicy/README.md), etc.) continua igual, cada lab é aplicado manualmente com
 `oc apply -f` pelo aluno/instrutor, exatamente como antes; a Policy só cuida do boilerplate.
 

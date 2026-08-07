@@ -101,7 +101,7 @@ spec:
               namespace: stackrox
             spec:
               clusterName: '{{hub .ManagedClusterName hub}}'
-              centralEndpoint: 'central-stackrox.apps.rms36u23q91da15275.eastus.aroapp.io:443'
+              centralEndpoint: 'central-stackrox.apps.aloe875y.eastus.aroapp.io:443'
   - objectDefinition:
       apiVersion: policy.open-cluster-management.io/v1
       kind: ConfigurationPolicy
