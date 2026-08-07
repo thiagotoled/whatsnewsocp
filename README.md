@@ -36,10 +36,7 @@ Cada diretório contém um laboratório independente com manifestos prontos para
 ## Automação via ACM
 
 O diretório [`acm-hub/`](./acm-hub/README.md) contém as Policies do RHACM (Advanced Cluster
-Management) que rodam de verdade no hub e pré-carregam o "boilerplate" de cada lab (namespace,
-deployment, operador) em todo cluster importado, deixando só a parte que É a lição para
-aplicação manual. Ver a tabela completa, os cuidados (secrets que não estão no git, Redirect
-URI do Entra ID) e o passo a passo pra importar um cluster novo no README do diretório.
+Management) usadas para preparar os clusters dos labs.
 
 ---
 
