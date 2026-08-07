@@ -1,4 +1,4 @@
-# Exercício 12: Gateway API
+# Exercício 10: Gateway API
 
 Neste laboratório, você vai subir um `Gateway` — com seu próprio `Deployment` e `Service` do
 tipo `LoadBalancer` — e comparar isso com o modelo clássico do Route/Router do OpenShift.

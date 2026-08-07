@@ -1,4 +1,4 @@
-# Exercício 9: Dashboards com o Red Hat Build of Perses — Dois Caminhos
+# Exercício 8: Dashboards com o Red Hat Build of Perses — Dois Caminhos
 
 Existem **dois jeitos diferentes** de ter Perses funcionando no console do OCP em cima do ACM, e
 eles não são a mesma coisa:

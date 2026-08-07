@@ -1,4 +1,4 @@
-# Exercício 7: Vulnerabilidades no Console e Mais Controle no CRS (RHACS 4.11)
+# Exercício 6: Vulnerabilidades no Console e Mais Controle no CRS (RHACS 4.11)
 
 Duas novidades do RHACS 4.11 que vivem na mesma área — segurança operacional do dia a dia,
 uma no console do OpenShift, outra na UI do Central:

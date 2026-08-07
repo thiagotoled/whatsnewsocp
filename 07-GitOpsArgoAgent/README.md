@@ -1,4 +1,4 @@
-# Exercício 8: GitOps Argo Agent Addon (ACM 2.17, Technology Preview)
+# Exercício 7: GitOps Argo Agent Addon (ACM 2.17, Technology Preview)
 
 Neste laboratório, você vai pegar **a mesma aplicação** e observar ela primeiro no modelo
 **tradicional** (push — Argo CD no hub conecta direto no managed cluster) e depois **migrada**

@@ -1,4 +1,4 @@
-# Exercício 11: Instalar Helm Chart Direto de uma URL OCI/HTTPS no Console (4.22)
+# Exercício 9: Instalar Helm Chart Direto de uma URL OCI/HTTPS no Console (4.22)
 
 > **Navegação confirmada ao vivo**: o menu do Helm não fica em "Developer perspective → +Add"
 > — fica em **Core platform (Administrator) → Ecosystem → Helm**, dentro de um projeto

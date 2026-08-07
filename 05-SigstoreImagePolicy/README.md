@@ -1,4 +1,4 @@
-# Exercício 6: Verificação de Assinatura de Imagens com Sigstore (`ImagePolicy`)
+# Exercício 5: Verificação de Assinatura de Imagens com Sigstore (`ImagePolicy`)
 
 Neste laboratório, você vai usar o `ImagePolicy` (GA no OpenShift 4.20) pra exigir que imagens
 de um determinado registry/repositório estejam assinadas via **sigstore** antes de serem
