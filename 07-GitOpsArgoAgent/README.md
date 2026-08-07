@@ -41,7 +41,6 @@ O **Argo CD Agent** inverte a direção da conexão:
 - Hub ACM **2.17+** com o `MultiClusterHub` já instalado.
 - **Pelo menos um managed cluster real, separado do hub**, importado e `Joined`/`Available`
   (confirme com `oc get managedcluster`). Não use só `local-cluster`.
-- OpenShift GitOps instalado no hub, namespace `openshift-gitops`.
 - Acesso de administrador ao hub.
 
 ---
