@@ -70,13 +70,9 @@ dentro dele nem sempre coincidem. O menu de contexto (`⋮`) tem duas ações di
 
 ## Passo 2: Limpeza
 
-```bash
-helm uninstall nginx -n app
-```
-
-Ou direto pelo console, sem CLI nenhum: **Ecosystem → Helm → Helm Releases**, menu `⋮` da
+Direto pelo console, sem CLI nenhum: **Ecosystem → Helm → Helm Releases**, menu `⋮` da
 linha do `nginx` → **Delete Helm Release** → confirme o nome do release no modal. Remove o
-`HelmRelease` e os recursos que ele criou, igual o `helm uninstall`.
+`HelmRelease` e os recursos que ele criou.
 
 ---
 
