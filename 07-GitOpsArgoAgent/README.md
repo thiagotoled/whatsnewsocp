@@ -171,7 +171,11 @@ oc get application appdemo-<seu-cluster> -n lab-argocd -o jsonpath='{.spec.desti
 
 Confirmado ao vivo: deletar o `ApplicationSet` **não** cascateia pras `Application`s geradas
 (ficam com `ownerReferences` apontando pra um `ApplicationSet` que já não existe) — apague as
-`Application`s primeiro, explicitamente:
+`Application`s primeiro, explicitamente. Elas também ficam presas em `Terminating` pra sempre
+se travarem no finalizer `resources-finalizer.argocd.argoproj.io`: nesta instância em modo
+Agent não tem `application-controller` tradicional rodando (Passo 2b) pra processar esse
+finalizer — se acontecer, remova na mão com
+`oc patch applications.argoproj.io <nome> -n lab-argocd --type=merge -p '{"metadata":{"finalizers":[]}}'`.
 
 ```bash
 oc delete applications.argoproj.io -n lab-argocd -l app.kubernetes.io/instance=appdemo
