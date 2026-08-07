@@ -73,10 +73,8 @@ oc login --token=<TOKEN> --server=<API_URL>
 │   ├── README.md
 │   └── ocp-manifests
 │       ├── 00-namespace-app.yaml
-│       ├── 01-namespace.yaml
 │       ├── 01-operator-config.yaml
 │       ├── 02-external-secrets-config.yaml
-│       ├── 03-azure-credentials-secret.yaml
 │       ├── 04-secret-store.yaml
 │       ├── 05-external-secret.yaml
 │       ├── 06-pod-check.yaml
