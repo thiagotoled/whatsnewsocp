@@ -122,18 +122,6 @@ oc patch mco observability -n open-cluster-management-observability --type=merge
   '{"spec":{"capabilities":{"platform":{"metrics":{"default":{"enabled":true}}}}}}'
 ```
 
-Isso faz o `MultiClusterObservability` operator **parar de implantar o coletor clássico** nos
-managed clusters e passar a implantar o `multicluster-observability-addon-manager`, que por sua
-vez cria `PrometheusAgent` (e `ScrapeConfig`/`PrometheusRule` default) em cada cluster gerenciado.
-
-> **Dá pra escopar, não é tudo ou nada**: o `ClusterManagementAddOn` do MCOA usa um `Placement`
-> pra decidir em quais clusters o add-on entra — não precisa ser a frota inteira de uma vez. A
-> **Placements UI** (ACM 2.17, Clusters → Placements → Create placement) agora mostra, **dentro
-> da própria tela de criação do placement**, um preview em tempo real de quantos e quais
-> clusters batem com os critérios escolhidos ("2 clusters matched", com a lista nominal) —
-> antes de você confirmar nada. Dá pra testar o MCOA num placement pequeno primeiro e conferir
-> visualmente o que seria afetado, em vez de assumir que "vai pra frota inteira" é a única opção.
-
 ### Passo 2 (já aplicado pelo instrutor): Habilitar a UI do Perses
 
 ```bash
@@ -147,16 +135,6 @@ No console do OCP: **Observe → Dashboards (Perses)** → selecione o projeto
 `open-cluster-management-observability` → abra **ACM Clusters Overview**. Compare com o
 dashboard que você mesmo construiu na Parte 1: aqui não teve `oc apply` de `PersesDashboard`
 nenhum — o dashboard já vem do próprio ACM.
-
-### Parte 1 vs. Parte 2, Resumo
-
-| | Parte 1 (COO genérico) | Parte 2 (MCOA do ACM) |
-|---|---|---|
-| Maturidade | GA (COO 1.5) | Technology Preview |
-| Você cria o `PersesDashboard`? | Sim, na mão | Não, já vem pronto (frota) |
-| Muda a coleta de métricas? | Não | Sim, troca o coletor inteiro |
-| Escopo do impacto | Só o dashboard/namespace do lab | Hub inteiro, todos os managed clusters |
-| Bom pra | Levar seu dashboard customizado existente pro Perses | Ver a visão de frota nativa do ACM |
 
 ---
 
