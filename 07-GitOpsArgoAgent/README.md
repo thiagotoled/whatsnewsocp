@@ -165,48 +165,8 @@ no `ManagedClusterAddOn`.
 ```bash
 oc delete -n lab-argocd $(oc get secret -n lab-argocd -l argocd.argoproj.io/secret-type=cluster -o name | grep application-manager-cluster-secret) --ignore-not-found
 oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/10-appset-pull.yaml
+oc delete pod -n lab-argocd -l app.kubernetes.io/name=lab-argocd-agent-principal
 oc get application appdemo-<seu-cluster> -n lab-argocd -o jsonpath='{.spec.destination}'
-```
-
-> **O `oc delete secret` acima é necessário** (confirmado ao vivo, não documentado assim na
-> doc oficial): o `GitOpsCluster` do Passo 1 já tinha criado um Secret de cluster (push) por
-> managed cluster; ligar o agent cria um SEGUNDO Secret pro mesmo nome de cluster (agora
-> via resource-proxy do agent, nomeado `cluster-<nome>` — confirmado ao vivo, formato diferente
-> do de push). Os dois com o mesmo "nome" quebram a resolução do `destination.name` com o erro
-> `there are 2 clusters with the same name`. O comando acima apaga só os secrets antigos do
-> push (`<cluster>-application-manager-cluster-secret`), identificados pelo label
-> `argocd.argoproj.io/secret-type=cluster`, sem tocar nos novos do agent — o `GitOpsCluster`
-> não recria mais os de push já que o addon está ligado.
-
-> **Se o primeiro sync falhar** (por exemplo, você pulou o 3f): depois de corrigir a RBAC, o
-> Argo CD **não tenta de novo sozinho** uma vez esgotadas as retentativas automáticas
-> (`retry.limit: 5` por padrão) — isso é comportamento padrão do Argo CD, não documentado nesse
-> guia do ACM. Force uma tentativa nova commitando qualquer mudança no Git (ex.: um comentário),
-> ou sincronize manualmente pela UI do Argo CD.
-
-Repare: `destination` mudou de `server` pra `name` — é a **mesma** `Application`
-(`appdemo-<seu-cluster>`), não uma segunda.
-
----
-
-## Passo 4: Provar a Resiliência do Pull
-
-Escale o `principal` a zero — simula o hub inacessível pro agent, sem mexer em NSG/firewall
-nenhum:
-
-```bash
-oc scale deployment lab-argocd-agent-principal -n lab-argocd --replicas=0
-```
-
-Commite uma mudança no Git. Confirmado ao vivo: o Argo CD **local** do managed cluster detecta
-a revisão nova e tenta aplicar **mesmo sem o principal** — porque ele busca do Git direto, não
-através do hub. A aplicação de fato só depende do hub pra receber `Application`s
-**novas**/mudanças de `Placement`; o que já está configurado continua se autocurando via Git.
-
-Restaure o `principal` antes de seguir pra limpeza:
-
-```bash
-oc scale deployment lab-argocd-agent-principal -n lab-argocd --replicas=1
 ```
 
 ---
@@ -242,7 +202,7 @@ Confirme o novo pod subir `1/1 Running` sem reiniciar, e recarregue a tela de Cl
 
 ---
 
-## Passo 5: Limpeza
+## Passo 4: Limpeza
 
 ```bash
 oc delete -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/10-appset-pull.yaml
