@@ -36,7 +36,7 @@ Se isso for pré-criado, o aluno perde o "antes/depois" e a lição não acontec
 | Lab | Boilerplate (→ Policy) | Lição (fica manual) |
 |---|---|---|
 | 1. InplacePodverticalscaling | namespace + deployment | `oc patch --subresource=resize` |
-| 2. ExternalSecretsOperator | namespaces (`eso-demo`, `app`) + instalação do operador (falta `ExternalSecretsConfig`, ver nota abaixo) | SecretStore/ExternalSecret (pull e push) |
+| 2. ExternalSecretsOperator | namespaces (`eso-demo`, `app`) + instalação do operador + Secrets do SPN Azure (`azure-kv-sp`, `azure-spn`, ver aviso de secrets abaixo) (falta `ExternalSecretsConfig`, ver nota abaixo) | SecretStore/ExternalSecret (pull e push) |
 | 3. UserNamespaces | namespace | os dois Deployments (comparação é a lição) |
 | 4. ManagedBootImages | *(nada)* | o único manifesto do lab é a lição inteira (bloqueado em Azure/ARO no 4.20, ver README do lab) |
 | 5. SigstoreImagePolicy | namespace + deployment | aplicar/trocar o `ImagePolicy` (chave errada bloqueia, chave real da Red Hat libera) |
@@ -93,6 +93,7 @@ nunca commitados:
 | `htpasswd-2cr76` | `policy-oauth-configuration` | `oc apply -f ~/secret-htpasswd.yaml` (fora do repo) |
 | `aad-client-secret` | `policy-oauth-configuration` | `oc apply -f ~/secret-aad-client.yaml` (fora do repo) |
 | `cluster-registration-secret` | `policy-acs-secured-cluster` | gerar novo CRS em Central > Clusters > Cluster registration secrets, `oc apply` no hub |
+| `azure-eso-spn` (chaves `ClientID`/`ClientSecret`) | `policy-lab02` | `oc apply -f ~/secret-azure-eso-spn.yaml` (fora do repo) — mesmo SPN usado no Lab 2, role `Key Vault Secrets Officer` no Key Vault |
 
 Se algum desses secrets sumir (ex.: reset do namespace `whatsnewsocp-policies`), as policies que
 dependem deles ficam `NonCompliant` até você reaplicar. O `fromSecret` não falha

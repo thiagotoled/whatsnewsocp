@@ -1,6 +1,7 @@
 # Lab 2 - ExternalSecretsOperator: a lição é a sincronização (pull e push).
-# Só o operador instalado é boilerplate. O namespace do operator usa kind: Namespace (não
-# Project) de propósito — Project deu NonCompliant permanente em cluster novo importado
+# Operador instalado + os Secrets do SPN do Azure (pra não depender do aluno editar
+# ClientID/ClientSecret na mão) são boilerplate. O namespace do operator usa kind: Namespace
+# (não Project) de propósito — Project deu NonCompliant permanente em cluster novo importado
 # ("watch not supported on this resource"), confirmado ao vivo no ms35vuo5.
 apiVersion: policy.open-cluster-management.io/v1
 kind: Policy
@@ -79,3 +80,43 @@ spec:
               sourceNamespace: openshift-marketplace
               installPlanApproval: Automatic
               startingCSV: external-secrets-operator.v1.0.0
+  - extraDependencies:
+    - apiVersion: policy.open-cluster-management.io/v1
+      compliance: Compliant
+      kind: ConfigurationPolicy
+      name: policy-lab02-namespaces
+    objectDefinition:
+      apiVersion: policy.open-cluster-management.io/v1
+      kind: ConfigurationPolicy
+      metadata:
+        name: policy-lab02-azure-spn-secrets
+      spec:
+        remediationAction: enforce
+        severity: medium
+        object-templates:
+        # Mesmo SPN copiado pros dois namespaces (SecretStore é namespace-scoped, cada um
+        # precisa da própria cópia -- ver README do lab). Fonte real (azure-eso-spn, chaves
+        # ClientID/ClientSecret) aplicada manualmente em whatsnewsocp-policies no hub, nunca
+        # commitada, mesmo padrão do policy-oauth-configuration.
+        - complianceType: musthave
+          objectDefinition:
+            apiVersion: v1
+            kind: Secret
+            metadata:
+              name: azure-kv-sp
+              namespace: eso-demo
+            type: Opaque
+            data:
+              ClientID: '{{hub fromSecret "whatsnewsocp-policies" "azure-eso-spn" "ClientID" hub}}'
+              ClientSecret: '{{hub fromSecret "whatsnewsocp-policies" "azure-eso-spn" "ClientSecret" hub}}'
+        - complianceType: musthave
+          objectDefinition:
+            apiVersion: v1
+            kind: Secret
+            metadata:
+              name: azure-spn
+              namespace: app
+            type: Opaque
+            data:
+              ClientID: '{{hub fromSecret "whatsnewsocp-policies" "azure-eso-spn" "ClientID" hub}}'
+              ClientSecret: '{{hub fromSecret "whatsnewsocp-policies" "azure-eso-spn" "ClientSecret" hub}}'
