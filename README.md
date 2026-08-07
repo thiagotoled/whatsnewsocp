@@ -72,6 +72,7 @@ oc login --token=<TOKEN> --server=<API_URL>
 ├── 02-ExternalSecretsOperator
 │   ├── README.md
 │   └── ocp-manifests
+│       ├── 00-namespace-app.yaml
 │       ├── 01-namespace.yaml
 │       ├── 01-operator-config.yaml
 │       ├── 02-external-secrets-config.yaml

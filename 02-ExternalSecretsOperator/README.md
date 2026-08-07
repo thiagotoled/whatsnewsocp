@@ -125,7 +125,7 @@ APP_PASSWORD=<valor-do-seu-segredo-no-keyvault>
 ### Passo 1: Criar o Namespace e os Segredos de Origem
 
 ```bash
-oc new-project app
+oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/02-ExternalSecretsOperator/ocp-manifests/00-namespace-app.yaml
 ```
 
 Baixe [`07-push-source-secret.yaml`](ocp-manifests/07-push-source-secret.yaml), edite localmente

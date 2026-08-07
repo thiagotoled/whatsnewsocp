@@ -36,7 +36,7 @@ Se isso for pré-criado, o aluno perde o "antes/depois" e a lição não acontec
 | Lab | Boilerplate (→ Policy) | Lição (fica manual) |
 |---|---|---|
 | 1. InplacePodverticalscaling | namespace + deployment | `oc patch --subresource=resize` |
-| 2. ExternalSecretsOperator | namespace + instalação do operador (falta `ExternalSecretsConfig`, ver nota abaixo) | SecretStore/ExternalSecret (pull e push) |
+| 2. ExternalSecretsOperator | namespaces (`eso-demo`, `app`) + instalação do operador (falta `ExternalSecretsConfig`, ver nota abaixo) | SecretStore/ExternalSecret (pull e push) |
 | 3. UserNamespaces | namespace | os dois Deployments (comparação é a lição) |
 | 4. ManagedBootImages | *(nada)* | o único manifesto do lab é a lição inteira (bloqueado em Azure/ARO no 4.20, ver README do lab) |
 | 5. SigstoreImagePolicy | namespace + deployment | aplicar/trocar o `ImagePolicy` (chave errada bloqueia, chave real da Red Hat libera) |

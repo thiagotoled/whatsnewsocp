@@ -35,6 +35,12 @@ spec:
             apiVersion: v1
             kind: Namespace
             metadata:
+              name: app
+        - complianceType: musthave
+          objectDefinition:
+            apiVersion: v1
+            kind: Namespace
+            metadata:
               name: external-secrets-operator
   - extraDependencies:
     - apiVersion: policy.open-cluster-management.io/v1
