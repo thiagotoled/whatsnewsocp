@@ -95,7 +95,7 @@ nunca commitados:
 | `htpasswd-2cr76` | `policy-oauth-configuration` | sincronizado sozinho pelo `policy-eso-oauth-secrets` a partir do segredo `whatsnewsocp-htpasswd` no Key Vault — atualize lá, não aplique nada no hub |
 | `aad-client-secret` | `policy-oauth-configuration` | sincronizado sozinho pelo `policy-eso-oauth-secrets` a partir do segredo `whatsnewsocp-aad-client-secret` no Key Vault — atualize lá, não aplique nada no hub |
 | `cluster-registration-secret` | `policy-acs-secured-cluster` | gerar novo CRS em Central > Clusters > Cluster registration secrets, `oc apply` no hub |
-| `azure-eso-spn` (chaves `ClientID`/`ClientSecret`) | `policy-lab02`, `policy-eso-oauth-secrets` | `oc apply -f ~/secret-azure-eso-spn.yaml` (fora do repo) — continua manual de propósito: é a credencial que o próprio ESO do hub usa pra falar com o Key Vault, não dá pra guardar dentro do Key Vault que ela mesma destranca |
+| `azure-eso-spn` (chaves `ClientID`/`ClientSecret`) | `policy-lab02`, `policy-eso-oauth-secrets` | `oc apply -f ~/secret-azure-eso-spn.yaml` (fora do repo) — continua manual de propósito: é a credencial que o próprio ESO do hub usa pra falar com o Key Vault, não dá pra guardar dentro do Key Vault que ela mesma destranca. Backup dos valores em `whatsnewsocp-azure-eso-spn-client-id`/`-client-secret` no Key Vault, só pra recuperar se perder o arquivo local — ainda precisa `oc apply` manual |
 
 Se `azure-eso-spn` ou `cluster-registration-secret` sumirem (ex.: reset do namespace
 `whatsnewsocp-policies`), as policies que dependem deles ficam `NonCompliant` até você
