@@ -3,7 +3,7 @@
 Este diretório contém as `Policy`/`Placement`/`PlacementBinding` do RHACM que rodam **de
 verdade** no hub (`local-cluster`, ARO em `rms36u23q91da15275.eastus.aroapp.io`) e em qualquer
 managed cluster importado (hoje: `ms35vuo5`). O restante do repositório ([`01-InplacePodverticalscaling/`](../01-InplacePodverticalscaling/README.md),
-[`05-UpgradeRecommendPrecheck/`](../05-UpgradeRecommendPrecheck/README.md), etc.) continua igual, cada lab é aplicado manualmente com
+[`05-SigstoreImagePolicy/`](../05-SigstoreImagePolicy/README.md), etc.) continua igual, cada lab é aplicado manualmente com
 `oc apply -f` pelo aluno/instrutor, exatamente como antes; a Policy só cuida do boilerplate.
 
 Sincronizado via Argo CD (`openshift-gitops-acm`, Application `politicasdoacm-local-cluster`)
@@ -19,14 +19,9 @@ oc annotate application.argoproj.io -n openshift-gitops-acm politicasdoacm-local
 
 ## Por que usar ACM Policy aqui?
 
-Dois motivos, não um só:
-
-1. **Reduzir trabalho repetitivo**: parte de cada lab é só "prep" (namespace, deployment,
-   operador instalado), não é a lição em si. Isso fica pronto no cluster antes da sessão
-   começar, incluindo em clusters novos assim que são importados.
-2. **Resolver o problema de timing do Lab 5**: o alerta `PodDisruptionBudgetAtLimit` só vira
-   `firing` depois de **60 minutos** (`for: 60m` na regra do Prometheus). Semeando o PDB via
-   Policy com bastante antecedência, ele já está `firing` quando a turma chega nesse passo.
+**Reduzir trabalho repetitivo**: parte de cada lab é só "prep" (namespace, deployment,
+operador instalado), não é a lição em si. Isso fica pronto no cluster antes da sessão
+começar, incluindo em clusters novos assim que são importados.
 
 ---
 
@@ -44,9 +39,8 @@ Se isso for pré-criado, o aluno perde o "antes/depois" e a lição não acontec
 | 2. ExternalSecretsOperator | namespace + instalação do operador (falta `ExternalSecretsConfig`, ver nota abaixo) | SecretStore/ExternalSecret (pull e push) |
 | 3. UserNamespaces | namespace | os dois Deployments (comparação é a lição) |
 | 4. ManagedBootImages | *(nada)* | o único manifesto do lab é a lição inteira (bloqueado em Azure/ARO no 4.20, ver README do lab) |
-| 5. UpgradeRecommendPrecheck | namespace + deployment **+ PDB restritivo (ver aviso abaixo)** | corrigir o PDB e ver o precheck refletir |
-| 6. SigstoreImagePolicy | namespace + deployment | aplicar/trocar o `ImagePolicy` (chave errada bloqueia, chave real da Red Hat libera) |
-| 7. VulnerabilitiesAndCRS | namespace + deployment (imagem RHEL9 real, com CVEs de verdade) — só a Parte 1 (console) | Parte 1: abrir Security → Vulnerabilities no console do OCP. Parte 2 (CRS): *(nada pra pré-criar)* — criar o CRS pela UI com Validity period + Max registrations |
+| 5. SigstoreImagePolicy | namespace + deployment | aplicar/trocar o `ImagePolicy` (chave errada bloqueia, chave real da Red Hat libera) |
+| 6. VulnerabilitiesAndCRS | namespace + deployment (imagem RHEL9 real, com CVEs de verdade) — só a Parte 1 (console) | Parte 1: abrir Security → Vulnerabilities no console do OCP. Parte 2 (CRS): *(nada pra pré-criar)* — criar o CRS pela UI com Validity period + Max registrations |
 
 Labs "Enhanced Vulnerability Management Reporting", "Policy Scope com Labels de Cluster/Namespace"
 e "Policy para oc debug / pods attach" foram removidos do repositório (eram candidatos a remoção
@@ -85,30 +79,6 @@ bate com o spec desejado, não que os pods que esse objeto gera estão de pé.
 **Sempre que uma Policy cria um objeto que por sua vez cria pods** (Operator CRs, principalmente),
 `Compliant` é necessário mas não suficiente. Confirme também com `oc get pods -n <namespace>`
 no managed cluster, não só o status da Policy no hub.
-
----
-
-## ⚠️ Cuidado com o PDB do Lab 5 (drift/enforce)
-
-A `policy-lab05` tem dois `ConfigurationPolicy` dentro: um com o namespace/deployment e outro
-com o PDB restritivo. Esse segundo roda em `remediationAction: enforce` de propósito, para o PDB
-existir com bastante antecedência (fluxo do "por que" acima). Só que, em `enforce`, o ACM
-**reverte qualquer mudança manual** assim que detecta drift. Confirmado ao vivo: corrigi o PDB
-manualmente durante um teste e a policy reverteu de volta pra `100%` sem eu perceber, porque
-não tinha desabilitado a policy antes.
-
-Isso quebra o Passo 5 do lab (o aluno aplica [`04-poddisruptionbudget-fixed.yaml`](../05-UpgradeRecommendPrecheck/ocp-manifests/04-poddisruptionbudget-fixed.yaml) para corrigir
-o PDB), a policy vai desfazer a correção do aluno.
-
-**Antes de liberar a turma para o Passo 5**, desabilite a policy inteira (não tem problema
-pausar o namespace/deployment junto, já estão criados e estáveis nesse ponto do lab):
-
-```bash
-oc patch policy policy-lab05 \
-  -n whatsnewsocp-policies --type merge -p '{"spec":{"disabled":true}}'
-```
-
-(Ou delete a policy: o PDB já criado continua no cluster, só para de ser reconciliado.)
 
 ---
 
@@ -169,7 +139,7 @@ mundo, sem afetar os outros:
 | `placement-local-cluster` | só o hub (`local-cluster=true`) | gitops-operator-install, policy-acs-central |
 | `placement-azure` | qualquer managed cluster OpenShift na Azure, **hub incluído** (`cloud=Azure` + `vendor=OpenShift`, sem exigir `whatsnewsocp-lab`) | policy-oauth-configuration, policy-cluster-admin-rbac |
 | `placement-vmware-lab-clusters` | clusters de **lab** na VMware (`whatsnewsocp-lab=true` + `cloud=VMware`) | *(nenhuma ainda, pronto pra quando divergir)* |
-| `placement-all-lab-clusters` | qualquer cluster de lab, qualquer nuvem (`whatsnewsocp-lab=true`) | as 6 policies de baseline dos labs (nenhuma é específica de nuvem hoje) |
+| `placement-all-lab-clusters` | qualquer cluster de lab, qualquer nuvem (`whatsnewsocp-lab=true`) | as 5 policies de baseline dos labs (nenhuma é específica de nuvem hoje) |
 | `placement-all` | qualquer managed cluster OpenShift, sem filtro (inclui o hub) | webterminal-install, policy-acs-operator-install, policy-acs-secured-cluster |
 
 > **Assimetria de propósito:** `placement-azure` NÃO exige `whatsnewsocp-lab` (cobre o hub, que
@@ -196,7 +166,7 @@ acm-hub/
     ├── 04-placement-azure.yaml                    # placement-azure (hub incluído)
     ├── 05-placement-vmware.yaml                   # sem binding ainda, ver tabela acima
     ├── 06-placement-all-lab-clusters.yaml
-    ├── 07-placementbinding-all-lab-clusters.yaml  # as 6 policies de baseline dos labs
+    ├── 07-placementbinding-all-lab-clusters.yaml  # as 5 policies de baseline dos labs
     ├── 08-placement-all.yaml
     ├── 09-placementbinding-all.yaml                # webterminal, policy-acs-operator-install, policy-acs-secured-cluster
     ├── 10-placementbinding-azure.yaml              # policy-oauth-configuration, policy-cluster-admin-rbac
@@ -210,9 +180,8 @@ acm-hub/
     ├── policy-lab01.yaml
     ├── policy-lab02.yaml
     ├── policy-lab03.yaml
-    ├── policy-lab05.yaml                           # 2 ConfigurationPolicy: baseline + PDB seed
-    ├── policy-lab06.yaml
-    └── policy-lab07.yaml                           # Parte 1 (console); Parte 2 (CRS) não tem policy — só geração via UI
+    ├── policy-lab05.yaml
+    └── policy-lab06.yaml                           # Parte 1 (console); Parte 2 (CRS) não tem policy — só geração via UI
 ```
 
 Sem PolicyGenerator de propósito: time não gosta, e o `ACM_OCP/Politicas` real também não usa
@@ -247,9 +216,6 @@ do repo real, sem exec plugin, sem `--enable-alpha-plugins`.
    de verdade no managed cluster, ver aviso "`Compliant` não significa pods saudáveis" acima.
 4. **Redirect URI do Entra ID**: se o cluster for Azure, adicione o Redirect URI dele no app
    registration (ver aviso acima). Sem isso o login AAD falha mesmo com a policy `Compliant`.
-5. Pelo menos **1h antes** de rodar o Lab 5 com a turma nesse cluster, confirme que a policy do
-   PDB já foi aplicada (para o alerta ter tempo de virar `firing`), e não esqueça o passo 7.
-6. Antes do Passo 5 do Lab 5, aplique o `oc patch ... disabled:true` da seção de aviso acima.
 
 ---
 

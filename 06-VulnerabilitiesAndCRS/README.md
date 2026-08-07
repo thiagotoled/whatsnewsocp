@@ -74,8 +74,8 @@ do `multicluster-engine` já em uso no seu hub ACM, escaneada ao vivo com **178 
 fixable**:
 
 ```bash
-oc apply -f 07-VulnerabilitiesAndCRS/ocp-manifests/01-namespace.yaml
-oc apply -f 07-VulnerabilitiesAndCRS/ocp-manifests/02-deployment.yaml
+oc apply -f 06-VulnerabilitiesAndCRS/ocp-manifests/01-namespace.yaml
+oc apply -f 06-VulnerabilitiesAndCRS/ocp-manifests/02-deployment.yaml
 ```
 
 O `command: ["sleep", "infinity"]` é só pra não tentar rodar o binário do console do MCE de

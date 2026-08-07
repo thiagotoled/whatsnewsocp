@@ -1,12 +1,6 @@
-# Lab 5 - UpgradeRecommendPrecheck: a lição é corrigir o PDB e ver o precheck do
-# oc adm upgrade recommend refletir a mudança. Namespace + deployment são boilerplate normal.
-#
-# O PDB restritivo (segundo ConfigurationPolicy abaixo) precisa ser semeado ~1h antes do lab
-# por causa do "for: 60m" do alerta PodDisruptionBudgetAtLimit (ver acm-hub/README.md).
-# IMPORTANTE: por estar em remediationAction=enforce, ele vai reverter a correção manual do
-# Passo 5 do lab se a policy ficar habilitada — desabilite a policy inteira antes de liberar
-# a turma pra aplicar o 04-poddisruptionbudget-fixed.yaml (não tem problema pausar também o
-# namespace/deployment — já estão criados e estáveis nesse ponto do lab).
+# Lab 5 - SigstoreImagePolicy: a lição é aplicar/trocar o ImagePolicy e ver o pull
+# ser bloqueado (chave errada) ou liberado (chave real da Red Hat). Namespace + deployment
+# são boilerplate normal — o ImagePolicy fica manual de propósito.
 apiVersion: policy.open-cluster-management.io/v1
 kind: Policy
 metadata:
@@ -24,7 +18,7 @@ spec:
       apiVersion: policy.open-cluster-management.io/v1
       kind: ConfigurationPolicy
       metadata:
-        name: policy-lab05-baseline
+        name: policy-lab05
       spec:
         remediationAction: enforce
         severity: low
@@ -34,47 +28,25 @@ spec:
             apiVersion: v1
             kind: Namespace
             metadata:
-              name: lab-upgrade-status
+              name: lab-sigstore-policy
         - complianceType: musthave
           objectDefinition:
             apiVersion: apps/v1
             kind: Deployment
             metadata:
-              name: nginx-pdb-demo
-              namespace: lab-upgrade-status
+              name: demo-app
+              namespace: lab-sigstore-policy
             spec:
-              replicas: 3
+              replicas: 1
               selector:
                 matchLabels:
-                  app: nginx-pdb-demo
+                  app: demo-app
               template:
                 metadata:
                   labels:
-                    app: nginx-pdb-demo
+                    app: demo-app
                 spec:
                   containers:
-                    - name: nginx
-                      image: quay.io/packit/nginx-unprivileged:latest
-                      ports:
-                        - containerPort: 8080
-  - objectDefinition:
-      apiVersion: policy.open-cluster-management.io/v1
-      kind: ConfigurationPolicy
-      metadata:
-        name: policy-lab05-pdb-seed
-      spec:
-        remediationAction: enforce
-        severity: low
-        object-templates:
-        - complianceType: musthave
-          objectDefinition:
-            apiVersion: policy/v1
-            kind: PodDisruptionBudget
-            metadata:
-              name: nginx-pdb-demo-strict
-              namespace: lab-upgrade-status
-            spec:
-              minAvailable: 100%
-              selector:
-                matchLabels:
-                  app: nginx-pdb-demo
+                    - name: demo-app
+                      image: registry.access.redhat.com/ubi9/ubi-micro:latest
+                      command: ["sleep", "infinity"]

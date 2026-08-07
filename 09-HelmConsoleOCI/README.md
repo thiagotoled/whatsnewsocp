@@ -49,7 +49,7 @@ O 4.22 adiciona três coisas (RFE-7114 e RFE-7965):
 Cadastre um repositório Helm público conhecido:
 
 ```bash
-oc apply -f 10-HelmConsoleOCI/manifests/01-helmchartrepository.yaml
+oc apply -f 09-HelmConsoleOCI/manifests/01-helmchartrepository.yaml
 ```
 
 No console: **Developer perspective → +Add → Helm Chart** — o catálogo mostra os charts desse
@@ -106,7 +106,7 @@ e senha — o console agora grava isso como `basicAuthConfig` no `Secret` refere
 
 ```bash
 helm uninstall <release-name> -n <seu-namespace>
-oc delete -f 10-HelmConsoleOCI/manifests/01-helmchartrepository.yaml
+oc delete -f 09-HelmConsoleOCI/manifests/01-helmchartrepository.yaml
 ```
 
 ---

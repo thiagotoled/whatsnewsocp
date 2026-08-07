@@ -13,23 +13,23 @@ Cada diretório contém um laboratório independente com manifestos prontos para
 | 2 | [External Secrets Operator](./02-ExternalSecretsOperator/README.md) | Sincronização bidirecional de segredos entre OpenShift e Azure Key Vault | 4.20+ | GA | ~25 min |
 | 3 | [User Namespaces](./03-UserNamespaces/README.md) | Isolamento de UID/GID do container em relação ao host com `hostUsers: false` | 4.20+ | GA | ~10 min |
 | 4 | [Managed Boot Images](./04-ManagedBootImages/README.md) | Atualização automática de imagens de boot nos MachineSets, provisionamento mais rápido | 4.21+ | GA | ~20 min |
-| 5 | [Encontrando Problemas Antes de Atualizar o Cluster](./05-UpgradeRecommendPrecheck/README.md) | Uso do `oc adm upgrade recommend` para identificar riscos antes de iniciar um update | 4.20+ | GA | ~30 min |
-| 6 | [Verificação de Assinatura de Imagens com Sigstore](./06-SigstoreImagePolicy/README.md) | Uso do `ImagePolicy` para exigir assinatura sigstore antes do pull | 4.20+ | GA | ~20 min |
-| 7 | [Vulnerabilidades no Console e Mais Controle no CRS](./07-VulnerabilitiesAndCRS/README.md) | Plugin `advanced-cluster-security` do RHACS no console do OpenShift + controles de **validade** e **max registrations** na geração do CRS (RHACS 4.11) | 4.20+ / ACS 4.11 | GA | ~25 min |
-| 8 | [GitOps Argo Agent Addon](./08-GitOpsArgoAgent/README.md) **(exige managed cluster real)** | Modelo **pull** de GitOps multicluster do ACM 2.17 — managed cluster conecta no hub, não o contrário | ACM 2.17 | Tech Preview | ~35 min |
-| 9 | [Dashboards com o Red Hat Build of Perses](./09-GrafanaToPerses/README.md) | Dois caminhos: Parte 1 — COO genérico (`UIPlugin`/`PersesDashboard`, GA), isolado no cluster de cada aluno. Parte 2 — Multicluster Observability Add-on nativo do ACM (Technology Preview), dashboards de frota prontos, pré-configurado no hub | COO 1.5 / ACM 2.17 | GA + Tech Preview | ~30 min |
-| 10 | [Helm Chart Direto de URL OCI/HTTPS no Console](./10-HelmConsoleOCI/README.md) **(backend validado, UI do console não)** | Instala um Helm chart sem cadastrar repositório antes — cola a URL `oci://` ou `https://` na hora | 4.22 | GA | ~15 min |
-| 11 | [Gateway API — Dois Gateways Independentes](./11-GatewayAPI/README.md) | Cada `Gateway` gera seu próprio `Deployment`+`LoadBalancer` — isolado no cluster de cada aluno, sem depender de ACM/hub | 4.19+ | GA | ~25 min |
+| 5 | [Verificação de Assinatura de Imagens com Sigstore](./05-SigstoreImagePolicy/README.md) | Uso do `ImagePolicy` para exigir assinatura sigstore antes do pull | 4.20+ | GA | ~20 min |
+| 6 | [Vulnerabilidades no Console e Mais Controle no CRS](./06-VulnerabilitiesAndCRS/README.md) | Plugin `advanced-cluster-security` do RHACS no console do OpenShift + controles de **validade** e **max registrations** na geração do CRS (RHACS 4.11) | 4.20+ / ACS 4.11 | GA | ~25 min |
+| 7 | [GitOps Argo Agent Addon](./07-GitOpsArgoAgent/README.md) **(exige managed cluster real)** | Modelo **pull** de GitOps multicluster do ACM 2.17 — managed cluster conecta no hub, não o contrário | ACM 2.17 | Tech Preview | ~35 min |
+| 8 | [Dashboards com o Red Hat Build of Perses](./08-GrafanaToPerses/README.md) | Dois caminhos: Parte 1 — COO genérico (`UIPlugin`/`PersesDashboard`, GA), isolado no cluster de cada aluno. Parte 2 — Multicluster Observability Add-on nativo do ACM (Technology Preview), dashboards de frota prontos, pré-configurado no hub | COO 1.5 / ACM 2.17 | GA + Tech Preview | ~30 min |
+| 9 | [Helm Chart Direto de URL OCI/HTTPS no Console](./09-HelmConsoleOCI/README.md) **(backend validado, UI do console não)** | Instala um Helm chart sem cadastrar repositório antes — cola a URL `oci://` ou `https://` na hora | 4.22 | GA | ~15 min |
+| 10 | [Gateway API — Dois Gateways Independentes](./10-GatewayAPI/README.md) | Cada `Gateway` gera seu próprio `Deployment`+`LoadBalancer` — isolado no cluster de cada aluno, sem depender de ACM/hub | 4.19+ | GA | ~25 min |
 
 > **OCP 4.22** (lançado em 23 de junho de 2026, baseado no Kubernetes 1.35 "Timbernetes"):
-> o In-place Pod Vertical Scaling (Lab 1) passou de Tech Preview para **GA**. Labs 8-11 cobrem
+> o In-place Pod Vertical Scaling (Lab 1) passou de Tech Preview para **GA**. Labs 7-10 cobrem
 > outras novidades do 4.19-4.22 e do ACM 2.17/RHACS 4.11 (GitOps pull model, Perses, Helm
 > Console, Gateway API) — marcados **"não validado ao vivo"** até serem testados num cluster
 > real.
 >
-> **Lab de OLM v1 removido**: exigia a capability opcional `OperatorLifecycleManagerV1`, que
-> não vem habilitada por padrão e, uma vez ligada, não pode ser desligada de novo — não dava pra
-> validar sem alterar permanentemente o cluster de testes deste repositório.
+> **Labs removidos**: OLM v1 (exigia a capability opcional `OperatorLifecycleManagerV1`, que não
+> vem habilitada por padrão e, uma vez ligada, não pode ser desligada de novo — não dava pra
+> validar sem alterar permanentemente o cluster de testes deste repositório) e "Encontrando
+> Problemas Antes de Atualizar o Cluster" (`oc adm upgrade recommend`).
 
 ---
 
@@ -38,9 +38,8 @@ Cada diretório contém um laboratório independente com manifestos prontos para
 O diretório [`acm-hub/`](./acm-hub/README.md) contém as Policies do RHACM (Advanced Cluster
 Management) que rodam de verdade no hub e pré-carregam o "boilerplate" de cada lab (namespace,
 deployment, operador) em todo cluster importado, deixando só a parte que É a lição para
-aplicação manual. Ver a tabela completa, os cuidados (PDB do Lab 5, secrets que não estão no
-git, Redirect URI do Entra ID) e o passo a passo pra importar um cluster novo no README do
-diretório.
+aplicação manual. Ver a tabela completa, os cuidados (secrets que não estão no git, Redirect
+URI do Entra ID) e o passo a passo pra importar um cluster novo no README do diretório.
 
 ---
 
@@ -94,26 +93,19 @@ oc login --token=<TOKEN> --server=<API_URL>
 │   ├── README.md
 │   └── ocp-manifests
 │       └── 01-machine-configuration.yaml
-├── 05-UpgradeRecommendPrecheck
-│   ├── README.md
-│   └── ocp-manifests
-│       ├── 01-namespace.yaml
-│       ├── 02-deployment.yaml
-│       ├── 03-poddisruptionbudget-blocking.yaml
-│       └── 04-poddisruptionbudget-fixed.yaml
-├── 06-SigstoreImagePolicy
+├── 05-SigstoreImagePolicy
 │   ├── README.md
 │   └── ocp-manifests
 │       ├── 01-namespace.yaml
 │       ├── 02-deployment.yaml
 │       ├── 03-imagepolicy-wrong-key.yaml
 │       └── 04-imagepolicy-redhat-key.yaml
-├── 07-VulnerabilitiesAndCRS
+├── 06-VulnerabilitiesAndCRS
 │   ├── README.md
 │   └── ocp-manifests
 │       ├── 01-namespace.yaml
 │       └── 02-deployment.yaml
-├── 08-GitOpsArgoAgent
+├── 07-GitOpsArgoAgent
 │   ├── README.md
 │   └── manifests
 │       ├── 00-placement.yaml
@@ -128,7 +120,7 @@ oc login --token=<TOKEN> --server=<API_URL>
 │       ├── 09-appset-pull.yaml
 │       └── app
 │           └── deployment.yaml
-├── 09-GrafanaToPerses
+├── 08-GrafanaToPerses
 │   ├── README.md
 │   └── manifests
 │       ├── 01-uiplugin-monitoring.yaml
@@ -136,11 +128,11 @@ oc login --token=<TOKEN> --server=<API_URL>
 │       ├── 03-namespace.yaml
 │       ├── 04-demo-deployment.yaml
 │       └── 05-persesdashboard.yaml
-├── 10-HelmConsoleOCI
+├── 09-HelmConsoleOCI
 │   ├── README.md
 │   └── manifests
 │       └── 01-helmchartrepository.yaml
-├── 11-GatewayAPI
+├── 10-GatewayAPI
 │   ├── README.md
 │   └── manifests
 │       ├── 01-gatewayclass.yaml
@@ -178,6 +170,5 @@ oc login --token=<TOKEN> --server=<API_URL>
         ├── policy-lab02.yaml
         ├── policy-lab03.yaml
         ├── policy-lab05.yaml
-        ├── policy-lab06.yaml
-        └── policy-lab07.yaml
+        └── policy-lab06.yaml
 ```
