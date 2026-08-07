@@ -133,7 +133,6 @@ Deixe o `GatewayClass openshift-default` (é reutilizável por outros labs/apps 
 
 ## Referências
 
-- [Gateway API with OpenShift Container Platform networking — OKD docs](https://docs.okd.io/latest/networking/ingress_load_balancing/configuring_ingress_cluster_traffic/ingress-gateway-api.html)
-- [Using the Gateway API on OpenShift — Simon Krenger](https://www.krenger.ch/blog/using-the-gateway-api-on-openshift/) — fonte do YAML testado usado neste lab.
+- [Using the Gateway API on OpenShift — Simon Krenger](https://www.krenger.ch/blog/using-the-gateway-api-on-openshift/)
 - [Integrate OpenShift Gateway API with OpenShift Service Mesh — Red Hat Developer](https://developers.redhat.com/articles/2025/12/09/integrate-openshift-gateway-api-openshift-service-mesh)
 - [Introducing Gateway API with OpenShift Networking — Red Hat blog](https://www.redhat.com/en/blog/introducing-gateway-api-with-openshift-networking-developer-preview)
