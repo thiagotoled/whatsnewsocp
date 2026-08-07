@@ -163,18 +163,20 @@ no `ManagedClusterAddOn`.
 ## Passo 3: Converter a Mesma App pra Pull
 
 ```bash
-oc delete secret <seu-cluster>-application-manager-cluster-secret -n lab-argocd --ignore-not-found
+oc delete secret -n lab-argocd $(oc get secret -n lab-argocd -l argocd.argoproj.io/secret-type=cluster -o name | grep application-manager-cluster-secret) --ignore-not-found
 oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/10-appset-pull.yaml
 oc get application appdemo-<seu-cluster> -n lab-argocd -o jsonpath='{.spec.destination}'
 ```
 
 > **O `oc delete secret` acima é necessário** (confirmado ao vivo, não documentado assim na
-> doc oficial): o `GitOpsCluster` do Passo 1 já tinha criado um Secret de cluster (push) pra
-> esse managed cluster; ligar o agent cria um SEGUNDO Secret pro mesmo nome de cluster (agora
-> via resource-proxy do agent). Os dois com o mesmo "nome" quebram a resolução do
-> `destination.name` com o erro `there are 2 clusters with the same name`. Apagar o Secret
-> antigo do push resolve — o `GitOpsCluster` não recria mais o de push já que o addon está
-> ligado.
+> doc oficial): o `GitOpsCluster` do Passo 1 já tinha criado um Secret de cluster (push) por
+> managed cluster; ligar o agent cria um SEGUNDO Secret pro mesmo nome de cluster (agora
+> via resource-proxy do agent, nomeado `cluster-<nome>` — confirmado ao vivo, formato diferente
+> do de push). Os dois com o mesmo "nome" quebram a resolução do `destination.name` com o erro
+> `there are 2 clusters with the same name`. O comando acima apaga só os secrets antigos do
+> push (`<cluster>-application-manager-cluster-secret`), identificados pelo label
+> `argocd.argoproj.io/secret-type=cluster`, sem tocar nos novos do agent — o `GitOpsCluster`
+> não recria mais os de push já que o addon está ligado.
 
 > **Se o primeiro sync falhar** (por exemplo, você pulou o 3f): depois de corrigir a RBAC, o
 > Argo CD **não tenta de novo sozinho** uma vez esgotadas as retentativas automáticas
