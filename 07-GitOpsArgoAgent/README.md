@@ -126,10 +126,6 @@ Mesmo objeto do Passo 1, agora com o bloco `gitopsAddon`:
 oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/07-gitopscluster-agent.yaml
 ```
 
-> **Se o status ficar preso em "addon disabled" por mais de um minuto** (confirmado ao vivo,
-> acontece às vezes), reinicie o controller:
-> `oc delete pod -n open-cluster-management -l app=multicluster-integrations`
-
 ### 2e. RBAC `view` pro agent (leitura)
 
 ```bash
