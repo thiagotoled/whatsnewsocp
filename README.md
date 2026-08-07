@@ -171,5 +171,6 @@ oc login --token=<TOKEN> --server=<API_URL>
         ├── policy-lab02.yaml
         ├── policy-lab03.yaml
         ├── policy-lab05.yaml
-        └── policy-lab06.yaml
+        ├── policy-lab06.yaml
+        └── policy-lab08.yaml
 ```

@@ -41,6 +41,7 @@ Se isso for pré-criado, o aluno perde o "antes/depois" e a lição não acontec
 | 4. ManagedBootImages | *(nada)* | o único manifesto do lab é a lição inteira (bloqueado em Azure/ARO no 4.20, ver README do lab) |
 | 5. SigstoreImagePolicy | namespace + deployment | aplicar/trocar o `ImagePolicy` (chave errada bloqueia, chave real da Red Hat libera) |
 | 6. VulnerabilitiesAndCRS | namespace + deployment (imagem RHEL9 real, com CVEs de verdade) — só a Parte 1 (console) | Parte 1: abrir Security → Vulnerabilities no console do OCP. Parte 2 (CRS): *(nada pra pré-criar)* — criar o CRS pela UI com Validity period + Max registrations |
+| 8. GrafanaToPerses (Parte 1) | namespace do demo + instalação do Cluster Observability Operator | UIPlugin/PersesGlobalDatasource/PersesDashboard |
 
 Labs "Enhanced Vulnerability Management Reporting", "Policy Scope com Labels de Cluster/Namespace"
 e "Policy para oc debug / pods attach" foram removidos do repositório (eram candidatos a remoção
@@ -140,7 +141,7 @@ mundo, sem afetar os outros:
 | `placement-local-cluster` | só o hub (`local-cluster=true`) | gitops-operator-install, policy-acs-central |
 | `placement-azure` | qualquer managed cluster OpenShift na Azure, **hub incluído** (`cloud=Azure` + `vendor=OpenShift`, sem exigir `whatsnewsocp-lab`) | policy-oauth-configuration, policy-cluster-admin-rbac |
 | `placement-vmware-lab-clusters` | clusters de **lab** na VMware (`whatsnewsocp-lab=true` + `cloud=VMware`) | *(nenhuma ainda, pronto pra quando divergir)* |
-| `placement-all-lab-clusters` | qualquer cluster de lab, qualquer nuvem (`whatsnewsocp-lab=true`) | as 5 policies de baseline dos labs (nenhuma é específica de nuvem hoje) |
+| `placement-all-lab-clusters` | qualquer cluster de lab, qualquer nuvem (`whatsnewsocp-lab=true`) | as 6 policies de baseline dos labs (nenhuma é específica de nuvem hoje) |
 | `placement-all` | qualquer managed cluster OpenShift, sem filtro (inclui o hub) | webterminal-install, policy-acs-operator-install, policy-acs-secured-cluster |
 
 > **Assimetria de propósito:** `placement-azure` NÃO exige `whatsnewsocp-lab` (cobre o hub, que
@@ -167,7 +168,7 @@ acm-hub/
     ├── 04-placement-azure.yaml                    # placement-azure (hub incluído)
     ├── 05-placement-vmware.yaml                   # sem binding ainda, ver tabela acima
     ├── 06-placement-all-lab-clusters.yaml
-    ├── 07-placementbinding-all-lab-clusters.yaml  # as 5 policies de baseline dos labs
+    ├── 07-placementbinding-all-lab-clusters.yaml  # as 6 policies de baseline dos labs
     ├── 08-placement-all.yaml
     ├── 09-placementbinding-all.yaml                # webterminal, policy-acs-operator-install, policy-acs-secured-cluster
     ├── 10-placementbinding-azure.yaml              # policy-oauth-configuration, policy-cluster-admin-rbac
@@ -182,7 +183,8 @@ acm-hub/
     ├── policy-lab02.yaml
     ├── policy-lab03.yaml
     ├── policy-lab05.yaml
-    └── policy-lab06.yaml                           # Parte 1 (console); Parte 2 (CRS) não tem policy — só geração via UI
+    ├── policy-lab06.yaml                           # Parte 1 (console); Parte 2 (CRS) não tem policy — só geração via UI
+    └── policy-lab08.yaml                           # Parte 1 (COO genérico); Parte 2 (MCOA) não tem policy — pré-config manual do instrutor
 ```
 
 Sem PolicyGenerator de propósito: time não gosta, e o `ACM_OCP/Politicas` real também não usa
