@@ -40,50 +40,32 @@ O 4.22 adiciona três coisas (RFE-7114 e RFE-7965):
 
 ## Passo 1: Instalar Direto de uma URL OCI, Sem Cadastrar Nada
 
-No console: **Core platform → Ecosystem → Helm** (dentro do projeto desejado) → botão
+Selecione o projeto **`app`** (o mesmo namespace do Lab 2 — se você não rodou aquele lab,
+crie primeiro: `oc new-project app`). No console: **Core platform → Ecosystem → Helm** → botão
 **Create → Helm chart URL** → cole uma referência OCI pública, por exemplo:
 
 ```
 oci://registry-1.docker.io/bitnamicharts/nginx
 ```
 
-Preencha o **Release Name** e instale. Nenhum `HelmChartRepository` foi criado — o console foi
-direto na URL, resolveu o chart, e mostrou pra você inspecionar antes de instalar. Não existe
-nenhum objeto Kubernetes de "repositório" — só o `HelmRelease`/Secret que o Helm sempre cria pra
-rastrear a instalação em si.
+> **`Chart version` é obrigatório** (confirmado ao vivo, o formulário não deixa avançar sem
+> isso) — use `25.0.18`.
+
+Preencha o **Release name** (ex.: `nginx`) e instale. Nenhum `HelmChartRepository` foi criado —
+o console foi direto na URL, resolveu o chart, e mostrou pra você inspecionar antes de instalar.
+Não existe nenhum objeto Kubernetes de "repositório" — só o `HelmRelease`/Secret que o Helm
+sempre cria pra rastrear a instalação em si.
 
 ```bash
-oc get secret -l owner=helm -n <seu-namespace>
+oc get secret -l owner=helm -n app
 ```
 
 ---
 
-## Passo 2: Mesma Coisa, com uma URL HTTPS Direta
-
-Repita o Passo 1, mas usando uma URL `https://` apontando direto pro `.tgz` de um chart
-empacotado (em vez de uma referência OCI) — o mesmo fluxo de "colar URL, sem repositório"
-funciona pros dois protocolos.
-
-> Nota: não incluí uma URL HTTPS específica pronta pro `.tgz` porque não confirmei ao vivo uma
-> que seja estável a longo prazo — ao preparar a aula, valide qual chart público em `.tgz` você
-> vai usar (ex.: algum publicado nas releases de um repositório GitHub) antes de depender dele
-> na frente da turma.
-
----
-
-## Passo 3: Repositório Privado com Autenticação (Conceitual)
-
-Se você tiver um repositório Helm privado disponível: **Core platform → Ecosystem → Helm →
-Repositories → Create → Repository**, e no formulário (não no YAML) preencha usuário e senha —
-o console agora grava isso como `basicAuthConfig` no `Secret` referenciado pelo
-`HelmChartRepository`, sem você precisar montar o `Secret` manualmente primeiro.
-
----
-
-## Passo 4: Limpeza
+## Passo 2: Limpeza
 
 ```bash
-helm uninstall <release-name> -n <seu-namespace>
+helm uninstall nginx -n app
 ```
 
 ---
