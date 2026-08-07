@@ -121,9 +121,6 @@ oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/head
 
 ### 2c. `AppProject` wildcard
 
-(o `ManagedClusterSetBinding` já foi aplicado no Passo 0 — precisa existir antes do
-`Placement`, não faria sentido aqui.)
-
 ```bash
 oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/06-appproject-wildcard.yaml
 ```
