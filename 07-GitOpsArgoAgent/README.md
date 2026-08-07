@@ -169,7 +169,12 @@ oc get application appdemo-<seu-cluster> -n lab-argocd -o jsonpath='{.spec.desti
 
 ## Passo 4: Limpeza
 
+Confirmado ao vivo: deletar o `ApplicationSet` **não** cascateia pras `Application`s geradas
+(ficam com `ownerReferences` apontando pra um `ApplicationSet` que já não existe) — apague as
+`Application`s primeiro, explicitamente:
+
 ```bash
+oc delete applications.argoproj.io -n lab-argocd -l app.kubernetes.io/instance=appdemo
 oc delete -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/10-appset-pull.yaml
 oc delete -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/09-agent-write-rbac-policy.yaml
 oc delete -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/08-agent-view-rbac-policy.yaml
