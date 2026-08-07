@@ -80,25 +80,7 @@ Confirme que subiu:
 oc get pods -n lab-console-vulnerabilities
 ```
 
-### Passo 3: Esperar o Sensor Escanear
-
-O Sensor detecta o novo `Deployment` e reporta a imagem pro Central em segundos; o scan de
-vulnerabilidade (Scanner V4) normalmente termina em menos de um minuto. Sem acesso à UI do
-Central, dá pra confirmar via API também (usando a senha do secret `central-htpasswd`):
-
-```bash
-ROUTE=$(oc get route central -n stackrox -o jsonpath='{.spec.host}')
-PASS=$(oc get secret central-htpasswd -n stackrox -o jsonpath='{.data.password}' | base64 -d)
-curl -sk -u admin:"$PASS" "https://$ROUTE/v1/images?query=Namespace%3Alab-console-vulnerabilities"
-```
-
-Saída esperada (resumida) — `cves` deixa de ser `0`:
-
-```json
-{"images":[{"name":"registry.redhat.io/multicluster-engine/console-mce-rhel9@sha256:da19...","components":205,"cves":178,"fixableCves":25,...}]}
-```
-
-### Passo 4: Explorar no Console do OpenShift
+### Passo 3: Explorar no Console do OpenShift
 
 No menu lateral, **Security → Vulnerabilities**. Você vai ver a tela **Workload vulnerabilities**,
 com **Project: All Projects** por padrão.
