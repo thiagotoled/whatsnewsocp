@@ -133,6 +133,10 @@ oc patch mco observability -n open-cluster-management-observability --type=merge
   '{"spec":{"capabilities":{"platform":{"metrics":{"default":{"enabled":true},"ui":{"enabled":true}}}}}}'
 ```
 
+Confirmado ao vivo: esse patch já instala sozinho o Cluster Observability Operator **no hub**
+(diferente da Parte 1, que depende do `policy-lab08` no managed cluster) — não precisa de
+nenhum passo extra de operator aqui.
+
 ### Passo 3 (demonstração): Ver o Dashboard de Frota Pronto
 
 No console do OCP: **Observe → Dashboards (Perses)** → selecione o projeto
