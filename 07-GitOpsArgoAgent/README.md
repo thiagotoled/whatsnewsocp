@@ -23,12 +23,6 @@ O **Argo CD Agent** inverte a direção da conexão:
 | Como a `Application` acha o destino | `destination.server` — resolvido pelo Secret de cluster | `destination.name` — nome do managed cluster, resolvido pelo principal (`destinationBasedMapping`) |
 | Resiliência a queda de rede | Sync para, hub não alcança mais o spoke | Continua funcionando enquanto o spoke tiver saída pra internet |
 
-> **Uma app, dois modelos — não duas apps**: o `ApplicationSet` se chama `appdemo` (não
-> `appdemo-push`) de propósito — a `Application` gerada é a **mesma** do início ao fim, só o
-> campo `destination` muda no Passo 4. Duas `Application`s separadas mirando o mesmo
-> `Deployment`/namespace geram `SharedResourceWarning` (confirmado ao vivo numa versão anterior
-> deste lab).
-
 **Componentes** (todos no namespace `openshift-gitops`, não `argocd`):
 
 - **Principal** (`openshift-gitops-agent-principal`): roda no hub. É o "servidor" que os
