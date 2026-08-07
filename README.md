@@ -130,9 +130,7 @@ oc login --token=<TOKEN> --server=<API_URL>
 │       ├── 04-demo-deployment.yaml
 │       └── 05-persesdashboard.yaml
 ├── 09-HelmConsoleOCI
-│   ├── README.md
-│   └── manifests
-│       └── 01-helmchartrepository.yaml
+│   └── README.md
 ├── 10-GatewayAPI
 │   ├── README.md
 │   └── manifests

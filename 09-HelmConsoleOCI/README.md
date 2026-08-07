@@ -1,15 +1,9 @@
 # Exercício 11: Instalar Helm Chart Direto de uma URL OCI/HTTPS no Console (4.22)
 
-> **Parcialmente validado ao vivo em OCP 4.22.8**: confirmei os pedaços que dão pra testar via
-> CLI — o CRD `helmchartrepositories.helm.openshift.io` existe, o `HelmChartRepository` do
-> Passo 1 aplica limpo, a URL `https://redhat-developer.github.io/redhat-helm-charts/index.yaml`
-> responde `200`, e a referência OCI usada no Passo 2
-> (`oci://registry-1.docker.io/bitnamicharts/nginx`) resolve de verdade (`helm show chart`
-> puxou o chart normalmente). **O que eu não consegui confirmar**: os Passos 2-4 são só UI do
-> console (Developer perspective → +Add → Helm Chart) — não tenho como abrir navegador aqui pra
-> clicar e confirmar que a opção "instalar por URL" (RFE-7114/7965) realmente aparece nesse
-> build específico do console. Abra o console manualmente antes da aula pra confirmar essa
-> parte.
+> **Navegação confirmada ao vivo**: o menu do Helm não fica em "Developer perspective → +Add"
+> — fica em **Core platform (Administrator) → Ecosystem → Helm**, dentro de um projeto
+> selecionado. O dropdown **Create** já mostra as três opções direto: **Helm Release**,
+> **Repository** e **Helm chart URL** — essa última é a novidade deste lab (RFE-7114/7965).
 
 Neste laboratório, você vai instalar um Helm chart no console do OpenShift **sem cadastrar um
 repositório antes** — direto de uma URL `oci://` ou `https://` — a novidade do 4.22
@@ -44,35 +38,19 @@ O 4.22 adiciona três coisas (RFE-7114 e RFE-7965):
 
 ---
 
-## Passo 1: O Jeito Clássico (Comparação) — Repositório Cadastrado Antes
+## Passo 1: Instalar Direto de uma URL OCI, Sem Cadastrar Nada
 
-Cadastre um repositório Helm público conhecido:
-
-```bash
-oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/09-HelmConsoleOCI/manifests/01-helmchartrepository.yaml
-```
-
-No console: **Developer perspective → +Add → Helm Chart** — o catálogo mostra os charts desse
-repositório. É o fluxo que já existe desde o 4.8: alguém (admin) precisa ter cadastrado o
-repositório **antes** de qualquer chart aparecer ali.
-
----
-
-## Passo 2: A Novidade — Instalar Direto de uma URL OCI, Sem Cadastrar Nada
-
-No console: **Developer perspective → +Add → Helm Chart** → procure a opção de instalar **por
-URL** (em vez de escolher um chart já listado do catálogo) → cole uma referência OCI pública,
-por exemplo:
+No console: **Core platform → Ecosystem → Helm** (dentro do projeto desejado) → botão
+**Create → Helm chart URL** → cole uma referência OCI pública, por exemplo:
 
 ```
 oci://registry-1.docker.io/bitnamicharts/nginx
 ```
 
 Preencha o **Release Name** e instale. Nenhum `HelmChartRepository` foi criado — o console foi
-direto na URL, resolveu o chart, e mostrou pra você inspecionar antes de instalar.
-
-Compare com o Passo 1: aqui não existe nenhum objeto Kubernetes de "repositório" — só o
-`HelmRelease`/Secret que o Helm sempre cria pra rastrear a instalação em si.
+direto na URL, resolveu o chart, e mostrou pra você inspecionar antes de instalar. Não existe
+nenhum objeto Kubernetes de "repositório" — só o `HelmRelease`/Secret que o Helm sempre cria pra
+rastrear a instalação em si.
 
 ```bash
 oc get secret -l owner=helm -n <seu-namespace>
@@ -80,9 +58,9 @@ oc get secret -l owner=helm -n <seu-namespace>
 
 ---
 
-## Passo 3: Mesma Coisa, com uma URL HTTPS Direta
+## Passo 2: Mesma Coisa, com uma URL HTTPS Direta
 
-Repita o Passo 2, mas usando uma URL `https://` apontando direto pro `.tgz` de um chart
+Repita o Passo 1, mas usando uma URL `https://` apontando direto pro `.tgz` de um chart
 empacotado (em vez de uma referência OCI) — o mesmo fluxo de "colar URL, sem repositório"
 funciona pros dois protocolos.
 
@@ -93,20 +71,19 @@ funciona pros dois protocolos.
 
 ---
 
-## Passo 4: Repositório Privado com Autenticação (Conceitual)
+## Passo 3: Repositório Privado com Autenticação (Conceitual)
 
-Se você tiver um repositório Helm privado disponível: **Developer perspective → +Add → Helm
-Chart Repositories → Create HelmChartRepository**, e no formulário (não no YAML) preencha usuário
-e senha — o console agora grava isso como `basicAuthConfig` no `Secret` referenciado pelo
+Se você tiver um repositório Helm privado disponível: **Core platform → Ecosystem → Helm →
+Repositories → Create → Repository**, e no formulário (não no YAML) preencha usuário e senha —
+o console agora grava isso como `basicAuthConfig` no `Secret` referenciado pelo
 `HelmChartRepository`, sem você precisar montar o `Secret` manualmente primeiro.
 
 ---
 
-## Passo 5: Limpeza
+## Passo 4: Limpeza
 
 ```bash
 helm uninstall <release-name> -n <seu-namespace>
-oc delete -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/09-HelmConsoleOCI/manifests/01-helmchartrepository.yaml
 ```
 
 ---
