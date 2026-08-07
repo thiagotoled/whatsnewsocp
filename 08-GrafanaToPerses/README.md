@@ -107,31 +107,13 @@ oc delete -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/hea
 
 ## Parte 2: Caminho Oficial do ACM — Multicluster Observability Add-on (MCOA)
 
-> **Já vem pronto no hub — a lição aqui é explorar, não configurar.** Diferente da Parte 1 (que
-> cada aluno liga no próprio cluster, sem afetar mais ninguém), habilitar o MCOA com coleta de
-> métricas **substitui o coletor clássico** (`observability-endpoint-operator`) por um pipeline
-> novo baseado em `PrometheusAgent`/COO em **todos os managed clusters da frota** — é uma
-> mudança de arquitetura pro hub inteiro, não algo por-aluno. Por isso o instrutor aplica os
-> patches abaixo **uma vez, antes da aula** (mesmo espírito do boilerplate em
-> [`acm-hub/`](../acm-hub/README.md) — o que já está pronto não é a lição). Os Passos 1 e 2 são
-> só documentação do que já foi feito; o Passo 3 é a parte que você de fato executa.
-
 ### Conceito Rápido
 
 O guia oficial *Red Hat Advanced Cluster Management for Kubernetes 2.17 — Observability* (seção
 1.11) documenta um caminho de Perses **diferente** do da Parte 1: em vez de você criar
 `UIPlugin`/`PersesDashboard` na mão, o próprio ACM entrega Perses como parte do **Multicluster
 Observability Add-on (MCOA)** — um mecanismo alternativo de coleta de métricas, **Technology
-Preview**, que:
-
-- Troca o coletor de métricas do managed cluster: em vez do `observability-endpoint-operator`
-  clássico, usa `PrometheusAgent` + `PrometheusOperator` do Cluster Observability Operator pra
-  federar métricas direto pro hub.
-- Já vem com dashboards de frota **prontos** — por exemplo, `ACM Clusters Overview` — sem você
-  ter que escrever `PersesDashboard` nenhum.
-- Liga em duas etapas, ambas via patch no CR `MultiClusterObservability`: primeiro o MCOA em si
-  (`platform.metrics.default.enabled`), depois a UI do Perses especificamente
-  (`platform.metrics.ui.enabled`).
+Preview**.
 
 ### Passo 1 (já aplicado pelo instrutor): Habilitar o MCOA com Métricas de Plataforma
 
