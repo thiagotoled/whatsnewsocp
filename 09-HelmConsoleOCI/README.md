@@ -60,6 +60,12 @@ sempre cria pra rastrear a instalação em si.
 oc get secret -l owner=helm -n app
 ```
 
+Na lista de **Helm Releases**, o release aparece com **Chart version** (`25.0.18`) e **App
+version** (`1.31.3`) como colunas separadas — a versão do chart e a versão do app empacotado
+dentro dele nem sempre coincidem. O menu de contexto (`⋮`) tem duas ações direto na UI:
+**Upgrade** (troca a versão do chart/values sem precisar do CLI) e **Delete Helm Release**
+(equivalente ao `helm uninstall` do Passo 2).
+
 ---
 
 ## Passo 2: Limpeza
