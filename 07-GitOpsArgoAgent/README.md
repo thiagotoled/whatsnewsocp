@@ -163,7 +163,7 @@ no `ManagedClusterAddOn`.
 ## Passo 3: Converter a Mesma App pra Pull
 
 ```bash
-oc delete secret -n lab-argocd $(oc get secret -n lab-argocd -l argocd.argoproj.io/secret-type=cluster -o name | grep application-manager-cluster-secret) --ignore-not-found
+oc delete -n lab-argocd $(oc get secret -n lab-argocd -l argocd.argoproj.io/secret-type=cluster -o name | grep application-manager-cluster-secret) --ignore-not-found
 oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/10-appset-pull.yaml
 oc get application appdemo-<seu-cluster> -n lab-argocd -o jsonpath='{.spec.destination}'
 ```
