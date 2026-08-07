@@ -184,7 +184,7 @@ oc get pushsecret push-local-secret-to-akv -n app
 ```
 
 Acesse o Azure Key Vault e confirme que o segredo `minha-secret-na-keyvault-<seu-nome>` foi
-criado com o valor correto (ou via CLI: `az keyvault secret show --vault-name <KEYVAULT_NAME> --name minha-secret-na-keyvault-<seu-nome> --query value -o tsv`).
+criado com o valor correto.
 
 ---
 
