@@ -167,18 +167,14 @@ oc apply -f 09-push-secret-store.yaml
 
 ### Passo 4: Criar o PushSecret
 
-O `PushSecret` publica o campo `password` do Secret `source-secret` no Azure Key Vault. Antes de
-aplicar, edite `10-push-secret.yaml` e troque `<SEU_NOME>` pelo seu nome (só letras, números e
-hífen):
-
-> **Se o Key Vault for compartilhado entre vários alunos** (mesmo Key Vault, clusters
-> diferentes): use `remoteKey: minha-secret-na-keyvault-<seu-nome>`, sem isso, todo mundo
-> escreve na mesma chave e cada aluno sobrescreve o secret do anterior. Também confirmado ao
-> vivo: o Azure Key Vault **não aceita `_` (underscore)** no nome do secret, só `-` (hífen).
-> Usar underscore falha com `BadParameter: The request URI contains an invalid name`.
+O `PushSecret` publica o campo `password` do Secret `source-secret` no Azure Key Vault. Baixe
+`10-push-secret.yaml`, edite localmente trocando `<SEU_NOME>` pelo seu nome (só letras, números
+e hífen), e só então aplique:
 
 ```bash
-oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/02-ExternalSecretsOperator/ocp-manifests/10-push-secret.yaml
+wget https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/02-ExternalSecretsOperator/ocp-manifests/10-push-secret.yaml
+vim 10-push-secret.yaml
+oc apply -f 10-push-secret.yaml
 ```
 
 Verifique o status do `PushSecret`:
