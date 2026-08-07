@@ -7,7 +7,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: AppProject
 metadata:
   name: default
-  namespace: openshift-gitops
+  namespace: lab-argocd
 spec:
   sourceNamespaces:
     - '*'
@@ -26,6 +26,6 @@ apiVersion: cluster.open-cluster-management.io/v1beta2
 kind: ManagedClusterSetBinding
 metadata:
   name: default
-  namespace: openshift-gitops
+  namespace: lab-argocd
 spec:
   clusterSet: default

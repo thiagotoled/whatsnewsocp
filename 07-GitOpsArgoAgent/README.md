@@ -5,6 +5,13 @@ Neste laboratório, você vai pegar **a mesma aplicação** e observar ela prime
 para o **Argo CD Agent** (addon do ACM 2.17, **Technology Preview**) — um modelo **pull**, onde
 é o managed cluster que abre conexão para o hub, não o contrário.
 
+> **Instância de Argo CD dedicada, não a `openshift-gitops` de produção**: este lab desliga o
+> controller tradicional da instância que usa (Passo 3b). A `openshift-gitops` real deste hub
+> já roda a `Application politicasdoacm-local-cluster`, que sincroniza as Policies do ACM
+> (confirmado ao vivo com `oc get applications.argoproj.io -A`) — desligar o controller dela
+> quebraria a automação do hub inteiro, não só a demo. Por isso todo este lab roda numa
+> instância própria, isolada, no namespace `lab-argocd` (Passo 0).
+
 ---
 
 ## Conceito Rápido
@@ -23,12 +30,12 @@ O **Argo CD Agent** inverte a direção da conexão:
 | Como a `Application` acha o destino | `destination.server` — resolvido pelo Secret de cluster | `destination.name` — nome do managed cluster, resolvido pelo principal (`destinationBasedMapping`) |
 | Resiliência a queda de rede | Sync para, hub não alcança mais o spoke | Continua funcionando enquanto o spoke tiver saída pra internet |
 
-**Componentes** (todos no namespace `openshift-gitops`, não `argocd`):
+**Componentes** (todos no namespace `lab-argocd`, a instância dedicada deste lab):
 
-- **Principal** (`openshift-gitops-agent-principal`): roda no hub. É o "servidor" que os
+- **Principal** (`lab-argocd-agent-principal`): roda no hub. É o "servidor" que os
   agents se conectam, com autenticação mTLS.
 - **Agent** (parte do `app.kubernetes.io/part-of=argocd-agent`): roda no managed cluster,
-  também no namespace `openshift-gitops`. Puxa `Application`s do principal e reconcilia
+  também no namespace `lab-argocd`. Puxa `Application`s do principal e reconcilia
   localmente.
 - **`GitOpsCluster`**: o controller que automatiza a gestão de PKI, registra o Secret de
   cluster (push), e — quando `gitopsAddon` está habilitado — implanta o Argo CD Agent no
@@ -45,17 +52,19 @@ O **Argo CD Agent** inverte a direção da conexão:
 
 ---
 
-## Passo 0 (já aplicado pelo instrutor): `Placement` no Hub
+## Passo 0 (já aplicado pelo instrutor): Instância Dedicada de Argo CD + `Placement`
 
-Só o instrutor tem acesso ao hub cluster — este `Placement` já está aplicado, selecionando
-**todos** os managed clusters com o label `whatsnewsocp-lab: "true"` (o mesmo usado no
-`placement-all-lab-clusters` das Policies do `acm-hub/`), sem precisar apontar pra um cluster
-específico:
+Só o instrutor tem acesso ao hub cluster — os dois já estão aplicados:
 
 ```bash
-oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/00-placement.yaml
-oc get placementdecision -n openshift-gitops -l cluster.open-cluster-management.io/placement=placement-argocd-agent-demo -o jsonpath='{.items[0].status.decisions}'
+oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/00-namespace.yaml
+oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/01-placement.yaml
+oc get placementdecision -n lab-argocd -l cluster.open-cluster-management.io/placement=placement-argocd-agent-demo -o jsonpath='{.items[0].status.decisions}'
 ```
+
+O `Placement` seleciona **todos** os managed clusters com o label `whatsnewsocp-lab: "true"`
+(o mesmo usado no `placement-all-lab-clusters` das Policies do `acm-hub/`), sem precisar
+apontar pra um cluster específico.
 
 ---
 
@@ -65,10 +74,10 @@ Registre o Secret de cluster (necessário mesmo pra push — doc oficial, seçã
 a `ApplicationSet`:
 
 ```bash
-oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/01-gitopscluster-push.yaml
-oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/03-push-rbac.yaml
-oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/02-appset-push.yaml
-oc get application appdemo-<seu-cluster> -n openshift-gitops
+oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/02-gitopscluster-push.yaml
+oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/04-push-rbac.yaml
+oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/03-appset-push.yaml
+oc get application appdemo-<seu-cluster> -n lab-argocd
 ```
 
 Espere `Synced`/`Healthy`. Confirme no managed cluster (via console ACM ou `oc --context`) que
@@ -102,9 +111,9 @@ operator e o `ArgoCD` do hub **antes** de ligar o addon via `GitOpsCluster`.
 ```bash
 oc patch subscription.operators openshift-gitops-operator -n openshift-gitops-operator \
   --type=merge -p '{"spec":{"config":{"env":[
-    {"name":"ARGOCD_CLUSTER_CONFIG_NAMESPACES","value":"openshift-gitops,local-cluster"},
+    {"name":"ARGOCD_CLUSTER_CONFIG_NAMESPACES","value":"lab-argocd,local-cluster"},
     {"name":"ARGOCD_PRINCIPAL_TLS_SERVER_ALLOW_GENERATE","value":"false"},
-    {"name":"ARGOCD_PRINCIPAL_REDIS_SERVER_ADDRESS","value":"openshift-gitops-redis:6379"}
+    {"name":"ARGOCD_PRINCIPAL_REDIS_SERVER_ADDRESS","value":"lab-argocd-redis:6379"}
   ]}}}'
 ```
 
@@ -113,17 +122,18 @@ oc patch subscription.operators openshift-gitops-operator -n openshift-gitops-op
 **A doc oficial manda substituir o recurso inteiro** (não é um patch parcial):
 
 ```bash
-oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/04-argocd-agent-mode.yaml
+oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/05-argocd-agent-mode.yaml
 ```
 
 > **Isso desliga o push** (`controller.enabled: false`) — confirmado ao vivo, o
-> `application-controller` clássico some (`oc get pods -n openshift-gitops`). A partir daqui,
-> o Passo 1 não sincroniza mais nada nesta instância.
+> `application-controller` clássico some (`oc get pods -n lab-argocd`). A partir daqui,
+> o Passo 1 não sincroniza mais nada nesta instância (só nesta — a `openshift-gitops` de
+> produção do hub nunca é tocada).
 
 ### 3c. `AppProject` wildcard e `ManagedClusterSetBinding`
 
 ```bash
-oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/05-appproject-wildcard.yaml
+oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/06-appproject-wildcard.yaml
 ```
 
 ### 3d. Ligar o addon no `GitOpsCluster`
@@ -131,7 +141,7 @@ oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/head
 Mesmo objeto do Passo 1, agora com o bloco `gitopsAddon`:
 
 ```bash
-oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/06-gitopscluster-agent.yaml
+oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/07-gitopscluster-agent.yaml
 ```
 
 > **Se o status ficar preso em "addon disabled" por mais de um minuto** (confirmado ao vivo,
@@ -141,25 +151,25 @@ oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/head
 ### 3e. RBAC `view` pro agent (leitura)
 
 ```bash
-oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/07-agent-view-rbac-policy.yaml
+oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/08-agent-view-rbac-policy.yaml
 ```
 
 ### 3f. RBAC de escrita pro Argo CD local (mesmo requisito do push, seção 1.6.1)
 
 O Argo CD **local** que o agent instala no managed cluster (`application-controller` próprio)
-só tem permissão dentro do namespace onde ele mesmo vive (`openshift-gitops`) — sem isso,
+só tem permissão dentro do namespace onde ele mesmo vive (`lab-argocd`) — sem isso,
 qualquer app cujo destino seja outro namespace (o caso normal, como este lab:
 `gitops-agent-demo`) falha com `forbidden` ao aplicar. Confirmado ao vivo: sem isso, o sync
 falha 5 vezes seguidas e o `Deployment` nunca é atualizado, mesmo com tudo mais certo.
 
 ```bash
-oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/08-agent-write-rbac-policy.yaml
+oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/09-agent-write-rbac-policy.yaml
 ```
 
 ### 3g. Verificar
 
 ```bash
-oc get gitopscluster gitops-agent-clusters -n openshift-gitops -o jsonpath='{.status.conditions}' | jq .
+oc get gitopscluster gitops-agent-clusters -n lab-argocd -o jsonpath='{.status.conditions}' | jq .
 oc get managedclusteraddon gitops-addon -n <seu-cluster>
 ```
 
@@ -171,9 +181,9 @@ no `ManagedClusterAddOn`.
 ## Passo 4: Converter a Mesma App pra Pull
 
 ```bash
-oc delete secret <seu-cluster>-application-manager-cluster-secret -n openshift-gitops --ignore-not-found
-oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/09-appset-pull.yaml
-oc get application appdemo-<seu-cluster> -n openshift-gitops -o jsonpath='{.spec.destination}'
+oc delete secret <seu-cluster>-application-manager-cluster-secret -n lab-argocd --ignore-not-found
+oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/10-appset-pull.yaml
+oc get application appdemo-<seu-cluster> -n lab-argocd -o jsonpath='{.spec.destination}'
 ```
 
 > **O `oc delete secret` acima é necessário** (confirmado ao vivo, não documentado assim na
@@ -206,7 +216,7 @@ cluster-proxy, usada só pelo push).
 > (depende do seu provedor), escale o `principal` a zero — simula o hub inacessível pro agent,
 > sem mexer em NSG/firewall nenhum:
 > ```bash
-> oc scale deployment openshift-gitops-agent-principal -n openshift-gitops --replicas=0
+> oc scale deployment lab-argocd-agent-principal -n lab-argocd --replicas=0
 > ```
 > Commite uma mudança no Git. Confirmado ao vivo: o Argo CD **local** do managed cluster
 > detecta a revisão nova e tenta aplicar **mesmo sem o principal** — porque ele busca do Git
@@ -214,7 +224,7 @@ cluster-proxy, usada só pelo push).
 > **novas**/mudanças de `Placement`; o que já está configurado continua se autocurando via Git.
 > Restaure o `principal` depois:
 > ```bash
-> oc scale deployment openshift-gitops-agent-principal -n openshift-gitops --replicas=1
+> oc scale deployment lab-argocd-agent-principal -n lab-argocd --replicas=1
 > ```
 
 Restaure a rede antes de seguir pra limpeza.
@@ -224,14 +234,18 @@ Restaure a rede antes de seguir pra limpeza.
 ## Passo 6: Limpeza
 
 ```bash
-oc delete -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/09-appset-pull.yaml
-oc delete -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/08-agent-write-rbac-policy.yaml
-oc delete -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/07-agent-view-rbac-policy.yaml
-oc delete -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/06-gitopscluster-agent.yaml
-oc delete -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/05-appproject-wildcard.yaml
-oc delete -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/03-push-rbac.yaml
-oc delete -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/00-placement.yaml
+oc delete -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/10-appset-pull.yaml
+oc delete -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/09-agent-write-rbac-policy.yaml
+oc delete -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/08-agent-view-rbac-policy.yaml
+oc delete -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/07-gitopscluster-agent.yaml
+oc delete -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/06-appproject-wildcard.yaml
+oc delete -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/04-push-rbac.yaml
+oc delete -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/01-placement.yaml
+oc delete -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/00-namespace.yaml
 ```
+
+O último comando remove o namespace `lab-argocd` inteiro — a instância dedicada de Argo CD
+some junto, sem afetar a `openshift-gitops` de produção do hub.
 
 ---
 

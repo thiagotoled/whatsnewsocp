@@ -8,13 +8,13 @@ apiVersion: apps.open-cluster-management.io/v1beta1
 kind: GitOpsCluster
 metadata:
   name: gitops-agent-clusters
-  namespace: openshift-gitops
+  namespace: lab-argocd
 spec:
   argoServer:
     cluster: local-cluster
-    argoNamespace: openshift-gitops
+    argoNamespace: lab-argocd
   placementRef:
     kind: Placement
     apiVersion: cluster.open-cluster-management.io/v1beta1
     name: placement-argocd-agent-demo
-    namespace: openshift-gitops
+    namespace: lab-argocd

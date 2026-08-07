@@ -1,7 +1,7 @@
 # Confirmado ao vivo, não documentado explicitamente na doc oficial pro lado do agent (só pro
 # push, seção 1.6.1 "Important"): o Argo CD LOCAL que o agent instala no managed cluster
-# (application-controller próprio, SA acm-openshift-gitops-argocd-application-controller) só
-# tem permissão dentro do namespace onde ele mesmo vive (openshift-gitops) -- sem isso, toda
+# (application-controller próprio, SA acm-lab-argocd-argocd-application-controller) só
+# tem permissão dentro do namespace onde ele mesmo vive (lab-argocd) -- sem isso, toda
 # app cujo destino seja outro namespace (o caso normal, como este lab: gitops-agent-demo)
 # falha com "forbidden" ao tentar aplicar. É o MESMO requisito que a doc já avisa pro push,
 # só que agora pro controller local, não o do hub.
@@ -9,7 +9,7 @@ apiVersion: policy.open-cluster-management.io/v1
 kind: Policy
 metadata:
   name: gitops-agent-clusters-write-rbac-policy
-  namespace: openshift-gitops
+  namespace: lab-argocd
 spec:
   disabled: false
   policy-templates:
@@ -27,11 +27,11 @@ spec:
                 apiVersion: rbac.authorization.k8s.io/v1
                 kind: ClusterRoleBinding
                 metadata:
-                  name: argo-admin-acm-openshift-gitops
+                  name: argo-admin-acm-lab-argocd
                 subjects:
                   - kind: ServiceAccount
-                    name: acm-openshift-gitops-argocd-application-controller
-                    namespace: openshift-gitops
+                    name: acm-lab-argocd-argocd-application-controller
+                    namespace: lab-argocd
                 roleRef:
                   apiGroup: rbac.authorization.k8s.io
                   kind: ClusterRole
@@ -41,7 +41,7 @@ apiVersion: policy.open-cluster-management.io/v1
 kind: PlacementBinding
 metadata:
   name: gitops-agent-clusters-write-rbac-binding
-  namespace: openshift-gitops
+  namespace: lab-argocd
 placementRef:
   apiGroup: cluster.open-cluster-management.io
   kind: Placement

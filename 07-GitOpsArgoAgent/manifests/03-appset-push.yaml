@@ -12,7 +12,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
   name: appdemo
-  namespace: openshift-gitops
+  namespace: lab-argocd
 spec:
   generators:
     - clusterDecisionResource:

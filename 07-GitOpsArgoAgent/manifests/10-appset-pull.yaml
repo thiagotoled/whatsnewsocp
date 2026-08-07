@@ -1,10 +1,10 @@
-# Mesmo ApplicationSet "appdemo" do 02-appset-push.yaml, mesmo name/namespace -- reaplicar
+# Mesmo ApplicationSet "appdemo" do 03-appset-push.yaml, mesmo name/namespace -- reaplicar
 # atualiza em vez de criar uma segunda Application. Só o destination muda: em vez do endpoint
 # do managed cluster (destination.server), usa destination.name -- o principal resolve pelo
-# nome do managed cluster (destinationBasedMapping, ligado no 04-argocd-agent-mode.yaml).
+# nome do managed cluster (destinationBasedMapping, ligado no 05-argocd-agent-mode.yaml).
 #
 # Confirmado ao vivo: antes de reaplicar, apague o Secret de cluster antigo do push
-# (<nome-do-cluster>-application-manager-cluster-secret, em openshift-gitops) -- depois que o
+# (<nome-do-cluster>-application-manager-cluster-secret, em lab-argocd) -- depois que o
 # GitOpsCluster liga o agent, ele cria um SEGUNDO Secret pro mesmo cluster (agora apontando
 # pro resource-proxy do agent), e os dois com "nome" igual quebram a resolução do
 # destination.name ("there are 2 clusters with the same name"). Isso não está na doc oficial;
@@ -14,7 +14,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
   name: appdemo
-  namespace: openshift-gitops
+  namespace: lab-argocd
 spec:
   generators:
     - clusterDecisionResource:

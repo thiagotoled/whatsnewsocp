@@ -1,4 +1,4 @@
-# Mesmo objeto do 01-gitopscluster-push.yaml (mesmo name/namespace) -- reaplicar com o bloco
+# Mesmo objeto do 02-gitopscluster-push.yaml (mesmo name/namespace) -- reaplicar com o bloco
 # gitopsAddon adicionado atualiza em vez de criar. A partir daqui o controller do GitOpsCluster
 # instala o addon (operator + ArgoCD Agent) no managed cluster selecionado pelo Placement.
 #
@@ -10,15 +10,15 @@ apiVersion: apps.open-cluster-management.io/v1beta1
 kind: GitOpsCluster
 metadata:
   name: gitops-agent-clusters
-  namespace: openshift-gitops
+  namespace: lab-argocd
 spec:
   argoServer:
-    argoNamespace: openshift-gitops
+    argoNamespace: lab-argocd
   placementRef:
     kind: Placement
     apiVersion: cluster.open-cluster-management.io/v1beta1
     name: placement-argocd-agent-demo
-    namespace: openshift-gitops
+    namespace: lab-argocd
   gitopsAddon:
     enabled: true
     argoCDAgent:

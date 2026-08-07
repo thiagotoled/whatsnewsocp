@@ -1,0 +1,19 @@
+# Instância de Argo CD DEDICADA pra este lab -- NÃO é a mesma `openshift-gitops` que o hub
+# usa de verdade (a Application `politicasdoacm-local-cluster`, que sincroniza as Policies do
+# ACM, roda ali -- confirmado ao vivo com `oc get applications.argoproj.io -A`). O Passo 3
+# deste lab desliga o controller tradicional da instância que ele usa (`controller.enabled:
+# false`), então rodar isso na `openshift-gitops` de produção quebraria a sincronização das
+# Policies do hub inteiro, não só a demo. `spec: {}` é suficiente -- o operator aplica os
+# defaults de uma instância nova (mesmo comportamento da instância `openshift-gitops` que o
+# OLM cria sozinho, só que essa aqui a gente cria explicitamente, em namespace isolado).
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: lab-argocd
+---
+apiVersion: argoproj.io/v1beta1
+kind: ArgoCD
+metadata:
+  name: lab-argocd
+  namespace: lab-argocd
+spec: {}

@@ -106,16 +106,17 @@ oc login --token=<TOKEN> --server=<API_URL>
 ├── 07-GitOpsArgoAgent
 │   ├── README.md
 │   └── manifests
-│       ├── 00-placement.yaml
-│       ├── 01-gitopscluster-push.yaml
-│       ├── 02-appset-push.yaml
-│       ├── 03-push-rbac.yaml
-│       ├── 04-argocd-agent-mode.yaml
-│       ├── 05-appproject-wildcard.yaml
-│       ├── 06-gitopscluster-agent.yaml
-│       ├── 07-agent-view-rbac-policy.yaml
-│       ├── 08-agent-write-rbac-policy.yaml
-│       ├── 09-appset-pull.yaml
+│       ├── 00-namespace.yaml
+│       ├── 01-placement.yaml
+│       ├── 02-gitopscluster-push.yaml
+│       ├── 03-appset-push.yaml
+│       ├── 04-push-rbac.yaml
+│       ├── 05-argocd-agent-mode.yaml
+│       ├── 06-appproject-wildcard.yaml
+│       ├── 07-gitopscluster-agent.yaml
+│       ├── 08-agent-view-rbac-policy.yaml
+│       ├── 09-agent-write-rbac-policy.yaml
+│       ├── 10-appset-pull.yaml
 │       └── app
 │           └── deployment.yaml
 ├── 08-GrafanaToPerses
