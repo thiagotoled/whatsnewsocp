@@ -122,29 +122,9 @@ Abra **Observe → Dashboards (Perses)**, selecione o namespace `lab-perses-demo
 **Lab Perses Demo - CPU/Mem por Pod** — dois painéis, CPU e memória por pod, puxando do
 Deployment do Passo 3.
 
-> **Schema confirmado ao vivo**: `panels`/`queries`/`layouts` ficam aninhados em `spec.config`,
-> não direto em `spec` — o CRD instalado pelo COO 1.5.1 exige isso
-> (`oc explain persesdashboard.spec --recursive` mostra `config` como único campo
-> obrigatório de topo). A primeira versão deste manifesto tinha os campos soltos direto em
-> `spec` e falhava na validação do CRD.
-
 ---
 
-### Passo 5: Editar Direto na UI (e Ver a Mudança Virar YAML)
-
-No console, abra o dashboard e adicione/edite um painel pela interface. Confirme que a mudança
-foi persistida de volta no objeto Kubernetes:
-
-```bash
-oc get persesdashboard cpu-mem-demo -n lab-perses-demo -o yaml
-```
-
-Esse é o ponto central da Parte 1: no Perses, a UI e o GitOps não são dois mundos separados —
-editar na tela edita o CR, e o CR aplicado via Git edita a tela.
-
----
-
-### Passo 6: Limpeza
+### Passo 5: Limpeza
 
 ```bash
 oc delete namespace lab-perses-demo
