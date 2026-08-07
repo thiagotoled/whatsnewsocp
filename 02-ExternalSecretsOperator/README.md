@@ -43,14 +43,29 @@ sem `STATUS`/`READY` (nada acontece, sem erro nenhum aparente).
 
 ---
 
-### Passo 2 (já aplicado pelo instrutor): Namespace e Credenciais do Azure
+### Passo 2: Criar o Namespace e as Credenciais do Azure
 
-O namespace `eso-demo` e o Secret `azure-kv-sp` (credenciais do Service Principal do Azure)
-já vêm pré-criados via ACM (`policy-lab02`) em todo cluster de lab — confirme:
+> **Criado por política**: se seu cluster foi importado no hub com ACM, o namespace `eso-demo`
+> e o Secret `azure-kv-sp` já vêm pré-criados pelo `policy-lab02` — só confirme e pule pro
+> Passo 3:
+> ```bash
+> oc get namespace eso-demo
+> oc get secret azure-kv-sp -n eso-demo
+> ```
+
+Sem ACM, crie o namespace de demonstração e o Secret com as credenciais do Service Principal
+do Azure na mão:
 
 ```bash
-oc get namespace eso-demo
-oc get secret azure-kv-sp -n eso-demo
+oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/02-ExternalSecretsOperator/ocp-manifests/01-namespace.yaml
+```
+
+Baixe o arquivo [`03-azure-credentials-secret.yaml`](ocp-manifests/03-azure-credentials-secret.yaml), edite localmente substituindo os placeholders `<AZURE_CLIENT_ID>` e `<AZURE_CLIENT_SECRET>` pelos valores reais, e só então aplique:
+
+```bash
+wget https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/02-ExternalSecretsOperator/ocp-manifests/03-azure-credentials-secret.yaml
+vim 03-azure-credentials-secret.yaml
+oc apply -f 03-azure-credentials-secret.yaml
 ```
 
 ---
@@ -135,7 +150,13 @@ oc apply -f 07-push-source-secret.yaml
 
 ### Passo 2: Criar as Credenciais do Service Principal
 
-Baixe [`08-push-azure-credentials.yaml`](ocp-manifests/08-push-azure-credentials.yaml), edite
+> **Criado por política**: se seu cluster foi importado no hub com ACM, o Secret `azure-spn`
+> já vem pré-criado pelo `policy-lab02` — só confirme e pule pro Passo 3:
+> ```bash
+> oc get secret azure-spn -n app
+> ```
+
+Sem ACM, baixe [`08-push-azure-credentials.yaml`](ocp-manifests/08-push-azure-credentials.yaml), edite
 localmente com o `ClientID` e `ClientSecret` do Service Principal, e só então aplique:
 
 ```bash
