@@ -45,17 +45,17 @@ O **Argo CD Agent** inverte a direção da conexão:
 
 ---
 
-## Passo 0: Apontar o Lab pro Seu Managed Cluster
+## Passo 0 (já aplicado pelo instrutor): `Placement` no Hub
 
-Edite `07-GitOpsArgoAgent/manifests/00-placement.yaml` e troque `rgz1hs02` pelo nome real do
-seu managed cluster (`oc get managedcluster`):
+Só o instrutor tem acesso ao hub cluster — este `Placement` já está aplicado, selecionando
+**todos** os managed clusters com o label `whatsnewsocp-lab: "true"` (o mesmo usado no
+`placement-all-lab-clusters` das Policies do `acm-hub/`), sem precisar apontar pra um cluster
+específico:
 
 ```bash
 oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/00-placement.yaml
 oc get placementdecision -n openshift-gitops -l cluster.open-cluster-management.io/placement=placement-argocd-agent-demo -o jsonpath='{.items[0].status.decisions}'
 ```
-
-Confirme que o managed cluster certo aparece na decisão antes de continuar.
 
 ---
 

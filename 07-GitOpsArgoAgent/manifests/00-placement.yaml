@@ -1,8 +1,7 @@
-# Troque "rgz1hs02" pelo nome real do SEU managed cluster (oc get managedcluster). Este lab
-# precisa de um managed cluster de verdade, separado do hub -- testar com hub=spoke
-# (local-cluster) expõe bugs de auto-referência que não refletem o caso real (confirmado ao
-# vivo: erro "openapi... rejected" e conflito de AppProject só aparecem nesse cenário
-# self-managed, somem completamente com um spoke real).
+# Mesmo label whatsnewsocp-lab=true usado no placement-all-lab-clusters do acm-hub -- pega
+# todo managed cluster real dos labs de uma vez, sem precisar editar nome de cluster. Não
+# inclui local-cluster (não tem esse label) -- este lab precisa de um managed cluster de
+# verdade, separado do hub. Aplicado pelo instrutor direto no hub, uma vez só.
 apiVersion: cluster.open-cluster-management.io/v1beta1
 kind: Placement
 metadata:
@@ -12,10 +11,8 @@ spec:
   predicates:
     - requiredClusterSelector:
         labelSelector:
-          matchExpressions:
-            - key: name
-              operator: In
-              values: ["rgz1hs02"]
+          matchLabels:
+            whatsnewsocp-lab: "true"
   tolerations:
     - key: cluster.open-cluster-management.io/unreachable
       operator: Exists
