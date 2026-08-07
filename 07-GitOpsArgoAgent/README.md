@@ -211,6 +211,37 @@ oc scale deployment lab-argocd-agent-principal -n lab-argocd --replicas=1
 
 ---
 
+## Problema conhecido: `principal` crash-loop na subida + status de conexão travado
+
+Observado ao vivo: o pod `lab-argocd-agent-principal` pode crashar logo na primeira subida com:
+
+```
+[FATAL]: Could not load resource proxy TLS configuration: error getting proxy certificate:
+could not read TLS secret lab-argocd/argocd-agent-resource-proxy-tls: secrets
+"argocd-agent-resource-proxy-tls" not found
+```
+
+Causa: corrida de inicialização — o `principal` sobe antes do secret
+`argocd-agent-resource-proxy-tls` ser criado. Depois que o secret existe, os restarts seguintes
+do próprio pod já sobem sem erro (o `CrashLoopBackOff` se autolimita).
+
+Efeito colateral: mesmo depois do `principal` estabilizar, os agents que já estavam registrados
+**antes** do crash continuam aparecendo com `Connection Status: Unknown`/`Failed` na tela
+Settings → Clusters do Argo CD — mesmo trocando eventos normalmente nos logs do `principal`
+(`Updated cluster mapping for agent <nome>` a cada ~2min). Agents registrados **depois** do
+crash aparecem `Successful` desde o início.
+
+Fix: reiniciar o `principal` de novo, já estabilizado (não durante o crash-loop), refaz o
+tracking de conexão pra todos os agents já conectados:
+
+```bash
+oc delete pod -n lab-argocd -l app.kubernetes.io/name=lab-argocd-agent-principal
+```
+
+Confirme o novo pod subir `1/1 Running` sem reiniciar, e recarregue a tela de Clusters.
+
+---
+
 ## Passo 5: Limpeza
 
 ```bash
