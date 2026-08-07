@@ -51,22 +51,27 @@ Crie o namespace de demonstração e o Secret com as credenciais do Service Prin
 oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/02-ExternalSecretsOperator/ocp-manifests/01-namespace.yaml
 ```
 
-Edite o arquivo [`03-azure-credentials-secret.yaml`](ocp-manifests/03-azure-credentials-secret.yaml), substituindo os placeholders `<AZURE_CLIENT_ID>` e `<AZURE_CLIENT_SECRET>` pelos valores reais, depois aplique:
+Baixe o arquivo [`03-azure-credentials-secret.yaml`](ocp-manifests/03-azure-credentials-secret.yaml), edite localmente substituindo os placeholders `<AZURE_CLIENT_ID>` e `<AZURE_CLIENT_SECRET>` pelos valores reais, e só então aplique:
 
 ```bash
-oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/02-ExternalSecretsOperator/ocp-manifests/03-azure-credentials-secret.yaml
+wget https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/02-ExternalSecretsOperator/ocp-manifests/03-azure-credentials-secret.yaml
+vim 03-azure-credentials-secret.yaml
+oc apply -f 03-azure-credentials-secret.yaml
 ```
 
 ---
 
 ### Passo 3: Criar o SecretStore
 
-O `SecretStore` define **como** o ESO se conecta ao Azure Key Vault. Edite o arquivo [`04-secret-store.yaml`](ocp-manifests/04-secret-store.yaml) substituindo:
+O `SecretStore` define **como** o ESO se conecta ao Azure Key Vault. Baixe o arquivo
+[`04-secret-store.yaml`](ocp-manifests/04-secret-store.yaml), edite localmente substituindo:
 - `<KEYVAULT_NAME>`: nome do seu Key Vault
 - `<AZURE_TENANT_ID>`: ID do tenant Azure
 
 ```bash
-oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/02-ExternalSecretsOperator/ocp-manifests/04-secret-store.yaml
+wget https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/02-ExternalSecretsOperator/ocp-manifests/04-secret-store.yaml
+vim 04-secret-store.yaml
+oc apply -f 04-secret-store.yaml
 ```
 
 Verifique se o `SecretStore` está pronto:
@@ -143,10 +148,13 @@ oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/head
 
 ### Passo 3: Criar o SecretStore para o Namespace `app`
 
-Edite [`09-push-secret-store.yaml`](ocp-manifests/09-push-secret-store.yaml) substituindo `<KEYVAULT_NAME>` e `<AZURE_TENANT_ID>`, depois aplique:
+Baixe [`09-push-secret-store.yaml`](ocp-manifests/09-push-secret-store.yaml), edite localmente
+substituindo `<KEYVAULT_NAME>` e `<AZURE_TENANT_ID>`, e só então aplique:
 
 ```bash
-oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/02-ExternalSecretsOperator/ocp-manifests/09-push-secret-store.yaml
+wget https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/02-ExternalSecretsOperator/ocp-manifests/09-push-secret-store.yaml
+vim 09-push-secret-store.yaml
+oc apply -f 09-push-secret-store.yaml
 ```
 
 ---
