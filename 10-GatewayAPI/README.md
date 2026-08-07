@@ -32,8 +32,7 @@ sem doc oficial completa sugeria antes).
 
 ## Pré-requisitos
 
-- **OpenShift Service Mesh Operator 3.0+** instalado no cluster (instrutor/você, uma vez —
-  fora do escopo deste lab detalhar a instalação do operator em si).
+- **OpenShift Service Mesh Operator 3.0+** instalado no cluster.
 - Acesso de administrador de cluster (pra criar `GatewayClass`, cluster-scoped, e recursos em
   `openshift-ingress`).
 
