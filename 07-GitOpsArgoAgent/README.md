@@ -5,13 +5,6 @@ Neste laboratório, você vai pegar **a mesma aplicação** e observar ela prime
 para o **Argo CD Agent** (addon do ACM 2.17, **Technology Preview**) — um modelo **pull**, onde
 é o managed cluster que abre conexão para o hub, não o contrário.
 
-> **Instância de Argo CD dedicada, não a `openshift-gitops` de produção**: este lab desliga o
-> controller tradicional da instância que usa (Passo 2b). A `openshift-gitops` real deste hub
-> já roda a `Application politicasdoacm-local-cluster`, que sincroniza as Policies do ACM
-> (confirmado ao vivo com `oc get applications.argoproj.io -A`) — desligar o controller dela
-> quebraria a automação do hub inteiro, não só a demo. Por isso todo este lab roda numa
-> instância própria, isolada, no namespace `lab-argocd` (Passo 0).
-
 ---
 
 ## Conceito Rápido
