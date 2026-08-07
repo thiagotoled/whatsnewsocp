@@ -26,3 +26,4 @@ resources:
   - policy-lab05.yaml
   - policy-lab06.yaml
   - policy-lab08.yaml
+  - policy-eso-oauth-secrets.yaml

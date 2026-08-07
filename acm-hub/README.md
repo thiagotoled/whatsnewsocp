@@ -65,6 +65,7 @@ nenhum lab específico), trazidas do repo real `ACM_OCP/Politicas` e adaptadas:
 | `policy-acs-operator-install` | Instala o `rhacs-operator`, sem CR nenhum (compartilhado entre Central e SecuredCluster) | **`all`** |
 | `policy-acs-central` | Namespace `stackrox` + CR `Central` | `local-cluster` (só o hub roda Central) |
 | `policy-acs-secured-cluster` | Namespace + CRS (via `fromSecret`) + CR `SecuredCluster` + plugin `advanced-cluster-security` no console | **`all`**: hub incluído (o hub também monitora a si mesmo) |
+| `policy-eso-oauth-secrets` | Instala ESO no hub + `SecretStore`/`ExternalSecret` sincronizando `htpasswd-2cr76` e `aad-client-secret` do Key Vault (substitui o `oc apply` manual desses dois) | `local-cluster` (o hub) |
 
 ---
 
@@ -91,14 +92,15 @@ nunca commitados:
 
 | Secret (namespace `whatsnewsocp-policies` no hub) | Usado por | Onde reaplicar se precisar |
 |---|---|---|
-| `htpasswd-2cr76` | `policy-oauth-configuration` | `oc apply -f ~/secret-htpasswd.yaml` (fora do repo) |
-| `aad-client-secret` | `policy-oauth-configuration` | `oc apply -f ~/secret-aad-client.yaml` (fora do repo) |
+| `htpasswd-2cr76` | `policy-oauth-configuration` | sincronizado sozinho pelo `policy-eso-oauth-secrets` a partir do segredo `whatsnewsocp-htpasswd` no Key Vault — atualize lá, não aplique nada no hub |
+| `aad-client-secret` | `policy-oauth-configuration` | sincronizado sozinho pelo `policy-eso-oauth-secrets` a partir do segredo `whatsnewsocp-aad-client-secret` no Key Vault — atualize lá, não aplique nada no hub |
 | `cluster-registration-secret` | `policy-acs-secured-cluster` | gerar novo CRS em Central > Clusters > Cluster registration secrets, `oc apply` no hub |
-| `azure-eso-spn` (chaves `ClientID`/`ClientSecret`) | `policy-lab02` | `oc apply -f ~/secret-azure-eso-spn.yaml` (fora do repo) — mesmo SPN usado no Lab 2, role `Key Vault Secrets Officer` no Key Vault |
+| `azure-eso-spn` (chaves `ClientID`/`ClientSecret`) | `policy-lab02`, `policy-eso-oauth-secrets` | `oc apply -f ~/secret-azure-eso-spn.yaml` (fora do repo) — continua manual de propósito: é a credencial que o próprio ESO do hub usa pra falar com o Key Vault, não dá pra guardar dentro do Key Vault que ela mesma destranca |
 
-Se algum desses secrets sumir (ex.: reset do namespace `whatsnewsocp-policies`), as policies que
-dependem deles ficam `NonCompliant` até você reaplicar. O `fromSecret` não falha
-silenciosamente, mas também não recria o secret-fonte sozinho.
+Se `azure-eso-spn` ou `cluster-registration-secret` sumirem (ex.: reset do namespace
+`whatsnewsocp-policies`), as policies que dependem deles ficam `NonCompliant` até você
+reaplicar manualmente. `htpasswd-2cr76` e `aad-client-secret` se recriam sozinhos assim que o
+`SecretStore` voltar a autenticar no Key Vault.
 
 ---
 
@@ -138,7 +140,7 @@ mundo, sem afetar os outros:
 
 | Placement | Seleciona | Quem tá vinculado hoje |
 |---|---|---|
-| `placement-local-cluster` | só o hub (`local-cluster=true`) | gitops-operator-install, policy-acs-central |
+| `placement-local-cluster` | só o hub (`local-cluster=true`) | gitops-operator-install, policy-acs-central, policy-eso-oauth-secrets |
 | `placement-azure` | qualquer managed cluster OpenShift na Azure, **hub incluído** (`cloud=Azure` + `vendor=OpenShift`, sem exigir `whatsnewsocp-lab`) | policy-oauth-configuration, policy-cluster-admin-rbac |
 | `placement-vmware-lab-clusters` | clusters de **lab** na VMware (`whatsnewsocp-lab=true` + `cloud=VMware`) | *(nenhuma ainda, pronto pra quando divergir)* |
 | `placement-all-lab-clusters` | qualquer cluster de lab, qualquer nuvem (`whatsnewsocp-lab=true`) | as 6 policies de baseline dos labs (nenhuma é específica de nuvem hoje) |
@@ -164,7 +166,7 @@ acm-hub/
     ├── 00-namespace.yaml                          # namespace whatsnewsocp-policies
     ├── 01-managedclustersetbinding.yaml           # vincula o clusterset "default" embutido
     ├── 02-placement-local-cluster.yaml
-    ├── 03-placementbinding-local-cluster.yaml     # gitops-operator-install, policy-acs-central
+    ├── 03-placementbinding-local-cluster.yaml     # gitops-operator-install, policy-acs-central, policy-eso-oauth-secrets
     ├── 04-placement-azure.yaml                    # placement-azure (hub incluído)
     ├── 05-placement-vmware.yaml                   # sem binding ainda, ver tabela acima
     ├── 06-placement-all-lab-clusters.yaml
@@ -184,7 +186,8 @@ acm-hub/
     ├── policy-lab03.yaml
     ├── policy-lab05.yaml
     ├── policy-lab06.yaml                           # Parte 1 (console); Parte 2 (CRS) não tem policy — só geração via UI
-    └── policy-lab08.yaml                           # Parte 1 (COO genérico); Parte 2 (MCOA) não tem policy — pré-config manual do instrutor
+    ├── policy-lab08.yaml                           # Parte 1 (COO genérico); Parte 2 (MCOA) não tem policy — pré-config manual do instrutor
+    └── policy-eso-oauth-secrets.yaml                # bootstrap "local-cluster", ESO no hub sincronizando do Key Vault, ver aviso acima
 ```
 
 Sem PolicyGenerator de propósito: time não gosta, e o `ACM_OCP/Politicas` real também não usa

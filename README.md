@@ -167,5 +167,6 @@ oc login --token=<TOKEN> --server=<API_URL>
         ├── policy-lab03.yaml
         ├── policy-lab05.yaml
         ├── policy-lab06.yaml
-        └── policy-lab08.yaml
+        ├── policy-lab08.yaml
+        └── policy-eso-oauth-secrets.yaml
 ```
