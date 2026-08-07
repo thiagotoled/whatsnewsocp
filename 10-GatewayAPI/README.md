@@ -1,20 +1,7 @@
-# Exercício 12: Gateway API — Dois Gateways, Dois LoadBalancers Independentes
+# Exercício 12: Gateway API
 
-> **Validado ao vivo em OCP 4.22.8**: os 8 manifestos deste lab (`GatewayClass`, namespace, 2
-> apps, 2 `Gateway`s, 2 `HTTPRoute`s) foram aplicados de ponta a ponta num cluster real. Achado
-> importante que corrige a primeira versão deste README: **não precisa de OpenShift Service
-> Mesh Operator instalado** — nesse cluster, sem nenhum CSV de Service Mesh/Istio/Sail presente,
-> o `GatewayClass openshift-default` foi `Accepted` sozinho e um `istiod` (v1.28.5) subiu
-> automaticamente em `openshift-ingress`, gerenciado pelo próprio Ingress Operator (`status`
-> mostra `reason: ManagedByCIO` — Cluster Ingress Operator). Os dois `Gateway`s programaram com
-> IP próprio (`PROGRAMMED: True`) em menos de 2 minutos.
-
-Neste laboratório, você vai subir **dois `Gateway` completamente independentes** no mesmo
-cluster — cada um com seu próprio `Deployment` e `Service` do tipo `LoadBalancer` — e comparar
-isso com o modelo clássico do Route/Router do OpenShift.
-
-> **Cada aluno no próprio cluster**: este lab não depende de ACM nem do hub — é Gateway API
-> puro do OpenShift, isolado. Sem naming por aluno, sem hub compartilhado.
+Neste laboratório, você vai subir um `Gateway` — com seu próprio `Deployment` e `Service` do
+tipo `LoadBalancer` — e comparar isso com o modelo clássico do Route/Router do OpenShift.
 
 ---
 
@@ -40,18 +27,6 @@ sem doc oficial completa sugeria antes).
   um `Gateway` via `parentRefs`. É aqui que o modelo de responsabilidade muda: o time de
   infraestrutura é dono do `Gateway`, o time de aplicação é dono do `HTTPRoute` no próprio
   namespace — sem precisar de permissão pra mexer em `openshift-ingress`.
-
-> **Por que criar dois `Gateway`s em vez de um só**: não é só sobre isolamento de tráfego — é
-> sobre prática. Criar um `Gateway` é, na prática, o equivalente em Gateway API de provisionar
-> um novo `IngressController`: gera um `Deployment` e um `Service LoadBalancer` do zero, do
-> jeito clássico já ensinado em outros exercícios deste curso. Fazer isso duas vezes (uma por
-> app) dá ao aluno a repetição desse fluxo de provisionamento, não só o resultado final.
-
-> **Isso não é a única forma de ter múltiplos pontos de entrada no OpenShift**: o `Route`/
-> `IngressController` clássico já suporta sharding (vários routers). O diferencial real do
-> Gateway API é ser uma API **portável** (mesmo YAML funciona em outro Kubernetes, não só
-> OpenShift) e ter esse modelo de responsabilidade mais granular entre infra e aplicação — não
-> é que o clássico "não consegue" ter mais de um ponto de entrada.
 
 ---
 
@@ -81,68 +56,55 @@ Espere a condição `Accepted: "True"`.
 
 ---
 
-## Passo 2: Subir as Duas Apps de Exemplo
+## Passo 2: Subir a App de Exemplo
 
 ```bash
 oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/10-GatewayAPI/manifests/02-namespace.yaml
-oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/10-GatewayAPI/manifests/03-app-a.yaml
-oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/10-GatewayAPI/manifests/04-app-b.yaml
+oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/10-GatewayAPI/manifests/03-app.yaml
 oc get pods -n lab-gateway-demo
 ```
 
-Duas apps idênticas de propósito ("Hello OpenShift") — o ponto do lab é o roteamento, não o
-conteúdo das respostas.
+Uma app simples ("Hello OpenShift") — o ponto do lab é o roteamento, não o conteúdo da
+resposta.
 
 ---
 
-## Passo 3: Criar os Dois `Gateway`s
+## Passo 3: Criar o `Gateway`
 
 ```bash
-oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/10-GatewayAPI/manifests/05-gateway-a.yaml
-oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/10-GatewayAPI/manifests/06-gateway-b.yaml
+oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/10-GatewayAPI/manifests/04-gateway.yaml
 ```
 
-Confirme que **cada um** gerou seu próprio `Deployment` e `Service LoadBalancer`, separados:
+Confirme que ele gerou seu próprio `Deployment` e `Service LoadBalancer`:
 
 ```bash
 oc get deployment -n openshift-ingress | grep gateway-app
 oc get svc -n openshift-ingress | grep gateway-app
 ```
 
-Anote os dois `EXTERNAL-IP`/hostname — vão ser diferentes um do outro.
+Anote o `EXTERNAL-IP`/hostname.
 
 ---
 
-## Passo 4: Criar os `HTTPRoute`s e Testar
+## Passo 4: Criar o `HTTPRoute` e Testar
 
 ```bash
-oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/10-GatewayAPI/manifests/07-httproute-a.yaml
-oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/10-GatewayAPI/manifests/08-httproute-b.yaml
+oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/10-GatewayAPI/manifests/05-httproute.yaml
 ```
 
-Como os hostnames (`app-a.gwapi.example.com`, `app-b.gwapi.example.com`) não têm DNS real
-apontando pra eles (diferente do `Route` clássico, que ganha um subdomínio automático em
-`*.apps.<seu-domínio>`), teste direto contra o IP/hostname de cada `LoadBalancer`, informando
-o `Host` manualmente:
+Como o hostname (`app.gwapi.example.com`) não tem DNS real apontando pra ele (diferente do
+`Route` clássico, que ganha um subdomínio automático em `*.apps.<seu-domínio>`), teste direto
+contra o IP/hostname do `LoadBalancer`, informando o `Host` manualmente:
 
 ```bash
-LB_A=$(oc get svc -n openshift-ingress -l gateway.networking.k8s.io/gateway-name=gateway-app-a -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}')
-LB_B=$(oc get svc -n openshift-ingress -l gateway.networking.k8s.io/gateway-name=gateway-app-b -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}')
+LB=$(oc get svc -n openshift-ingress -l gateway.networking.k8s.io/gateway-name=gateway-app -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}')
 
-curl -H "Host: app-a.gwapi.example.com" "http://${LB_A}/"
-curl -H "Host: app-b.gwapi.example.com" "http://${LB_B}/"
+curl -H "Host: app.gwapi.example.com" "http://${LB}/"
 ```
 
 > Se o seletor de label acima não bater no seu cluster, confira o nome exato do `Service` com
 > `oc get svc -n openshift-ingress` e pegue o IP manualmente — o nome padrão esperado é
-> `gateway-app-a-openshift-default` / `gateway-app-b-openshift-default`.
-
-Confirme que os dois respondem, cada um pelo seu próprio `LoadBalancer` — prova de que são
-duas instâncias de verdade, não uma só compartilhada.
-
-> **Confirmado ao vivo**: `app-a` responde `200` só via `LB_A`, `app-b` só via `LB_B`. Teste
-> cruzado (`Host: app-a.gwapi.example.com` contra `LB_B`) retorna `404` — prova de isolamento
-> real entre os dois `Gateway`s, não é só um LB compartilhado com hostnames diferentes.
+> `gateway-app-openshift-default`.
 
 ---
 
@@ -152,7 +114,7 @@ duas instâncias de verdade, não uma só compartilhada.
 oc get svc -n openshift-ingress
 ```
 
-Ao lado dos dois `LoadBalancer` novos do Gateway API, você ainda vê o `router-default` (ou
+Ao lado do `LoadBalancer` novo do Gateway API, você ainda vê o `router-default` (ou
 equivalente) do modelo clássico — os dois modelos coexistem no mesmo cluster, sem conflito.
 
 ---
@@ -160,12 +122,9 @@ equivalente) do modelo clássico — os dois modelos coexistem no mesmo cluster,
 ## Passo 6: Limpeza
 
 ```bash
-oc delete -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/10-GatewayAPI/manifests/08-httproute-b.yaml
-oc delete -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/10-GatewayAPI/manifests/07-httproute-a.yaml
-oc delete -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/10-GatewayAPI/manifests/06-gateway-b.yaml
-oc delete -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/10-GatewayAPI/manifests/05-gateway-a.yaml
-oc delete -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/10-GatewayAPI/manifests/04-app-b.yaml
-oc delete -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/10-GatewayAPI/manifests/03-app-a.yaml
+oc delete -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/10-GatewayAPI/manifests/05-httproute.yaml
+oc delete -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/10-GatewayAPI/manifests/04-gateway.yaml
+oc delete -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/10-GatewayAPI/manifests/03-app.yaml
 oc delete namespace lab-gateway-demo
 ```
 

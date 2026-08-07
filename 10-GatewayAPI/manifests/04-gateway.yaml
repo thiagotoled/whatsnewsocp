@@ -1,16 +1,16 @@
 # Gateway objects sempre em openshift-ingress, independente de onde a app/HTTPRoute vive.
-# Sem TLS de propósito (protocol: HTTP) -- o foco do lab é comparar dois LoadBalancers
-# independentes, não configuração de certificado.
+# Sem TLS de propósito (protocol: HTTP) -- o foco do lab é o fluxo Gateway -> HTTPRoute, não
+# configuração de certificado.
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
-  name: gateway-app-a
+  name: gateway-app
   namespace: openshift-ingress
 spec:
   gatewayClassName: openshift-default
   listeners:
     - name: http
-      hostname: "app-a.gwapi.example.com"
+      hostname: "app.gwapi.example.com"
       port: 80
       protocol: HTTP
       allowedRoutes:

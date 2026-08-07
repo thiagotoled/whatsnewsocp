@@ -18,7 +18,7 @@ Cada diretório contém um laboratório independente com manifestos prontos para
 | 7 | [GitOps Argo Agent Addon](./07-GitOpsArgoAgent/README.md) **(exige managed cluster real)** | Modelo **pull** de GitOps multicluster do ACM 2.17 — managed cluster conecta no hub, não o contrário | ACM 2.17 | Tech Preview | ~35 min |
 | 8 | [Dashboards com o Red Hat Build of Perses](./08-GrafanaToPerses/README.md) | Dois caminhos: Parte 1 — COO genérico (`UIPlugin`/`PersesDashboard`, GA), isolado no cluster de cada aluno. Parte 2 — Multicluster Observability Add-on nativo do ACM (Technology Preview), dashboards de frota prontos, pré-configurado no hub | COO 1.5 / ACM 2.17 | GA + Tech Preview | ~30 min |
 | 9 | [Helm Chart Direto de URL OCI/HTTPS no Console](./09-HelmConsoleOCI/README.md) **(backend validado, UI do console não)** | Instala um Helm chart sem cadastrar repositório antes — cola a URL `oci://` ou `https://` na hora | 4.22 | GA | ~15 min |
-| 10 | [Gateway API — Dois Gateways Independentes](./10-GatewayAPI/README.md) | Cada `Gateway` gera seu próprio `Deployment`+`LoadBalancer` — isolado no cluster de cada aluno, sem depender de ACM/hub | 4.19+ | GA | ~25 min |
+| 10 | [Gateway API](./10-GatewayAPI/README.md) | `GatewayClass` + `Gateway` + `HTTPRoute` — o `Gateway` gera seu próprio `Deployment`+`LoadBalancer`, comparado ao modelo clássico de Route/Router | 4.19+ | GA | ~20 min |
 
 > **OCP 4.22** (lançado em 23 de junho de 2026, baseado no Kubernetes 1.35 "Timbernetes"):
 > o In-place Pod Vertical Scaling (Lab 1) passou de Tech Preview para **GA**. Labs 7-10 cobrem
@@ -136,12 +136,9 @@ oc login --token=<TOKEN> --server=<API_URL>
 │   └── manifests
 │       ├── 01-gatewayclass.yaml
 │       ├── 02-namespace.yaml
-│       ├── 03-app-a.yaml
-│       ├── 04-app-b.yaml
-│       ├── 05-gateway-a.yaml
-│       ├── 06-gateway-b.yaml
-│       ├── 07-httproute-a.yaml
-│       └── 08-httproute-b.yaml
+│       ├── 03-app.yaml
+│       ├── 04-gateway.yaml
+│       └── 05-httproute.yaml
 ├── README.md
 └── acm-hub
     ├── README.md

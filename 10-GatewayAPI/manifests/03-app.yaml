@@ -1,22 +1,23 @@
-# App de exemplo B -- mesma imagem do app-a, de propósito: o ponto do lab é comparar os dois
-# LoadBalancers/Gateways, não o conteúdo das respostas.
+# App de exemplo -- imagem "Hello OpenShift" oficial, usada nos próprios exemplos de Route
+# da documentação do OCP. O conteúdo da resposta não importa pro lab; o que importa é o
+# caminho (Gateway -> HTTPRoute -> Service) até chegar nela.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: app-b
+  name: app
   namespace: lab-gateway-demo
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: app-b
+      app: app
   template:
     metadata:
       labels:
-        app: app-b
+        app: app
     spec:
       containers:
-        - name: app-b
+        - name: app
           image: quay.io/openshift/origin-hello-openshift
           ports:
             - containerPort: 8080
@@ -24,11 +25,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: app-b
+  name: app
   namespace: lab-gateway-demo
 spec:
   selector:
-    app: app-b
+    app: app
   ports:
     - port: 8080
       targetPort: 8080
