@@ -25,11 +25,6 @@ Cada diretório contém um laboratório independente com manifestos prontos para
 > outras novidades do 4.19-4.22 e do ACM 2.17/RHACS 4.11 (GitOps pull model, Perses, Helm
 > Console, Gateway API) — marcados **"não validado ao vivo"** até serem testados num cluster
 > real.
->
-> **Labs removidos**: OLM v1 (exigia a capability opcional `OperatorLifecycleManagerV1`, que não
-> vem habilitada por padrão e, uma vez ligada, não pode ser desligada de novo — não dava pra
-> validar sem alterar permanentemente o cluster de testes deste repositório) e "Encontrando
-> Problemas Antes de Atualizar o Cluster" (`oc adm upgrade recommend`).
 
 ---
 
