@@ -156,11 +156,20 @@ oc get nodes -w
 Para desabilitar o gerenciamento automático e retornar ao comportamento padrão:
 
 ```bash
-oc patch machineconfiguration cluster --type=merge -p '{"spec":{"managedBootImages":{"machineManagers":[]}}}'
+oc edit MachineConfiguration cluster
+
+apiVersion: operator.openshift.io/v1
+kind: MachineConfiguration
+metadata:
+  name: cluster
+spec:
+# ...
+  managedBootImages:
+    machineManagers:
+    - apiGroup: machine.openshift.io
+      resource: machinesets
+      selection:
+        mode: None
 ```
 
 ---
-
-## Referências
-
-- [Documentação oficial: Managed Boot Images no OCP 4.21](https://docs.redhat.com/en/documentation/openshift_container_platform/4.21/html-single/machine_configuration/index#mco-update-boot-images)
