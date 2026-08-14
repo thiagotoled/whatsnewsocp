@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: appb-demo
+  labels:
+    app: appb-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: appb-demo
+  template:
+    metadata:
+      labels:
+        app: appb-demo
+    spec:
+      containers:
+        - name: appb-demo
+          image: registry.access.redhat.com/ubi9/ubi-minimal:latest
+          command: ["sleep", "infinity"]
