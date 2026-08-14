@@ -135,10 +135,12 @@ oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/head
 ### 2f. RBAC de escrita pro Argo CD local (mesmo requisito do push, seção 1.6.1)
 
 O Argo CD **local** que o agent instala no managed cluster (`application-controller` próprio)
-só tem permissão dentro do namespace onde ele mesmo vive (`lab-argocd`) — sem isso,
+só tem permissão dentro do namespace onde ele mesmo vive (`openshift-gitops` — independente do
+`argoServer.argoNamespace` do hub, que só controla onde o `principal` roda) — sem isso,
 qualquer app cujo destino seja outro namespace (o caso normal, como este lab:
-`gitops-agent-demo`) falha com `forbidden` ao aplicar. Confirmado ao vivo: sem isso, o sync
-falha 5 vezes seguidas e o `Deployment` nunca é atualizado, mesmo com tudo mais certo.
+`gitops-agent-demo`) falha com `forbidden` ao aplicar. Confirmado ao vivo (inclusive testando
+carga real com 50 mil `Application`s, depois de um `sed` global ter trocado esse valor sem
+querer): sem isso, o sync falha e o `Deployment` nunca é atualizado, mesmo com tudo mais certo.
 
 ```bash
 oc apply -f https://raw.githubusercontent.com/thiagotoled/whatsnewsocp/refs/heads/main/07-GitOpsArgoAgent/manifests/09-agent-write-rbac-policy.yaml

@@ -4,9 +4,14 @@
 # já gera automaticamente; aqui está como uma Policy própria (mesmo Placement), mais simples
 # de versionar em Git sem precisar buscar/editar um objeto gerado dinamicamente.
 #
-# Namespace do SA confirmado ao vivo como lab-argocd (bate exatamente com a doc) -- só
-# em teste anterior com hub=spoke esse SA apareceu num namespace diferente (local-cluster),
-# artefato do cenário auto-referenciado que não existe com um managed cluster de verdade.
+# O Argo CD LOCAL que o addon instala em cada managed cluster vive no namespace
+# openshift-gitops -- INDEPENDENTE do argoServer.argoNamespace (lab-argocd) do hub, que só
+# controla onde o principal roda. Confirmado ao vivo via AddOnDeploymentConfig
+# (customizedVariables ARGOCD_NAMESPACE=openshift-gitops em todo managed cluster, mesmo com o
+# hub usando lab-argocd). Bug real: um `sed` global durante o redesign pra lab-argocd trocou
+# esse valor sem querer, quebrando o RBAC pra todo cluster (achado testando carga real com
+# 50 mil Applications -- erro "cannot patch resource deployments ... forbidden" citando o SA
+# antigo acm-openshift-gitops-... em vez do acm-lab-argocd-... que a Policy criava).
 apiVersion: policy.open-cluster-management.io/v1
 kind: Policy
 metadata:
@@ -29,11 +34,11 @@ spec:
                 apiVersion: rbac.authorization.k8s.io/v1
                 kind: ClusterRoleBinding
                 metadata:
-                  name: acm-lab-argocd-argocd-agent-cluster-reader
+                  name: acm-openshift-gitops-argocd-agent-cluster-reader
                 subjects:
                   - kind: ServiceAccount
-                    name: acm-lab-argocd-agent-agent
-                    namespace: lab-argocd
+                    name: acm-openshift-gitops-agent-agent
+                    namespace: openshift-gitops
                 roleRef:
                   apiGroup: rbac.authorization.k8s.io
                   kind: ClusterRole

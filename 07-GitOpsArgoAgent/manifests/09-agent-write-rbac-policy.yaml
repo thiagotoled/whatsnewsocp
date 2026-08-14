@@ -1,10 +1,15 @@
 # Confirmado ao vivo, não documentado explicitamente na doc oficial pro lado do agent (só pro
 # push, seção 1.6.1 "Important"): o Argo CD LOCAL que o agent instala no managed cluster
-# (application-controller próprio, SA acm-lab-argocd-argocd-application-controller) só
-# tem permissão dentro do namespace onde ele mesmo vive (lab-argocd) -- sem isso, toda
+# (application-controller próprio, SA acm-openshift-gitops-argocd-application-controller) só
+# tem permissão dentro do namespace onde ele mesmo vive (openshift-gitops) -- sem isso, toda
 # app cujo destino seja outro namespace (o caso normal, como este lab: gitops-agent-demo)
 # falha com "forbidden" ao tentar aplicar. É o MESMO requisito que a doc já avisa pro push,
 # só que agora pro controller local, não o do hub.
+#
+# openshift-gitops é INDEPENDENTE do argoServer.argoNamespace (lab-argocd) do hub -- só
+# controla onde o principal roda, não onde o Argo CD local do spoke instala. Bug real: um
+# `sed` global durante o redesign pra lab-argocd trocou esse valor sem querer aqui também,
+# quebrando o RBAC pra todo cluster (achado testando carga real com 50 mil Applications).
 apiVersion: policy.open-cluster-management.io/v1
 kind: Policy
 metadata:
@@ -27,11 +32,11 @@ spec:
                 apiVersion: rbac.authorization.k8s.io/v1
                 kind: ClusterRoleBinding
                 metadata:
-                  name: argo-admin-acm-lab-argocd
+                  name: argo-admin-acm-openshift-gitops
                 subjects:
                   - kind: ServiceAccount
-                    name: acm-lab-argocd-argocd-application-controller
-                    namespace: lab-argocd
+                    name: acm-openshift-gitops-argocd-application-controller
+                    namespace: openshift-gitops
                 roleRef:
                   apiGroup: rbac.authorization.k8s.io
                   kind: ClusterRole
