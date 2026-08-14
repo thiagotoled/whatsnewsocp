@@ -27,3 +27,4 @@ resources:
   - policy-lab06.yaml
   - policy-lab08.yaml
   - policy-eso-oauth-secrets.yaml
+  - policy-worker-3-per-zone.yaml
