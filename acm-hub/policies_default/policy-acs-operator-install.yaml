@@ -6,7 +6,7 @@ apiVersion: policy.open-cluster-management.io/v1
 kind: Policy
 metadata:
   name: policy-acs-operator-install
-  namespace: whatsnewsocp-policies
+  namespace: policies-acm
   annotations:
     policy.open-cluster-management.io/categories: CM Configuration Management
     policy.open-cluster-management.io/controls: CM-2 Baseline Configuration

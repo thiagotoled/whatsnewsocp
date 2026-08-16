@@ -2,6 +2,6 @@ apiVersion: cluster.open-cluster-management.io/v1beta2
 kind: ManagedClusterSetBinding
 metadata:
   name: default
-  namespace: whatsnewsocp-policies
+  namespace: policies-acm
 spec:
   clusterSet: default

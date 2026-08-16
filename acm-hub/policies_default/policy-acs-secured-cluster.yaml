@@ -5,7 +5,7 @@
 # disso o init-bundle era gerado por cluster e o plano original era aplicar isso tudo manual.
 # Gerado uma vez em Central > Clusters > Create Cluster Registration Secret, expira em
 # 2026-12-31 (crs.platform.stackrox.io/expires-at). O secret real (`cluster-registration-secret`)
-# é aplicado manualmente no namespace whatsnewsocp-policies do hub (NÃO commitado — este repo
+# é aplicado manualmente no namespace policies-acm do hub (NÃO commitado — este repo
 # é público) e copiado pra cada cluster via fromSecret no hub template abaixo. Se expirar,
 # gerar um novo CRS em Central, `oc apply` o secret de novo no hub, nada muda aqui.
 # clusterName usa hub templating (.ManagedClusterName) porque cada cluster precisa de um nome
@@ -27,7 +27,7 @@ apiVersion: policy.open-cluster-management.io/v1
 kind: Policy
 metadata:
   name: policy-acs-secured-cluster
-  namespace: whatsnewsocp-policies
+  namespace: policies-acm
   annotations:
     policy.open-cluster-management.io/categories: CM Configuration Management
     policy.open-cluster-management.io/controls: CM-2 Baseline Configuration
@@ -69,7 +69,7 @@ spec:
               namespace: stackrox
             type: Opaque
             data:
-              crs: '{{hub fromSecret "whatsnewsocp-policies" "cluster-registration-secret" "crs" hub}}'
+              crs: '{{hub fromSecret "policies-acm" "cluster-registration-secret" "crs" hub}}'
   - extraDependencies:
     - apiVersion: policy.open-cluster-management.io/v1
       compliance: Compliant

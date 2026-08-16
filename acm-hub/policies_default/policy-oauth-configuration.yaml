@@ -9,14 +9,14 @@
 # Sem isso, o login via AAD falha com redirect_uri_mismatch mesmo com a policy Compliant.
 #
 # Os secrets reais (htpasswd-2cr76, aad-client-secret) são aplicados manualmente no namespace
-# whatsnewsocp-policies do hub (NÃO commitados — este repo é público) e copiados pra
+# policies-acm do hub (NÃO commitados — este repo é público) e copiados pra
 # openshift-config via fromSecret no hub template abaixo, mesmo padrão do
 # policy-acs-secured-cluster. Pra reaplicar/rotacionar, veja os arquivos-fonte fora do repo.
 apiVersion: policy.open-cluster-management.io/v1
 kind: Policy
 metadata:
   name: policy-oauth-configuration
-  namespace: whatsnewsocp-policies
+  namespace: policies-acm
   annotations:
     policy.open-cluster-management.io/categories: CM Configuration Management
     policy.open-cluster-management.io/controls: CM-2 Baseline Configuration
@@ -43,7 +43,7 @@ spec:
               namespace: openshift-config
             type: Opaque
             data:
-              htpasswd: '{{hub fromSecret "whatsnewsocp-policies" "htpasswd-2cr76" "htpasswd" hub}}'
+              htpasswd: '{{hub fromSecret "policies-acm" "htpasswd-2cr76" "htpasswd" hub}}'
   - objectDefinition:
       apiVersion: policy.open-cluster-management.io/v1
       kind: ConfigurationPolicy
@@ -62,7 +62,7 @@ spec:
               namespace: openshift-config
             type: Opaque
             data:
-              clientSecret: '{{hub fromSecret "whatsnewsocp-policies" "aad-client-secret" "clientSecret" hub}}'
+              clientSecret: '{{hub fromSecret "policies-acm" "aad-client-secret" "clientSecret" hub}}'
   - extraDependencies:
     - apiVersion: policy.open-cluster-management.io/v1
       compliance: Compliant
