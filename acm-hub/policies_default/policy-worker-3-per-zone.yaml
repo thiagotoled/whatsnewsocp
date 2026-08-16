@@ -1,0 +1,40 @@
+# Garante 3 workers por zona em todo managed cluster OpenShift/Azure (placement-azure, hub
+# incluído). Usa object-templates-raw com Go template local (sem "hub") porque cada cluster
+# tem seu próprio conjunto de MachineSets, com nomes gerados na instalação (sufixo aleatório) —
+# não dá pra listar por nome fixo num único manifesto compartilhado entre 24+ clusters.
+# O "lookup" roda no managed cluster (config-policy-controller), não no hub: enumera os
+# MachineSets existentes em openshift-machine-api e força spec.replicas: 3 em cada um.
+# musthave só cobra o campo replicas — não mexe em selector/template/zona de cada MachineSet.
+apiVersion: policy.open-cluster-management.io/v1
+kind: Policy
+metadata:
+  name: policy-worker-3-per-zone
+  namespace: whatsnewsocp-policies
+  annotations:
+    policy.open-cluster-management.io/categories: CM Configuration Management
+    policy.open-cluster-management.io/controls: CM-2 Baseline Configuration
+    policy.open-cluster-management.io/standards: NIST SP 800-53
+    argocd.argoproj.io/compare-options: IgnoreExtraneous
+spec:
+  disabled: false
+  policy-templates:
+  - objectDefinition:
+      apiVersion: policy.open-cluster-management.io/v1
+      kind: ConfigurationPolicy
+      metadata:
+        name: policy-worker-3-per-zone
+      spec:
+        remediationAction: enforce
+        severity: medium
+        object-templates-raw: |
+          {{- range $ms := (lookup "machine.openshift.io/v1beta1" "MachineSet" "openshift-machine-api" "").items }}
+          - complianceType: musthave
+            objectDefinition:
+              apiVersion: machine.openshift.io/v1beta1
+              kind: MachineSet
+              metadata:
+                name: {{ $ms.metadata.name }}
+                namespace: openshift-machine-api
+              spec:
+                replicas: 3
+          {{- end }}

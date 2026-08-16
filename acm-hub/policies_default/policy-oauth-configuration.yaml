@@ -1,0 +1,118 @@
+# Baseado em ACM_OCP/Politicas/policy-htpasswd.yaml, renomeado porque o conteúdo é a
+# configuração de OAuth do cluster como um todo (HTPasswd + Entra ID/AAD via OIDC), não só
+# o htpasswd. Valores copiados do mesmo app registration usado no outro hub (reaproveitado
+# entre clusters).
+#
+# AÇÃO NECESSÁRIA: adicionar o Redirect URI deste hub novo no app registration no Entra ID
+# (Azure Portal > App registrations > Authentication):
+#   https://oauth-openshift.apps.<domínio-deste-hub>/oauth2callback/AAD
+# Sem isso, o login via AAD falha com redirect_uri_mismatch mesmo com a policy Compliant.
+#
+# Os secrets reais (htpasswd-2cr76, aad-client-secret) são aplicados manualmente no namespace
+# whatsnewsocp-policies do hub (NÃO commitados — este repo é público) e copiados pra
+# openshift-config via fromSecret no hub template abaixo, mesmo padrão do
+# policy-acs-secured-cluster. Pra reaplicar/rotacionar, veja os arquivos-fonte fora do repo.
+apiVersion: policy.open-cluster-management.io/v1
+kind: Policy
+metadata:
+  name: policy-oauth-configuration
+  namespace: whatsnewsocp-policies
+  annotations:
+    policy.open-cluster-management.io/categories: CM Configuration Management
+    policy.open-cluster-management.io/controls: CM-2 Baseline Configuration
+    policy.open-cluster-management.io/standards: NIST SP 800-53
+    argocd.argoproj.io/compare-options: IgnoreExtraneous
+spec:
+  disabled: false
+  policy-templates:
+  - objectDefinition:
+      apiVersion: policy.open-cluster-management.io/v1
+      kind: ConfigurationPolicy
+      metadata:
+        name: policy-htpasswd-secret
+      spec:
+        remediationAction: enforce
+        severity: medium
+        object-templates:
+        - complianceType: musthave
+          objectDefinition:
+            apiVersion: v1
+            kind: Secret
+            metadata:
+              name: htpasswd-2cr76
+              namespace: openshift-config
+            type: Opaque
+            data:
+              htpasswd: '{{hub fromSecret "whatsnewsocp-policies" "htpasswd-2cr76" "htpasswd" hub}}'
+  - objectDefinition:
+      apiVersion: policy.open-cluster-management.io/v1
+      kind: ConfigurationPolicy
+      metadata:
+        name: policy-aad-secret
+      spec:
+        remediationAction: enforce
+        severity: medium
+        object-templates:
+        - complianceType: musthave
+          objectDefinition:
+            apiVersion: v1
+            kind: Secret
+            metadata:
+              name: aad-client-secret
+              namespace: openshift-config
+            type: Opaque
+            data:
+              clientSecret: '{{hub fromSecret "whatsnewsocp-policies" "aad-client-secret" "clientSecret" hub}}'
+  - extraDependencies:
+    - apiVersion: policy.open-cluster-management.io/v1
+      compliance: Compliant
+      kind: ConfigurationPolicy
+      name: policy-htpasswd-secret
+    - apiVersion: policy.open-cluster-management.io/v1
+      compliance: Compliant
+      kind: ConfigurationPolicy
+      name: policy-aad-secret
+    objectDefinition:
+      apiVersion: policy.open-cluster-management.io/v1
+      kind: ConfigurationPolicy
+      metadata:
+        name: policy-oauth-cluster
+      spec:
+        remediationAction: enforce
+        severity: medium
+        object-templates:
+        - complianceType: musthave
+          objectDefinition:
+            apiVersion: config.openshift.io/v1
+            kind: OAuth
+            metadata:
+              name: cluster
+            spec:
+              identityProviders:
+              - name: htpasswd
+                mappingMethod: claim
+                type: HTPasswd
+                htpasswd:
+                  fileData:
+                    name: htpasswd-2cr76
+              - name: AAD
+                mappingMethod: claim
+                type: OpenID
+                openID:
+                  clientID: ecb2c027-2a5f-4324-9e05-3aa819ab351e
+                  clientSecret:
+                    name: aad-client-secret
+                  extraScopes:
+                  - email
+                  - profile
+                  issuer: https://login.microsoftonline.com/64dc69e4-d083-49fc-9569-ebece1dd1408/v2.0
+                  claims:
+                    preferredUsername:
+                    - email
+                    - preferred_username
+                    name:
+                    - name
+                    email:
+                    - email
+                    groups:
+                    - groups

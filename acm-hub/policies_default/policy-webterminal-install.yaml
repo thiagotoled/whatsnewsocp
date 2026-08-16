@@ -1,0 +1,32 @@
+# Trazido de ACM_OCP/Politicas/policy-webterminal-install.yaml (sem alterações de conteúdo,
+# só o namespace da Policy).
+apiVersion: policy.open-cluster-management.io/v1
+kind: Policy
+metadata:
+  name: policy-webterminal-install
+  namespace: whatsnewsocp-policies
+  annotations:
+    policy.open-cluster-management.io/categories: CM Configuration Management
+    policy.open-cluster-management.io/controls: CM-2 Baseline Configuration
+    policy.open-cluster-management.io/standards: NIST SP 800-53
+    argocd.argoproj.io/compare-options: IgnoreExtraneous
+spec:
+  disabled: false
+  policy-templates:
+    - objectDefinition:
+        apiVersion: policy.open-cluster-management.io/v1beta1
+        kind: OperatorPolicy
+        metadata:
+          name: install-webterminal-operator
+        spec:
+          remediationAction: enforce
+          severity: critical
+          complianceType: musthave
+          subscription:
+            name: web-terminal
+            namespace: openshift-operators
+            channel: fast
+            source: redhat-operators
+            sourceNamespace: openshift-marketplace
+          upgradeApproval: Automatic
+          versions: []

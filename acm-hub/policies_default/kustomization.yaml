@@ -1,0 +1,20 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - 00-namespace.yaml
+  - 01-managedclustersetbinding.yaml
+  - 02-placement-local-cluster.yaml
+  - 03-placementbinding-local-cluster.yaml
+  - 04-placement-azure.yaml
+  - 08-placement-all.yaml
+  - 09-placementbinding-all.yaml
+  - 10-placementbinding-azure.yaml
+  - policy-gitops-operator-install.yaml
+  - policy-webterminal-install.yaml
+  - policy-oauth-configuration.yaml
+  - policy-cluster-admin-rbac.yaml
+  - policy-acs-operator-install.yaml
+  - policy-acs-central.yaml
+  - policy-acs-secured-cluster.yaml
+  - policy-worker-3-per-zone.yaml

@@ -1,0 +1,122 @@
+# SecuredCluster + Cluster Registration Secret (CRS), em todo cluster OpenShift (placement-all),
+# hub incluído — o hub também vira um secured cluster monitorando a si mesmo, além de rodar
+# o Central. Só dá pra automatizar isso via Policy porque o CRS (ACS 4.5+) substituiu o
+# init-bundle antigo por um secret único reutilizável em qualquer número de clusters — antes
+# disso o init-bundle era gerado por cluster e o plano original era aplicar isso tudo manual.
+# Gerado uma vez em Central > Clusters > Create Cluster Registration Secret, expira em
+# 2026-12-31 (crs.platform.stackrox.io/expires-at). O secret real (`cluster-registration-secret`)
+# é aplicado manualmente no namespace whatsnewsocp-policies do hub (NÃO commitado — este repo
+# é público) e copiado pra cada cluster via fromSecret no hub template abaixo. Se expirar,
+# gerar um novo CRS em Central, `oc apply` o secret de novo no hub, nada muda aqui.
+# clusterName usa hub templating (.ManagedClusterName) porque cada cluster precisa de um nome
+# único dentro do StackRox — não dá pra hardcodar como central-cr.
+# centralEndpoint É OBRIGATÓRIO aqui -- sem ele o default é central.stackrox.svc:443 (DNS
+# interno do cluster), que só resolve quando Central roda no MESMO cluster do SecuredCluster.
+# Bug real encontrado ao vivo no primeiro managed cluster importado (ms35vuo5): sensor init
+# container ficava em CrashLoopBackOff eterno, log "dial tcp: lookup central.stackrox.svc:
+# no such host" -- a policy tinha ficado Compliant mesmo assim, porque ConfigurationPolicy só
+# valida que o objeto SecuredCluster bate com o spec desejado, não que os pods gerados por ele
+# estão saudáveis. Usar a rota externa do Central funciona tanto no hub (self-monitoring)
+# quanto em qualquer managed cluster, então dá pra usar o mesmo valor pros dois casos.
+# policy-acs-console-plugin habilita o plugin "advanced-cluster-security" no Console (operator.
+# openshift.io/v1 Console/cluster spec.plugins) — sem isso o operator instala o ConsolePlugin
+# mas ele fica Disabled e as views de violação/vulnerabilidade não aparecem no console OCP.
+# musthave em array faz merge (não substitui a lista), então os outros plugins já habilitados
+# (acm, gitops-plugin, mce, etc.) não são removidos.
+apiVersion: policy.open-cluster-management.io/v1
+kind: Policy
+metadata:
+  name: policy-acs-secured-cluster
+  namespace: whatsnewsocp-policies
+  annotations:
+    policy.open-cluster-management.io/categories: CM Configuration Management
+    policy.open-cluster-management.io/controls: CM-2 Baseline Configuration
+    policy.open-cluster-management.io/standards: NIST SP 800-53
+    argocd.argoproj.io/compare-options: IgnoreExtraneous
+spec:
+  disabled: false
+  policy-templates:
+  - objectDefinition:
+      apiVersion: policy.open-cluster-management.io/v1
+      kind: ConfigurationPolicy
+      metadata:
+        name: policy-acs-secured-cluster-namespace
+      spec:
+        remediationAction: enforce
+        severity: low
+        object-templates:
+        - complianceType: musthave
+          objectDefinition:
+            apiVersion: v1
+            kind: Namespace
+            metadata:
+              name: stackrox
+  - objectDefinition:
+      apiVersion: policy.open-cluster-management.io/v1
+      kind: ConfigurationPolicy
+      metadata:
+        name: policy-acs-registration-secret
+      spec:
+        remediationAction: enforce
+        severity: medium
+        object-templates:
+        - complianceType: musthave
+          objectDefinition:
+            apiVersion: v1
+            kind: Secret
+            metadata:
+              name: cluster-registration-secret
+              namespace: stackrox
+            type: Opaque
+            data:
+              crs: '{{hub fromSecret "whatsnewsocp-policies" "cluster-registration-secret" "crs" hub}}'
+  - extraDependencies:
+    - apiVersion: policy.open-cluster-management.io/v1
+      compliance: Compliant
+      kind: ConfigurationPolicy
+      name: policy-acs-secured-cluster-namespace
+    - apiVersion: policy.open-cluster-management.io/v1
+      compliance: Compliant
+      kind: ConfigurationPolicy
+      name: policy-acs-registration-secret
+    - apiVersion: policy.open-cluster-management.io/v1beta1
+      compliance: Compliant
+      kind: OperatorPolicy
+      name: policy-acs-operator-install
+    objectDefinition:
+      apiVersion: policy.open-cluster-management.io/v1
+      kind: ConfigurationPolicy
+      metadata:
+        name: policy-acs-securedcluster-cr
+      spec:
+        remediationAction: enforce
+        severity: low
+        object-templates:
+        - complianceType: musthave
+          objectDefinition:
+            apiVersion: platform.stackrox.io/v1alpha1
+            kind: SecuredCluster
+            metadata:
+              name: stackrox-secured-cluster-services
+              namespace: stackrox
+            spec:
+              clusterName: '{{hub .ManagedClusterName hub}}'
+              centralEndpoint: 'central-stackrox.apps.d8qr5hh9.eastus.aroapp.io:443'
+  - objectDefinition:
+      apiVersion: policy.open-cluster-management.io/v1
+      kind: ConfigurationPolicy
+      metadata:
+        name: policy-acs-console-plugin
+      spec:
+        remediationAction: enforce
+        severity: low
+        object-templates:
+        - complianceType: musthave
+          objectDefinition:
+            apiVersion: operator.openshift.io/v1
+            kind: Console
+            metadata:
+              name: cluster
+            spec:
+              plugins:
+              - advanced-cluster-security

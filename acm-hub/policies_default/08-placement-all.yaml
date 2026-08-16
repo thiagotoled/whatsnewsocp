@@ -1,0 +1,18 @@
+# Mesmo padrão do all-ocp-placement em ACM_OCP/Politicas: qualquer managed cluster OpenShift,
+# sem filtro de nuvem nem de local-cluster. Para policies que valem em todo lugar (ex.: OAuth/IdP).
+apiVersion: cluster.open-cluster-management.io/v1beta1
+kind: Placement
+metadata:
+  name: placement-all
+  namespace: whatsnewsocp-policies
+spec:
+  tolerations:
+    - key: cluster.open-cluster-management.io/unreachable
+      operator: Exists
+    - key: cluster.open-cluster-management.io/unavailable
+      operator: Exists
+  predicates:
+    - requiredClusterSelector:
+        labelSelector:
+          matchLabels:
+            vendor: OpenShift
